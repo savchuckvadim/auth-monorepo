@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  db-auth-monorepo:
+    image: mysql:8.0
+    container_name: db-auth-monorepo
+    env_file:
+      - ./apps/api/.env
+    environment:
+      MYSQL_ROOT_PASSWORD: cf
+      MYSQL_DATABASE: auth-monorepo
+    ports:
+      - "3310:3306" # локально доступно на 127.0.0.1:3310
+    volumes:
+      - ./apps/api/db_data:/var/lib/mysql
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      retries: 5
+      timeout: 3s
+
+  redis-auth-monorepo:
+    image: redis:7
+    container_name: redis-auth-monorepo
+    ports:
+      - "6334:6379" # локально доступно на 127.0.0.1:6334
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 5
+      timeout: 3s
+
+networks:
+  app-network:
+    driver: bridge
