@@ -124,17 +124,21 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  surname: 'surname',
   email: 'email',
-  photo: 'photo',
-  role_id: 'role_id',
-  email_verified_at: 'email_verified_at',
+  isAcivated: 'isAcivated',
+  activationLink: 'activationLink',
+  role: 'role',
   password: 'password',
-  two_factor_secret: 'two_factor_secret',
-  two_factor_recovery_codes: 'two_factor_recovery_codes',
-  remember_token: 'remember_token',
-  created_at: 'created_at',
-  updated_at: 'updated_at'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TokenScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  refreshToken: 'refreshToken',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -148,19 +152,27 @@ exports.Prisma.NullsOrder = {
 };
 
 exports.Prisma.UserOrderByRelevanceFieldEnum = {
+  id: 'id',
   name: 'name',
-  surname: 'surname',
   email: 'email',
-  photo: 'photo',
-  password: 'password',
-  two_factor_secret: 'two_factor_secret',
-  two_factor_recovery_codes: 'two_factor_recovery_codes',
-  remember_token: 'remember_token'
+  activationLink: 'activationLink',
+  password: 'password'
 };
 
+exports.Prisma.TokenOrderByRelevanceFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  refreshToken: 'refreshToken'
+};
+exports.user_roles = exports.$Enums.user_roles = {
+  owner: 'owner',
+  admin: 'admin',
+  user: 'user'
+};
 
 exports.Prisma.ModelName = {
-  User: 'User'
+  User: 'User',
+  Token: 'Token'
 };
 
 /**

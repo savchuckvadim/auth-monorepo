@@ -59,7 +59,7 @@ export function EmailVerificationTemplate({ user, token }: EmailVerificationTemp
                                 Верификация почты
                             </Heading>
                             <Text className='mb-6 text-gray-500' style={{ fontFamily: 'Geist, Arial' }}>
-                                Привет, {user.name} {user.surname}! Мы получили запрос на верификацию вашей почты.
+                                Привет, {user.name} ! Мы получили запрос на верификацию вашей почты.
                             </Text>
                             <Section className='mb-8 rounded-lg border border-blue-100 bg-blue-50 p-6'>
                                 <Text className='mb-4 text-gray-800' style={{ fontFamily: 'Geist, Arial' }}>

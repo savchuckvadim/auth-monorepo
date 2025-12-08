@@ -96,17 +96,21 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  surname: 'surname',
   email: 'email',
-  photo: 'photo',
-  role_id: 'role_id',
-  email_verified_at: 'email_verified_at',
+  isAcivated: 'isAcivated',
+  activationLink: 'activationLink',
+  role: 'role',
   password: 'password',
-  two_factor_secret: 'two_factor_secret',
-  two_factor_recovery_codes: 'two_factor_recovery_codes',
-  remember_token: 'remember_token',
-  created_at: 'created_at',
-  updated_at: 'updated_at'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.TokenScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  refreshToken: 'refreshToken',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -120,14 +124,17 @@ exports.Prisma.NullsOrder = {
 };
 
 exports.Prisma.UserOrderByRelevanceFieldEnum = {
+  id: 'id',
   name: 'name',
-  surname: 'surname',
   email: 'email',
-  photo: 'photo',
-  password: 'password',
-  two_factor_secret: 'two_factor_secret',
-  two_factor_recovery_codes: 'two_factor_recovery_codes',
-  remember_token: 'remember_token'
+  activationLink: 'activationLink',
+  password: 'password'
+};
+
+exports.Prisma.TokenOrderByRelevanceFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  refreshToken: 'refreshToken'
 };
 exports.user_roles = exports.$Enums.user_roles = {
   owner: 'owner',
@@ -136,7 +143,8 @@ exports.user_roles = exports.$Enums.user_roles = {
 };
 
 exports.Prisma.ModelName = {
-  User: 'User'
+  User: 'User',
+  Token: 'Token'
 };
 /**
  * Create the Client
@@ -185,7 +193,6 @@ const config = {
     "db"
   ],
   "activeProvider": "mysql",
-  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -194,13 +201,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider      = \"prisma-client-js\"\n  output        = \"../generated/prisma\"\n  binaryTargets = [\"native\", \"debian-openssl-1.1.x\", \"debian-openssl-3.0.x\"]\n}\n\ndatasource db {\n  provider = \"mysql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id                        BigInt    @id @default(autoincrement()) @db.UnsignedBigInt\n  name                      String    @db.VarChar(255)\n  surname                   String    @db.VarChar(255)\n  email                     String?   @unique(map: \"users_email_unique\") @db.VarChar(255)\n  photo                     String?   @db.VarChar(255)\n  role_id                   BigInt    @db.UnsignedBigInt\n  email_verified_at         DateTime? @db.Timestamp(0)\n  password                  String    @db.VarChar(255)\n  two_factor_secret         String?   @db.Text\n  two_factor_recovery_codes String?   @db.Text\n  remember_token            String?   @db.VarChar(100)\n  created_at                DateTime? @default(now()) @db.Timestamp(0)\n  updated_at                DateTime? @default(now()) @db.Timestamp(0)\n}\n\nenum user_roles {\n  owner\n  admin\n  user\n}\n",
-  "inlineSchemaHash": "362ac0b654dd73e39b3455acdc1ec4fbad3fc34b6fbf4d96830729e122f116cf",
+  "inlineSchema": "generator client {\n  provider      = \"prisma-client-js\"\n  output        = \"../generated/prisma\"\n  binaryTargets = [\"native\", \"debian-openssl-1.1.x\", \"debian-openssl-3.0.x\"]\n}\n\ndatasource db {\n  provider = \"mysql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id             String     @id @default(uuid())\n  name           String     @db.VarChar(255)\n  email          String?    @unique(map: \"users_email_unique\") @db.VarChar(255)\n  isAcivated     Boolean    @default(false)\n  activationLink String?    @db.VarChar(255)\n  role           user_roles\n  password       String\n  createdAt      DateTime?  @default(now())\n  updatedAt      DateTime?  @default(now())\n  tokens         Token[]\n\n  @@unique([email])\n  @@map(\"users\")\n}\n\nmodel Token {\n  id           String @id @default(uuid())\n  userId       String @map(\"user_id\") @db.VarChar(255)\n  refreshToken String @map(\"refresh_token\") @db.VarChar(255)\n\n  createdAt DateTime? @default(now())\n  updatedAt DateTime? @default(now())\n\n  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)\n\n  @@map(\"tokens\")\n}\n\nenum user_roles {\n  owner\n  admin\n  user\n}\n",
+  "inlineSchemaHash": "7306503b18295a262f9684384c7d64ffdd72cc26357aad2fc79c8652cd48f3d0",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"surname\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"photo\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role_id\",\"kind\":\"scalar\",\"type\":\"BigInt\"},{\"name\":\"email_verified_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"two_factor_secret\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"two_factor_recovery_codes\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"remember_token\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"created_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updated_at\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isAcivated\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"activationLink\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"user_roles\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"tokens\",\"kind\":\"object\",\"type\":\"Token\",\"relationName\":\"TokenToUser\"}],\"dbName\":\"users\"},\"Token\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"user_id\"},{\"name\":\"refreshToken\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"refresh_token\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"TokenToUser\"}],\"dbName\":\"tokens\"}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: async () => require('./query_engine_bg.js'),
