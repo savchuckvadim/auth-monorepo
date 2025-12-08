@@ -9,9 +9,8 @@ import { ResetPasswordTemplate } from './templates/reset-password.template';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { TestTemplate } from './templates/test.template';
-import { SendEmailOfferRequestDto, SendEmailRequestDto } from './mail.dto';
-import { EmailOfferTemplate } from './templates/email-offer.template';
-import { StorageService, StorageType } from '@/core/storage';
+import { SendEmailRequestDto } from './mail.dto';
+
 
 @Injectable()
 export class MailService {
@@ -20,7 +19,7 @@ export class MailService {
     constructor(
         private readonly mailerService: MailerService,
         @InjectQueue('mail') private readonly queue: Queue,
-        private readonly storageService: StorageService
+
     ) { }
 
     public async sendTestEmail(dto: SendEmailRequestDto) {

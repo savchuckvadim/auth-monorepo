@@ -15,9 +15,11 @@ import { PrismaModule } from './core/prisma/prisma.module';
 
 
 import { AuthModule } from '@/modules/auth/auth.module';
-import { MailModule } from '@/modules/mail/mail.module';
-import { CookieModule } from '@/core/cookie/cookie.module';
 
+import { CookieModule } from '@/core/cookie/cookie.module';
+import { UserModule } from "@/modules/user";
+import { TokenModule } from "@/modules/token";
+import { MailModule } from "@/modules/mail";
 @Module({
     imports: [
         // DevtoolsModule.register({
@@ -44,8 +46,8 @@ import { CookieModule } from '@/core/cookie/cookie.module';
         TelegramModule,
         RedisModule,
 
-        StorageModule,
-        FileLinkModule,
+        // StorageModule,
+        // FileLinkModule,
 
 
         AuthModule,
