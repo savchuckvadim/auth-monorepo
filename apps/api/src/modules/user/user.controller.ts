@@ -31,8 +31,6 @@ export class UserController {
             name: 'Test',
             email: 'test@test.com',
             password: 'test',
-            role: user_roles.user,
-
 
         });
     }

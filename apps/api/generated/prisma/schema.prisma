@@ -12,9 +12,9 @@ datasource db {
 model User {
   id             String     @id @default(uuid())
   name           String     @db.VarChar(255)
-  email          String?    @unique(map: "users_email_unique") @db.VarChar(255)
+  email          String     @unique(map: "users_email_unique") @db.VarChar(255)
   isAcivated     Boolean    @default(false)
-  activationLink String?    @db.VarChar(255)
+  activationLink String     @unique(map: "users_activation_link_unique") @db.VarChar(255)
   role           user_roles
   password       String
   createdAt      DateTime?  @default(now())

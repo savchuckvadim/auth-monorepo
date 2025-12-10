@@ -18,16 +18,18 @@ import {
 import { User } from 'generated/prisma'
 
 interface EmailVerificationTemplateProps {
-    user: User
-    token: string
+    email: string
+    name: string
+    activationLink: string
+
 }
 
 const baseUrl = `https://${process.env.AUTH_COOKIE_SPA_DOMAIN}`
 
-export function EmailVerificationTemplate({ user, token }: EmailVerificationTemplateProps) {
-    const logo = `${baseUrl}/touch-icons/512x512.png`
+export function EmailVerificationTemplate({ name, activationLink }: EmailVerificationTemplateProps) {
+
     // const verfiyLink = `${baseUrl}/auth/verify/${token}`
-    const verfiyLink = `${baseUrl}/auth/confirm/${token}`;
+    const verfiyLink = `${baseUrl}/auth/confirm/${activationLink}`;
 
     return (
         <Tailwind>
@@ -48,18 +50,12 @@ export function EmailVerificationTemplate({ user, token }: EmailVerificationTemp
                     <Preview>Верификация почты на April</Preview>
                     <Container className='mx-auto my-10 max-w-[500px] rounded-lg bg-white p-8 shadow-lg'>
                         <Section className='text-center'>
-                            <Img
-                                src={logo}
-                                width='100'
-                                height='100'
-                                alt='April'
-                                className='mx-auto mb-4'
-                            />
+
                             <Heading className='text-2xl font-bold text-blue-600' style={{ fontFamily: 'Geist, Arial' }}>
                                 Верификация почты
                             </Heading>
                             <Text className='mb-6 text-gray-500' style={{ fontFamily: 'Geist, Arial' }}>
-                                Привет, {user.name} ! Мы получили запрос на верификацию вашей почты.
+                                Привет, {name} ! Мы получили запрос на верификацию вашей почты.
                             </Text>
                             <Section className='mb-8 rounded-lg border border-blue-100 bg-blue-50 p-6'>
                                 <Text className='mb-4 text-gray-800' style={{ fontFamily: 'Geist, Arial' }}>
@@ -77,7 +73,7 @@ export function EmailVerificationTemplate({ user, token }: EmailVerificationTemp
                                 Если вы не запрашивали верификацию почты, просто проигнорируйте это письмо.
                             </Text>
                             <Text className='mt-6 text-sm text-gray-400' style={{ fontFamily: 'Geist, Arial' }}>
-                                © {new Date().getFullYear()} April. Все права защищены.
+                                © {new Date().getFullYear()}. Все права защищены.
                             </Text>
                         </Section>
                     </Container>

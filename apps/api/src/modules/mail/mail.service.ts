@@ -1,15 +1,9 @@
 import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
 import { Injectable, Logger } from '@nestjs/common';
-import { RestrictionLiftedTemplate } from './templates/restriction-lifted.template';
 import { render } from '@react-email/components';
-import { User } from 'generated/prisma';
-import { RestrictionTemplate } from './templates/restriction.template';
 import { EmailVerificationTemplate } from './templates/email-verification.template';
-import { ResetPasswordTemplate } from './templates/reset-password.template';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { TestTemplate } from './templates/test.template';
-import { SendEmailRequestDto } from './mail.dto';
 
 
 @Injectable()
@@ -22,86 +16,27 @@ export class MailService {
 
     ) { }
 
-    public async sendTestEmail(dto: SendEmailRequestDto) {
-        const html = await render(
-            TestTemplate({ userName: 'John Doe', text: 'Это тестовое письмо' })
-        )
-
-        await this.sendEmail({
-            subject: dto.subject,
-            html: html,
-            context: {
-                name: 'Jhon Doe',
-            },
-            to: [dto.email],
-        })
-        return html
-    }
 
 
-    public async sendEmailVerification(user: User, token: string) {
-        const html = await render(EmailVerificationTemplate({ user, token }))
 
-        // await this.queue.add(
-        //     'send-email',
-        //     { email: user.email, subject: 'Верификация почты', html },
-        //     { removeOnComplete: true }
-        // )
+    public async sendActivationLink(email: string, name: string, activationLink: string) {
+
+        const html = await render(EmailVerificationTemplate({email, name, activationLink}))
+
+
 
         await this.sendEmail({
             subject: 'Верификация почты',
             html: html,
-            to: [user.email ?? 'april-app@mail.ru'],
+            to: [email ?? 'april-app@mail.ru'],
             context: {
-                name: user.name,
+                name: name,
             },
         })
         return true
     }
 
-    public async sendPasswordReset(user: User, token: string) {
-        const html = await render(ResetPasswordTemplate({ user, token }))
 
-        // await this.queue.add(
-        // 	'send-email',
-        // 	{ email: user.email, subject: 'Сброс пароля', html },
-        // 	{ removeOnComplete: true }
-        // )
-
-        return true
-    }
-
-    public async sendRestrictionEmail(
-        user: User,
-        // restriction: Restriction,
-        violations: number
-    ) {
-        const html = await render(
-            RestrictionTemplate({ user, violations })
-        )
-
-        // await this.queue.add(
-        // 	'send-email',
-        // 	{ email: user.email, subject: 'Ваш аккаунт был ограничен', html },
-        // 	{ removeOnComplete: true }
-        // )
-
-        return true
-    }
-
-    public async sendRestrictionLiftedEmail(user: User, violations: number) {
-        const html = await render(
-            RestrictionLiftedTemplate({ user, violations })
-        )
-
-        // await this.queue.add(
-        // 	'send-email',
-        // 	{ email: user.email, subject: 'Ограничение снято', html },
-        // 	{ removeOnComplete: true }
-        // )
-
-        return true
-    }
     async sendEmail(params: {
         subject: string;
         html: string;
@@ -115,7 +50,7 @@ export class MailService {
         }>;
     }) {
         try {
-            const from = `"April App" <${process.env.SMTP_FROM || 'manager@april-app.ru'}>`
+            const from = `"Test" <${process.env.SMTP_FROM || 'manager@april-app.ru'}>`
 
             const emailsList: string[] = params.to;
 

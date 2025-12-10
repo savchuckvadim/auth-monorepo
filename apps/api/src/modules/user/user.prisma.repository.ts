@@ -1,7 +1,9 @@
 import { PrismaService } from "@/core";
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { User } from "generated/prisma";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { User, user_roles } from "generated/prisma";
 import { CreateUserDto } from "./user.dto";
+import { hash } from "bcrypt";
+import { randomUUID } from "crypto";
 
 
 
@@ -30,7 +32,21 @@ export class UserPrismaRepository implements UserPrismaRepository {
     }
 
     public async create(user: CreateUserDto): Promise<User> {
-        const newUser = await this.prisma.user.create({ data: user });
+        const candidate = await this.prisma.user.findUnique({ where: { email: user.email } });
+        if (candidate) {
+            throw new BadRequestException('User already exists');
+        }
+        const hashedPassword = await hash(user.password, 10);
+        const activationLink = randomUUID();
+        const newUser = await this.prisma.user.create({
+            data: {
+                ...user,
+                role: user_roles.user,
+                password: hashedPassword,
+                activationLink: activationLink,
+            }
+        });
+
         if (!newUser) {
             throw new NotFoundException('User not created');
         }

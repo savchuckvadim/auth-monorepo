@@ -1,9 +1,8 @@
 import { Body, Controller, Get, Param, Post } from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
+import { ApiBody, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { AuthService } from "./auth.service";
 import { CreateUserDto } from "@/modules/user";
-import { User } from "generated/prisma";
-import { CurrentUser } from "@/core/decorators/auth/current-user.decorator";
+
 
 
 
@@ -12,6 +11,8 @@ import { CurrentUser } from "@/core/decorators/auth/current-user.decorator";
 export class AuthController {
     constructor(private readonly authService: AuthService) { }
 
+    @ApiOperation({ summary: 'Registration' })
+    @ApiBody({ type: CreateUserDto, description: 'Registration' })
     @Post('registration')
     async registration(@Body() registerDto: CreateUserDto) {
         return await this.authService.registration(registerDto);
@@ -36,5 +37,5 @@ export class AuthController {
     async refreshToken(@Body() refreshToken: string) {
         return await this.authService.refreshToken(refreshToken);
     }
- 
+
 }
