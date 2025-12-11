@@ -4,11 +4,12 @@ import { UserModule } from "@/modules/user";
 import { TokenModule } from "@/modules/token";
 import { MailModule } from "@/modules/mail";
 import { AuthService } from "./auth.service";
+import { CookieModule, CookieService } from "@/core/cookie";
 
 
 @Module({
-    imports: [UserModule, TokenModule, MailModule],
+    imports: [UserModule, TokenModule, MailModule, CookieModule],
     controllers: [AuthController],
-    providers: [AuthService],
+    providers: [AuthService, CookieService],
 })
 export class AuthModule { }

@@ -30,7 +30,21 @@ export class TokenService {
         return await this.tokenRepository.saveToken(userId, refreshToken);
     }
 
-    public async findToken(userId: string) {
-        return await this.tokenRepository.findToken(userId);
+    public async findToken(unicProp: string) {
+        return await this.tokenRepository.findToken(unicProp);
+    }
+
+    public async removeToken(refreshToken: string) {
+        return await this.tokenRepository.removeToken(refreshToken);
+    }
+
+    public async validateAccessToken(accessToken: string) {
+        const userData = await this.jwtService.verify(accessToken, { secret: this.configService.get('JWT_ACCESS_SECRET') });
+        return userData || null;
+    }
+
+    public async validateRefreshToken(refreshToken: string) {
+        const userData = await this.jwtService.verify(refreshToken, { secret: this.configService.get('JWT_REFRESH_SECRET') });
+        return userData || null;
     }
 }

@@ -3,6 +3,9 @@ import { ApiProperty } from "@nestjs/swagger";
 import { IsDate, IsEmail, IsEnum, IsString } from "class-validator";
 import { Token, User, user_roles } from "generated/prisma";
 
+
+
+
 export class CreateUserDto {
     @ApiProperty({ description: 'Email', example: 'test@test.com' })
     @IsEmail()

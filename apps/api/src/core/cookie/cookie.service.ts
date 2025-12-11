@@ -1,6 +1,6 @@
 // src/common/services/cookie.service.ts
-import { Injectable } from '@nestjs/common';
-import { Response } from 'express';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 
 
@@ -8,7 +8,7 @@ import { ConfigService } from '@nestjs/config';
 export class CookieService {
     constructor(private configService: ConfigService) { }
 
-    private readonly COOKIE_NAME = 'access_token';
+    private readonly COOKIE_NAME = 'refreshToken';
 
     setAuthCookie(res: Response, token: string) {
         const isProd = this.configService.get('NODE_ENV') === 'production';
@@ -35,4 +35,10 @@ export class CookieService {
 
         });
     }
+
+    getAuthCookie(req: Request) {
+        return req.cookies?.[this.COOKIE_NAME];
+    }
+
+ 
 }
