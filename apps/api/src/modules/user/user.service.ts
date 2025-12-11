@@ -20,4 +20,8 @@ export class UserService {
     public async createUser(user: CreateUserDto) {
         return await this.repo.create(user);
     }
+
+    public async activateUser(activationLink: string) {
+        return await this.repo.activate(activationLink);
+    }
 }

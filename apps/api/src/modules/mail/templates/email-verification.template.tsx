@@ -16,7 +16,6 @@ import {
 
 
 interface EmailVerificationTemplateProps {
-    email: string
     name: string
     activationLink: string
 

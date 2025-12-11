@@ -29,4 +29,8 @@ export class TokenService {
     public async saveToken(userId: string, refreshToken: string) {
         return await this.tokenRepository.saveToken(userId, refreshToken);
     }
+
+    public async findToken(userId: string) {
+        return await this.tokenRepository.findToken(userId);
+    }
 }

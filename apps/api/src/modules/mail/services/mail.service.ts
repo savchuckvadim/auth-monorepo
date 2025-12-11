@@ -5,6 +5,7 @@ import { EmailVerificationTemplate } from '../templates/email-verification.templ
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { ConfigService } from '@nestjs/config';
+import { SendMailActivationLinkDto } from '../dtos/activation-link.dto';
 
 
 @Injectable()
@@ -21,13 +22,13 @@ export class MailService {
 
 
 
-    public async sendActivationLink(email: string, name: string, activationLink: string) {
+    public async sendActivationLink({ email, name, activationLink }: SendMailActivationLinkDto) {
         const clientUrl = this.configService.getOrThrow<string>('CLIENT_URL')
 
 
         const html = await render(
             EmailVerificationTemplate(
-                { email, name, activationLink }
+                { name, activationLink }
             ))
 
 

@@ -18,9 +18,7 @@ export class MailProcessor {
     async handleSendActivationLink(job: Job<SendMailActivationLinkDto>) {
         console.log('handleSendActivationLink', job.data);
         await this.mailService.sendActivationLink(
-            job.data.email,
-            job.data.name,
-            job.data.activationLink
+            job.data
         );
     }
 }

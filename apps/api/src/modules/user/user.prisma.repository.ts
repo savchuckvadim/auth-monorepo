@@ -52,4 +52,22 @@ export class UserPrismaRepository implements UserPrismaRepository {
         }
         return newUser;
     }
+
+
+    public async activate(activationLink: string): Promise<User> {
+        const user = await this.prisma.user.findUnique({ where: { activationLink } });
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        return await this.update(
+            {
+                ...user,
+                isAcivated: true
+            }
+        );
+    }
+
+    public async update(user: User): Promise<User> {
+        return await this.prisma.user.update({ where: { id: user.id }, data: user });
+    }
 }

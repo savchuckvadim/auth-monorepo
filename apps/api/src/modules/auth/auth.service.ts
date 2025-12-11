@@ -45,8 +45,8 @@ export class AuthService {
         return 'logout';
     }
     public async activate(link: string) {
-        console.log(link);
-        return 'activate';
+        await this.userService.activateUser(link);
+        return true;
     }
     public async refreshToken(refreshToken: string) {
         return 'refreshToken';
