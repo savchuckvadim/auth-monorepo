@@ -1,9 +1,10 @@
 import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
 import { Injectable, Logger } from '@nestjs/common';
 import { render } from '@react-email/components';
-import { EmailVerificationTemplate } from './templates/email-verification.template';
+import { EmailVerificationTemplate } from '../templates/email-verification.template';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
+import { ConfigService } from '@nestjs/config';
 
 
 @Injectable()
@@ -12,6 +13,7 @@ export class MailService {
 
     constructor(
         private readonly mailerService: MailerService,
+        private readonly configService: ConfigService,
         @InjectQueue('mail') private readonly queue: Queue,
 
     ) { }
@@ -20,13 +22,18 @@ export class MailService {
 
 
     public async sendActivationLink(email: string, name: string, activationLink: string) {
+        const clientUrl = this.configService.getOrThrow<string>('CLIENT_URL')
 
-        const html = await render(EmailVerificationTemplate({email, name, activationLink}))
+
+        const html = await render(
+            EmailVerificationTemplate(
+                { email, name, activationLink }
+            ))
 
 
 
         await this.sendEmail({
-            subject: 'Верификация почты',
+            subject: 'Активация аккаунта на сайте ' + clientUrl,
             html: html,
             to: [email ?? 'april-app@mail.ru'],
             context: {

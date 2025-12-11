@@ -1,6 +1,4 @@
 import React from 'react'
-
-
 import {
     Body,
     Button,
@@ -15,7 +13,7 @@ import {
     Tailwind,
     Text
 } from '@react-email/components'
-import { User } from 'generated/prisma'
+
 
 interface EmailVerificationTemplateProps {
     email: string
@@ -24,12 +22,11 @@ interface EmailVerificationTemplateProps {
 
 }
 
-const baseUrl = `https://${process.env.AUTH_COOKIE_SPA_DOMAIN}`
+
 
 export function EmailVerificationTemplate({ name, activationLink }: EmailVerificationTemplateProps) {
 
-    // const verfiyLink = `${baseUrl}/auth/verify/${token}`
-    const verfiyLink = `${baseUrl}/auth/confirm/${activationLink}`;
+
 
     return (
         <Tailwind>
@@ -47,33 +44,33 @@ export function EmailVerificationTemplate({ name, activationLink }: EmailVerific
 
                 <Body style={{ backgroundColor: '#f8f9fa', fontFamily: 'Inter, Arial, sans-serif' }}>
 
-                    <Preview>Верификация почты на April</Preview>
+                    <Preview>Активация аккаунта на IT Booster Platform</Preview>
                     <Container className='mx-auto my-10 max-w-[500px] rounded-lg bg-white p-8 shadow-lg'>
                         <Section className='text-center'>
 
-                            <Heading className='text-2xl font-bold text-blue-600' style={{ fontFamily: 'Geist, Arial' }}>
-                                Верификация почты
+                            <Heading className='text-2xl font-bold text-gray-800' style={{ fontFamily: 'Geist, Arial' }}>
+                                Активация аккаунта
                             </Heading>
                             <Text className='mb-6 text-gray-500' style={{ fontFamily: 'Geist, Arial' }}>
-                                Привет, {name} ! Мы получили запрос на верификацию вашей почты.
+                                Привет, {name} ! Мы получили запрос на активацию вашего аккаунта.
                             </Text>
-                            <Section className='mb-8 rounded-lg border border-blue-100 bg-blue-50 p-6'>
+                            <Section className='mb-8 rounded-lg border border-gray-100 bg-gray-50 p-6'>
                                 <Text className='mb-4 text-gray-800' style={{ fontFamily: 'Geist, Arial' }}>
-                                    Нажмите на кнопку ниже, чтобы подтвердить ваш адрес электронной почты. Ссылка действительна в течение 1 часа.
+                                    Нажмите на кнопку ниже, чтобы подтвердить ваш адрес электронной почты.
                                 </Text>
                                 <Button
-                                    href={verfiyLink}
-                                    className='inline-flex items-center justify-center rounded-full bg-blue-600 px-8 py-3 text-sm font-medium text-white hover:bg-blue-600/90 leading-none'
+                                    href={activationLink}
+                                    className='inline-flex items-center justify-center rounded-full bg-gray-800 px-8 py-3 text-sm font-medium text-white hover:bg-pink-600/90 leading-none'
                                     style={{ fontFamily: 'Geist, Arial' }}
                                 >
-                                    Подтвердить почту
+                                    Активировать
                                 </Button>
                             </Section>
                             <Text className='text-sm text-gray-500' style={{ fontFamily: 'Geist, Arial' }}>
-                                Если вы не запрашивали верификацию почты, просто проигнорируйте это письмо.
+                                Если вы не запрашивали активацию аккаунта, просто проигнорируйте это письмо.
                             </Text>
                             <Text className='mt-6 text-sm text-gray-400' style={{ fontFamily: 'Geist, Arial' }}>
-                                © {new Date().getFullYear()}. Все права защищены.
+                                © {new Date().getFullYear()} IT Booster Platform. Все права защищены.
                             </Text>
                         </Section>
                     </Container>

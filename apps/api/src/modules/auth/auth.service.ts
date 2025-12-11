@@ -1,22 +1,33 @@
 import { CreateUserDto, UserDto, UserService } from "@/modules/user";
 import { Injectable } from "@nestjs/common";
-import { MailService } from "@/modules/mail";
+import { SendMailActivationLinkUseCase } from "@/modules/mail";
 import { TokenService } from "@/modules/token";
+import { ConfigService } from "@nestjs/config";
 
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly userService: UserService,
-        private readonly mailService: MailService,
+        private readonly mailService: SendMailActivationLinkUseCase,
         private readonly tokenService: TokenService,
+        private readonly configService: ConfigService,
     ) { }
 
     public async registration(registerDto: CreateUserDto): Promise<UserDto> {
         const user = await this.userService.createUser(registerDto);
-        const activationLink = user.activationLink;
+        const baseUrl = this.configService.getOrThrow<string>('APP_URL')
+        const activationLink = `${baseUrl}/api/auth/activate/${user.activationLink}`
 
-        await this.mailService.sendActivationLink(user.email, user.name, activationLink);
+
+        await this.mailService.activationLink({  //отправка в очередь для отправки письма
+            email: user.email,
+            name: user.name,
+            activationLink: activationLink
+        });
+
+
+
         const tokens = this.tokenService.generateTokens({ userId: user.id });
         await this.tokenService.saveToken(user.id, tokens.refreshToken);
         return new UserDto(
@@ -34,6 +45,7 @@ export class AuthService {
         return 'logout';
     }
     public async activate(link: string) {
+        console.log(link);
         return 'activate';
     }
     public async refreshToken(refreshToken: string) {
