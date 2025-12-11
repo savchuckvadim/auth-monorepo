@@ -37,8 +37,8 @@ export class CookieService {
     }
 
     getAuthCookie(req: Request) {
-        return req.cookies?.[this.COOKIE_NAME];
+        return req.cookies?.[this.COOKIE_NAME] || null;
     }
 
- 
+
 }
