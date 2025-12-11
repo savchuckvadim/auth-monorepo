@@ -3,7 +3,7 @@ import { Module} from '@nestjs/common';
 import { RedisModule } from 'src/core/redis/redis.module';
 import { ConfigService } from '@nestjs/config';
 import { QueueDispatcherService } from './dispatch/queue-dispatcher.service';
-import { QueueNames } from './constants/queue-names.enum';
+import { QueueNames } from './consts/queue-names.enum';
 
 @Module({
     imports: [

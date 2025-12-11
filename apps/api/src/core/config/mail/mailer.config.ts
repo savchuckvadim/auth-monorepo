@@ -18,14 +18,8 @@ export function getMailerConfig(configService: ConfigService): MailerOptions {
             },
 		},
 		defaults: {
-			from: `"April Team" ${configService.getOrThrow<string>('MAIL_LOGIN')}`
+			from: ` ${configService.getOrThrow<string>('MAIL_LOGIN')}`
 		},
-        // template: {
-        //     dir: path.resolve(process.cwd(), 'src/templates'),
-        //     adapter: new PugAdapter(),
-        //     options: {
-        //         strict: true,
-        //     },
-        // },
+
 	}
 }

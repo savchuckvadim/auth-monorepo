@@ -1,31 +1,23 @@
-import { Logger, Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { QueueModule } from './modules/queue/queue.module';
-
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { QueueModule } from '@/core/queue';
+
+
 import { TelegramModule } from './modules/telegram/telegram.module';
-import { GlobalExceptionFilter } from './core/filters/global-exception.filter';
-import { RedisModule } from './core/redis/redis.module';
-import { HealthController } from './health.controller';
+import { GlobalExceptionFilter } from '@/core/filters';
+import { RedisModule } from '@/core/redis';
 
-import { StorageModule } from '@/core/storage/storage.module';
-import { FileLinkModule } from '@/core/file-link/file-link.module';
-import { PrismaModule } from './core/prisma/prisma.module';
-
-
-import { AuthModule } from '@/modules/auth/auth.module';
-
-import { CookieModule } from '@/core/cookie/cookie.module';
+import { PrismaModule } from './core/prisma';
+import { AuthModule } from '@/modules/auth';
+import { CookieModule } from '@/core/cookie';
 import { UserModule } from "@/modules/user";
 import { TokenModule } from "@/modules/token";
 import { MailModule } from "@/modules/mail";
+
+
+
 @Module({
     imports: [
-        // DevtoolsModule.register({
-        //   http: process.env.NODE_ENV !== 'production'
-        // }),
-
         ConfigModule.forRoot({
             isGlobal: true,
             envFilePath: '.env',
@@ -39,20 +31,17 @@ import { MailModule } from "@/modules/mail";
         }),
         CookieModule,
         PrismaModule,
-
         QueueModule,
+        TelegramModule,
+
         MailModule,
 
-        TelegramModule,
         RedisModule,
-
-        // StorageModule,
-        // FileLinkModule,
-
-
         AuthModule,
+        UserModule,
+        TokenModule,
     ],
-    controllers: [AppController, HealthController],
-    providers: [AppService, GlobalExceptionFilter],
+
+    providers: [GlobalExceptionFilter],
 })
 export class AppModule { }
