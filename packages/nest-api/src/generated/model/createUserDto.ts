@@ -6,7 +6,11 @@
  * OpenAPI spec version: 1.0
  */
 
-/**
- * Данные ответа
- */
-export type SuccessResponseDtoData = { [key: string]: unknown };
+export interface CreateUserDto {
+    /** Email */
+    email: string;
+    /** Password */
+    password: string;
+    /** Name */
+    name: string;
+}

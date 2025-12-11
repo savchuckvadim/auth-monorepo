@@ -6,11 +6,9 @@
  * OpenAPI spec version: 1.0
  */
 
-export interface SendEmailRequestDto {
+export interface LoginDto {
     /** Email */
     email: string;
-    /** Subject */
-    subject: string;
-    /** Template */
-    body: string;
+    /** Password */
+    password: string;
 }

@@ -3,10 +3,7 @@ import axios, { Method } from 'axios';
 
 
 const url =`http://localhost:3000`;
- 
-// const url = 'https://dis7h8-92-63-121-184.ru.tuna.am';
-
-
+const AUTH_TOKEN_NAME = 'accessToken';
 
 export interface IBackResponse<T> {
     resultCode: EResultCode; // 0 - успех, 1 - ошибка
@@ -30,13 +27,13 @@ const evs = axios.create({
     headers: evsHeaders,
 });
 // // 🔐 автоматически добавляем JWT
-// evs.interceptors.request.use((config) => {
-//     const token = localStorage.getItem(AUTH_TOKEN_NAME);
-//     if (token) {
-//         config.headers.Authorization = `Bearer ${token}`;
-//     }
-//     return config;
-// });
+evs.interceptors.request.use((config) => {
+    const token = localStorage.getItem(AUTH_TOKEN_NAME);
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
 export const customAxios = async <T>({
     url,
     method,
@@ -51,14 +48,7 @@ export const customAxios = async <T>({
     headers?: any;
 }): Promise<T> => {
     // // Orval всегда ждёт, что mutator возвращает **данные**, а не { resultCode, data }
-    // const res = await backAPI.service<T>(url as EBACK_ENDPOINT, method.toLowerCase() as API_METHOD, data, params);
-    // return res.data as T; // важно вернуть именно T
-
-    // const instance = axios.create({
-    //     baseURL: 'http://localhost:3000', // или prod
-    //     headers: { 'Content-Type': 'application/json', ...headers },
-    // });
-
+   
     const res = await evs.request<IBackResponse<T>>({
         url,
         method: method as Method,
