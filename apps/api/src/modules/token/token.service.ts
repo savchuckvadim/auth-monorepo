@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from '@nestjs/jwt';
 import { TokenRepository } from "./token.repository";
+import { TokensDto } from "./token.dto";
 @Injectable()
 export class TokenService {
     constructor(
@@ -10,8 +11,8 @@ export class TokenService {
         private readonly tokenRepository: TokenRepository,
     ) { }
 
-    public generateTokens(payload: any) {
-        const result = {
+    public generateTokens(payload: any): TokensDto {
+        const result: TokensDto = {
             accessToken: this.generateAccessToken(payload),
             refreshToken: this.generateRefreshToken(payload),
         }

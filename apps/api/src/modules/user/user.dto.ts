@@ -21,7 +21,17 @@ export class CreateUserDto {
 
 
 }
+
+
+
 export class UserDto implements Partial<User> {
+    constructor(user: User) {
+        this.id = user.id;
+        this.email = user.email;
+        this.name = user.name;
+        this.activationLink = user.activationLink;
+    }
+
     @ApiProperty({ description: 'ID', example: '1' })
     @IsString()
     id: string;
@@ -35,36 +45,10 @@ export class UserDto implements Partial<User> {
     @IsString()
     name: string;
 
-    @ApiProperty({ description: 'Role', example: user_roles.user })
-    @IsEnum(user_roles)
-    role: user_roles;
-
-    @ApiProperty({ description: 'Created At', example: new Date() })
-    @IsDate()
-    createdAt: Date;
-
-    @ApiProperty({ description: 'Updated At', example: new Date() })
-    @IsDate()
-    updatedAt: Date;
-
-    @ApiProperty({ description: 'Activation Link', example: 'test@test.com' })
+    @ApiProperty({ description: 'Activation Link', example: 'https://example.com/activate' })
     @IsString()
-    activationLink?: string;
+    activationLink: string;
 
-    @ApiProperty({ description: 'Refresh Token', example: 'ergwrg3g' })
-    @IsString()
-    refreshToken: string;
-
-    @ApiProperty({ description: 'Access Token', example: '43twrereg' })
-    @IsString()
-    accessToken: string;
-    constructor(user: User, accessToken: string, refreshToken: string) {
-        this.id = user.id;
-        this.email = user.email;
-        this.name = user.name;
-        this.role = user.role;
-        this.refreshToken = refreshToken;
-        this.accessToken = accessToken;
-        this.activationLink = user.activationLink;
-    }
 }
+
+

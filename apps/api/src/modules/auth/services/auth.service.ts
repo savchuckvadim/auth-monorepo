@@ -3,8 +3,8 @@ import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { SendMailActivationLinkUseCase } from "@/modules/mail";
 import { TokenService } from "@/modules/token";
 import { ConfigService } from "@nestjs/config";
-import { LoginDto } from "./dtos/login.dto";
-import { User } from "generated/prisma";
+import { LoginDto } from "../dtos/login.dto";
+import { AuthenticatedUserDto } from "../dtos/login.dto";
 
 
 
@@ -18,7 +18,7 @@ export class AuthService {
 
     ) { }
 
-    public async registration(registerDto: CreateUserDto): Promise<UserDto> {
+    public async registration(registerDto: CreateUserDto): Promise<AuthenticatedUserDto> {
         const user = await this.userService.createUser(registerDto);
         const baseUrl = this.configService.getOrThrow<string>('APP_URL')
         const activationLink = `${baseUrl}/api/auth/activate/${user.activationLink}`
@@ -36,17 +36,19 @@ export class AuthService {
     }
 
     public async login(loginDto: LoginDto) {
+
         const user = await this.userService.getUserByEmail(loginDto.email);
         if (!user) {
             throw new UnauthorizedException('User not found');
         }
+
         const isPasswordValid = await this.userService.comparePassword(loginDto.password, user.password);
         if (!isPasswordValid) {
             throw new UnauthorizedException('Invalid password');
         }
-        return await this.generateTokens(user);
-    }
 
+        return await this.generateTokens(new UserDto(user));
+    }
 
 
     public async logout(refreshToken: string) {
@@ -59,12 +61,12 @@ export class AuthService {
 
     }
     public async refreshToken(refreshToken: string) {
-        if(!refreshToken){
+        if (!refreshToken) {
             throw new UnauthorizedException('Refresh token not found');
         }
         const userData = await this.tokenService.validateRefreshToken(refreshToken);
         const tokenFromDb = await this.tokenService.findToken(refreshToken);
-        if(!tokenFromDb || !userData){
+        if (!tokenFromDb || !userData) {
             throw new UnauthorizedException('Invalid refresh token');
         }
 
@@ -74,15 +76,16 @@ export class AuthService {
         const user = await this.userService.getUser(userData.id);
         return await this.generateTokens(user);
     }
-    private async generateTokens(user: User) {
+    private async generateTokens(user: UserDto): Promise<AuthenticatedUserDto> {
+
         const tokens = this.tokenService.generateTokens({ userId: user.id });
         await this.tokenService.saveToken(user.id, tokens.refreshToken);
 
-        return new UserDto(
-            user,
-            tokens.accessToken,
-            tokens.refreshToken
-        );
+        const result: AuthenticatedUserDto = {
+            tokens,
+            user: user
+        }
+        return result;
     }
 
 

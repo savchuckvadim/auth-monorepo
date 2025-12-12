@@ -9,7 +9,7 @@ export const App = ({ children }: { children: React.ReactNode }) => {
     const { initialized, isLoading, isClient } = useApp();
 
 
-
+    
     useEffect(() => {
         if (isClient) {
 
@@ -22,11 +22,7 @@ export const App = ({ children }: { children: React.ReactNode }) => {
     }, [isClient]);
     return (
         <div className="h-calc(100vh - 300px)">
-            {isClient && initialized && !isLoading ? (
-                children
-            ) : (
-                <LoadingScreen />
-            )}
+            {children}
         </div>
     );
 };

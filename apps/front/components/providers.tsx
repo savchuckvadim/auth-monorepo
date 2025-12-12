@@ -10,13 +10,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
     return (
         <NextThemesProvider
             attribute="class"
-            defaultTheme="bx-light"
+            defaultTheme="dark"
             enableSystem
             disableTransitionOnChange
             enableColorScheme
-        >      <AprilThemeProvider
-          
-        >
+        >      <AprilThemeProvider >
                 <ReactQueryProvider>
                     <AppProvider>{children}</AppProvider>
                 </ReactQueryProvider>

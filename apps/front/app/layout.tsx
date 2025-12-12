@@ -31,7 +31,7 @@ export default function RootLayout({
             <body
                 className={`${fontSans.variable} ${fontMono.variable} scrollbar-hide  font-sans antialiased `}
             >
-                <LoadingScreen />
+                {/* <LoadingScreen /> */}
                 <Providers>{children}</Providers>
             </body>
         </html>

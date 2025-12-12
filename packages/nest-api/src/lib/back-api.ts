@@ -16,25 +16,25 @@ export enum EResultCode {
     ERROR = 1,
 }
 
-const evsHeaders = {
+const headers = {
     'content-type': 'application/json',
     'X-BACK-API-KEY': '',
 };
 
-const evs = axios.create({
+const $api = axios.create({
     baseURL: url,
     withCredentials: true,
-    headers: evsHeaders,
+    headers: headers,
 });
 // // 🔐 автоматически добавляем JWT
-evs.interceptors.request.use((config) => {
+$api.interceptors.request.use((config) => {
     const token = localStorage.getItem(AUTH_TOKEN_NAME);
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
 });
-export const customAxios = async <T>({
+export const customAxios = async<T>({
     url,
     method,
     data,
@@ -48,8 +48,8 @@ export const customAxios = async <T>({
     headers?: any;
 }): Promise<T> => {
     // // Orval всегда ждёт, что mutator возвращает **данные**, а не { resultCode, data }
-   
-    const res = await evs.request<IBackResponse<T>>({
+
+    const res = await $api.request<IBackResponse<T>>({
         url,
         method: method as Method,
         data,
@@ -59,6 +59,6 @@ export const customAxios = async <T>({
     if (res.data.resultCode !== EResultCode.SUCCESS) {
         throw new Error(res.data.message || `Backend error ${url}`);
     }
-
+    debugger;
     return res.data.data as T;
 };

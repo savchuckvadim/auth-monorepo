@@ -34,7 +34,7 @@ async function bootstrap() {
     // глобально подключаем interceptor
     app.useGlobalInterceptors(new ResponseInterceptor());
     app.useGlobalFilters(app.get(GlobalExceptionFilter));
-    app.enableCors();
+    app.enableCors(cors);
 
 
 

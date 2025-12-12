@@ -5,7 +5,7 @@
  * API for auth backend for monorepo
  * OpenAPI spec version: 1.0
  */
-import type { CreateUserDto, LoginDto } from '.././model';
+import type { AuthenticatedUserDto, CreateUserDto, LoginDto } from '.././model';
 
 import { customAxios } from '../../lib/back-api';
 
@@ -14,7 +14,7 @@ export const getAuth = () => {
      * @summary Registration
      */
     const authRegistration = (createUserDto: CreateUserDto) => {
-        return customAxios<void>({
+        return customAxios<AuthenticatedUserDto>({
             url: `/api/auth/registration`,
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -25,7 +25,7 @@ export const getAuth = () => {
      * @summary Login
      */
     const authLogin = (loginDto: LoginDto) => {
-        return customAxios<void>({
+        return customAxios<AuthenticatedUserDto>({
             url: `/api/auth/login`,
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

@@ -18,7 +18,7 @@ const LoadingScreen = () => {
     }, []);
 
     return (
-        <div className="bg-orange-500">
+        <div className="">
 
             {isVisible && (
                 <div
@@ -26,20 +26,11 @@ const LoadingScreen = () => {
                 >
                     <div className="bg-gray-700 center-spinner flex flex-col justify-center items-center h-full w-full">
 
-                        <div className="p-4 rounded-xl bg-white border-2 border-indigo-600">
-                            <Image
-                                src="/logo/logo.svg"
-                                alt="Logo"
-                                width={45}
-                                height={45}
-                                className="backgound:invert"
-                                priority
-                            />
-                        </div>{' '}
+
                         <GradientText
                             colors={['#bb52d4', '#30c3ef', '#bb52d4', '#30c3ef',]}
                         >   <p className="mt-1 text-md tracking-widest font-bold ">
-                                Апрель
+                                Загрузка...
                             </p>
                         </GradientText>
 

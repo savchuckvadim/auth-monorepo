@@ -6,13 +6,11 @@
  * OpenAPI spec version: 1.0
  */
 
-export interface UserDto {
+export interface UserResponseDto {
     /** ID */
     id: string;
     /** Email */
     email: string;
     /** Name */
     name: string;
-    /** Activation Link */
-    activationLink: string;
 }

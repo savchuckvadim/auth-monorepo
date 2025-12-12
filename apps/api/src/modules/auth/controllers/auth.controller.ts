@@ -1,13 +1,14 @@
 import { Body, Controller, Get, HttpStatus, Param, Post, Req, Res, UnauthorizedException, UseInterceptors } from "@nestjs/common";
 import { Request, Response } from 'express';
-import { ApiBody, ApiOperation, ApiParam, ApiTags } from "@nestjs/swagger";
-import { AuthService } from "./auth.service";
+import { ApiBadRequestResponse, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { AuthService } from "../services//auth.service";
 import { CreateUserDto } from "@/modules/user";
 import { ConfigService } from "@nestjs/config";
-import { LoginDto } from "./dtos/login.dto";
+import { AuthenticatedUserDto, LoginDto } from "../dtos/login.dto";
 import { CookieService } from "@/core/cookie";
 import { AuthCookieInterceptor } from "@/core/interceptors/auth-cookie.interceptor";
 import { SetAuthCookie } from "@/core/decorators/auth/set-auth-cookie.decorator";
+import { ErrorResponseDto } from "@/core";
 
 
 /**
@@ -34,20 +35,27 @@ export class AuthController {
 
     @ApiOperation({ summary: 'Registration' })
     @ApiBody({ type: CreateUserDto, description: 'Registration' })
+    @ApiResponse({ status: 200, description: 'User', type: AuthenticatedUserDto })
+    @ApiBadRequestResponse({
+        description: 'Validation failed',
+        type: ErrorResponseDto,
+    })
     @Post('registration')
-    async registration(@Body() registerDto: CreateUserDto) {
+    async registration(@Body() registerDto: CreateUserDto): Promise<AuthenticatedUserDto> {
         return await this.authService.registration(registerDto);
     }
 
 
     @ApiOperation({ summary: 'Login' })
     @ApiBody({ type: LoginDto, description: 'Login' })
+    @ApiResponse({ status: 200, description: 'User', type: AuthenticatedUserDto })
     @UseInterceptors(AuthCookieInterceptor) // вызов interceptor без декоратора напрямую. interceptor вставляет куку в ответ
     @Post('login')
-    async login(@Body() loginDto: LoginDto, @Res() res: Response) {
+    async login(@Body() loginDto: LoginDto): Promise<AuthenticatedUserDto> {
 
-        return await this.authService.login(loginDto);
+        const user = await this.authService.login(loginDto);
 
+        return user;
 
     }
     @ApiOperation({ summary: 'Activate' })
@@ -56,8 +64,8 @@ export class AuthController {
     @Get('activate/:link')
     async activate(@Param('link') link: string, @Res() res: Response) {
         const user = await this.authService.activate(link);
-        const redirectUrl = `${this.clientUrl}/login`;
-        this.cookieService.setAuthCookie(res, user.refreshToken);
+        const redirectUrl = `${this.clientUrl}/auth/login`;
+        this.cookieService.setAuthCookie(res, user.tokens.refreshToken);
         return res.redirect(HttpStatus.FOUND, redirectUrl);
     }
 
