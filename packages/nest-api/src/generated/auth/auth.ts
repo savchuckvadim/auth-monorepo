@@ -48,7 +48,10 @@ export const getAuth = () => {
      * @summary Refresh token
      */
     const authRefreshToken = () => {
-        return customAxios<void>({ url: `/api/auth/refresh`, method: 'POST' });
+        return customAxios<AuthenticatedUserDto>({
+            url: `/api/auth/refresh`,
+            method: 'POST',
+        });
     };
     return {
         authRegistration,

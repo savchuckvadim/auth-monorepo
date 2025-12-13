@@ -65,15 +65,14 @@ export class AuthService {
             throw new UnauthorizedException('Refresh token not found');
         }
         const userData = await this.tokenService.validateRefreshToken(refreshToken);
-        const tokenFromDb = await this.tokenService.findToken(refreshToken);
-        if (!tokenFromDb || !userData) {
+
+        const tokenFromDb = await this.tokenService.findToken(userData?.userId || '');
+        if (!tokenFromDb || !userData?.userId) {
             throw new UnauthorizedException('Invalid refresh token');
         }
 
-        console.log(userData);
-        console.log(tokenFromDb);
 
-        const user = await this.userService.getUser(userData.id);
+        const user = await this.userService.getUser(userData.userId);
         return await this.generateTokens(user);
     }
     private async generateTokens(user: UserDto): Promise<AuthenticatedUserDto> {

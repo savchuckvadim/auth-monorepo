@@ -16,7 +16,7 @@ export class MailProcessor {
 
     @Process(JobNames.MAIL_VERIFICATION)
     async handleSendActivationLink(job: Job<SendMailActivationLinkDto>) {
-        console.log('handleSendActivationLink', job.data);
+
         await this.mailService.sendActivationLink(
             job.data
         );

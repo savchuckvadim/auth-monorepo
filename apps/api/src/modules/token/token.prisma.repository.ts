@@ -29,9 +29,11 @@ export class TokenPrismaRepository implements TokenRepository {
     }
 
     async findToken(userId: string): Promise<Token> {
+
         const token = await this.prisma.token.findFirst({
             where: { userId },
         });
+  
         if (!token) {
             throw new NotFoundException('Token not found');
         }

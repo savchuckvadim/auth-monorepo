@@ -2,6 +2,8 @@
 import { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from './redux';
 import { initializeApp} from '../../model/thunk/AppThunk';
+import { checkAuthThunk } from '@/modules/processes/auth/model/AuthThunk';
+import { AUTH_ACCESS_TOKEN_NAME_PUBLIC } from '@workspace/nest-api';
 
 export const useApp = () => {
     const dispatch = useAppDispatch();
@@ -13,6 +15,7 @@ export const useApp = () => {
     }, []);
 
     useEffect(() => {
+        debugger
         if (isClient && !app.initialized && !app.isLoading) {
             dispatch(initializeApp());
         }
@@ -27,6 +30,8 @@ export const useApp = () => {
             }
         }
     }, [isClient, app.initialized, app.isLoading, dispatch]);
+
+
 
     return {
         isClient,

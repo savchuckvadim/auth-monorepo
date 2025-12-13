@@ -10,7 +10,7 @@ export class SendMailActivationLinkUseCase {
     ) { }
 
     async activationLink(dto: SendMailActivationLinkDto) {
-        console.log('activationLink', dto);
+
         return await this.dispatcher.dispatch(
 
             QueueNames.MAIL,

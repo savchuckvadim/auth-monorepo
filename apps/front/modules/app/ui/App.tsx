@@ -4,12 +4,13 @@ import { useEffect, useState } from 'react';
 import { useApp } from '../lib/hooks/app';
 import { store } from '../model/store';
 import LoadingScreen from '@/modules/shared/components/LoadingScreen/ui/LoadingScreen';
+import { AUTH_ACCESS_TOKEN_NAME_PUBLIC } from '@workspace/nest-api';
 
 export const App = ({ children }: { children: React.ReactNode }) => {
     const { initialized, isLoading, isClient } = useApp();
 
 
-    
+
     useEffect(() => {
         if (isClient) {
 
@@ -22,7 +23,7 @@ export const App = ({ children }: { children: React.ReactNode }) => {
     }, [isClient]);
     return (
         <div className="h-calc(100vh - 300px)">
-            {children}
+            {isLoading ? <LoadingScreen /> : children}
         </div>
     );
 };

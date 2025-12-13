@@ -79,15 +79,19 @@ export class AuthController {
     }
 
 
-    //refresh для нагядномти вставляем куку вручную  без декоратора и  interceptor
+
     @ApiOperation({ summary: 'Refresh token' })
+    @ApiResponse({ status: 200, description: 'User', type: AuthenticatedUserDto })
+    @SetAuthCookie() // вызов interceptor через декоратор. декоратор просто обертка для UseInterceptors(AuthCookieInterceptor)
     @Post('refresh')
-    async refreshToken(@Res() res: Response, @Req() req: Request) {
+    async refreshToken( @Req() req: Request): Promise<AuthenticatedUserDto> {
         const refreshToken = this.cookieService.getAuthCookie(req);
+    
         if (!refreshToken) {
             throw new UnauthorizedException('Refresh token not found');
         }
-        return await this.authService.refreshToken(refreshToken);
+        const user = await this.authService.refreshToken(refreshToken);
+        return user;
     }
 
 }

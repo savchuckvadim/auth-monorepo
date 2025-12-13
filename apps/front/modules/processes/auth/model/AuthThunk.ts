@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AuthService } from "../lib/api/AuthService";
 import { IAuthState, ILoginForm, IRegisterForm } from "../type/auth.type";
-import { EResultCode, UserDto } from "@workspace/nest-api";
+import { AUTH_ACCESS_TOKEN_NAME_PUBLIC, EResultCode, UserDto } from "@workspace/nest-api";
 import { getApiErrorMessage } from "../lib/utils/api-error.util";
 
 
@@ -13,7 +13,7 @@ export const loginThunk = createAsyncThunk<
             try {
                 const authService = new AuthService();
                 const response = await authService.login(form.email, form.password);
-                localStorage.setItem('accessToken', response.tokens.accessToken);
+                localStorage.setItem(AUTH_ACCESS_TOKEN_NAME_PUBLIC, response.tokens.accessToken);
                 return response.user;
             } catch (error) {
                 return rejectWithValue(getApiErrorMessage(error));
@@ -30,6 +30,7 @@ export const registerThunk =
             const authService = new AuthService();
             try {
                 const response = await authService.registration(form);
+                localStorage.setItem(AUTH_ACCESS_TOKEN_NAME_PUBLIC, response.tokens.accessToken);
 
                 return response.user;
             } catch (error: any) {
@@ -46,8 +47,27 @@ export const logoutThunk = createAsyncThunk<
     try {
         const authService = new AuthService();
         await authService.logout();
+        localStorage.removeItem(AUTH_ACCESS_TOKEN_NAME_PUBLIC);
         return true;
     } catch (error) {
+        return rejectWithValue(getApiErrorMessage(error));
+    }
+});
+
+
+export const checkAuthThunk = createAsyncThunk<
+    UserDto,
+    void
+>('auth/checkAuth', async (_, { rejectWithValue }) => {
+    try {
+        debugger
+        const authService = new AuthService();
+        const response = await authService.refreshToken();
+        localStorage.setItem(AUTH_ACCESS_TOKEN_NAME_PUBLIC, response.tokens.accessToken);
+        debugger
+        return response.user;
+    } catch (error) {
+        debugger
         return rejectWithValue(getApiErrorMessage(error));
     }
 });

@@ -8,21 +8,21 @@ export async function middleware(req: NextRequest) {
     const token = cookie?.value;
     const url = req.nextUrl;
     const isAuthPage = url.pathname.startsWith('/auth');
-    const isProtected = url.pathname.startsWith('/standalone');
+    const isProtected = url.pathname.startsWith('/network');
 
 
     // Если нет токена — редирект на логин
     if (!token && isProtected) {
-        console.log('redirect to auth/login');
+
         return NextResponse.redirect(new URL('/auth/login', req.url));
     }
 
     if (token && isAuthPage) {
-        console.log('redirect to standalone');
-        return NextResponse.redirect(new URL('/standalone', req.url));
+
+        return NextResponse.redirect(new URL('/network', req.url));
     }
     if (!token && isAuthPage) {
-        console.log(' isAuthPage');
+     
         return NextResponse.next();
     }
     // Если есть токен, пропускаем
@@ -32,7 +32,7 @@ export async function middleware(req: NextRequest) {
 export const config = {
     matcher: [
 
-        '/standalone/:path*',
+        '/network/:path*',
 
-    ], // защищаем только /standalone
+    ],
 };
