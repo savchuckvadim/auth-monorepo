@@ -20,10 +20,22 @@ export class AuthCookieInterceptor implements NestInterceptor {
         return next.handle().pipe(
             tap((data) => {
 
-                if (data?.token) {
-                
-                    this.cookieService.setAuthCookie(res, data.token);
-                    delete data.token;
+                if (data?.tokens?.accessToken) {
+                    this.cookieService.setAccessToken(
+                        res,
+                        data.tokens.accessToken,
+                    );
+                }
+
+                if (data?.tokens?.refreshToken) {
+                    this.cookieService.setRefreshToken(
+                        res,
+                        data.tokens.refreshToken,
+                    );
+                }
+
+                if (data?.tokens) {
+                    delete data.tokens;
                 }
             }),
         );

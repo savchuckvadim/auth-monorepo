@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { IAuthState } from "../type/auth.type";
-import { loginThunk, logoutThunk, registerThunk } from "./AuthThunk";
+import { checkAuthThunk, loginThunk, logoutThunk, registerThunk } from "./AuthThunk";
 import { UserResponseDto } from "@workspace/nest-api";
 
 
@@ -36,6 +36,16 @@ export const authSlice = createSlice({
             state.isLoading = true;
             state.error = null;
         });
+        builder.addCase(checkAuthThunk.fulfilled, (state: IAuthState, action: PayloadAction<UserResponseDto>) => {
+            state.isAuthenticated = true;
+            state.currentUser = action.payload;
+
+        });
+        // builder.addCase(checkAuthThunk.rejected, (state: IAuthState, action) => {
+        //     state.error = (action.payload as string) || action.error?.message || 'Login failed';
+        //     state.isLoading = false;
+        // });
+ 
         builder.addCase(registerThunk.fulfilled, (state: IAuthState, action) => {
             state.isAuthenticated = true;
             state.currentUser = action.payload;

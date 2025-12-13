@@ -31,12 +31,12 @@ export class GlobalExceptionFilter implements ExceptionFilter {
                 : HttpStatus.INTERNAL_SERVER_ERROR;
 
 
-        if (status === HttpStatus.UNAUTHORIZED) {
-            return response.status(401).json({
-                resultCode: EResultCode.ERROR,
-                message: 'Пользователь не авторизован',
-            });
-        }
+        // if (status === HttpStatus.UNAUTHORIZED) {
+        //     return response.status(401).json({
+        //         resultCode: EResultCode.ERROR,
+        //         message: 'Пользователь не авторизован',
+        //     });
+        // }
 
 
         const error =

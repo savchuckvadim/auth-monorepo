@@ -22,7 +22,7 @@ export async function middleware(req: NextRequest) {
         return NextResponse.redirect(new URL('/network', req.url));
     }
     if (!token && isAuthPage) {
-     
+
         return NextResponse.next();
     }
     // Если есть токен, пропускаем
@@ -33,6 +33,7 @@ export const config = {
     matcher: [
 
         '/network/:path*',
+        '/auth/:path*',
 
     ],
 };

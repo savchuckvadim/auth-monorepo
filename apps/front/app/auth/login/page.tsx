@@ -1,5 +1,5 @@
 'use client';
-import { LoginForm } from "@/modules/processes/auth/ui/LoginForm/LoginForm";
+import { LoginForm } from "@/modules/processes";
 import { Card, CardHeader } from "@workspace/ui/components/card";
 import { CardTitle } from "@workspace/ui/components/card";
 import { CardDescription } from "@workspace/ui/components/card";

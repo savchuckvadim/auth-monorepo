@@ -2,7 +2,7 @@ import axios, { Method } from 'axios';
 
 
 
-const url =`http://localhost:3000`;
+const url = `http://localhost:3000`;
 const AUTH_TOKEN_NAME = 'accessToken';
 
 export interface IBackResponse<T> {
@@ -59,6 +59,6 @@ export const customAxios = async<T>({
     if (res.data.resultCode !== EResultCode.SUCCESS) {
         throw new Error(res.data.message || `Backend error ${url}`);
     }
-    debugger;
+
     return res.data.data as T;
 };

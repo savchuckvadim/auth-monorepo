@@ -65,17 +65,23 @@ export class AuthController {
     async activate(@Param('link') link: string, @Res() res: Response) {
         const user = await this.authService.activate(link);
         const redirectUrl = `${this.clientUrl}/auth/login`;
-        this.cookieService.setAuthCookie(res, user.tokens.refreshToken);
+        this.cookieService.setRefreshToken(res, user.tokens.refreshToken);
+        this.cookieService.setAccessToken(res, user.tokens.accessToken);
         return res.redirect(HttpStatus.FOUND, redirectUrl);
     }
 
+    @ApiOperation({ summary: 'Logout' })
+    @ApiResponse({ status: 200, description: 'User', type: Boolean })
     @Get('logout')
-    async logout(@Req() req: Request, @Res() res: Response) {
-        const refreshToken = this.cookieService.getAuthCookie(req);
-
+    async logout(
+        @Req() req: Request,
+        @Res({ passthrough: true }) res: Response,
+    ): Promise<boolean> {
+        // @Res - берем обработку полностью на себя. без автоматического отправки ответа NEST
+        const refreshToken = this.cookieService.getRefreshToken(req);
         await this.authService.logout(refreshToken);
-        this.cookieService.clearAuthCookie(res);
-        return refreshToken;
+        this.cookieService.clearAuthCookies(res);
+        return true;
     }
 
 
@@ -84,9 +90,9 @@ export class AuthController {
     @ApiResponse({ status: 200, description: 'User', type: AuthenticatedUserDto })
     @SetAuthCookie() // вызов interceptor через декоратор. декоратор просто обертка для UseInterceptors(AuthCookieInterceptor)
     @Post('refresh')
-    async refreshToken( @Req() req: Request): Promise<AuthenticatedUserDto> {
-        const refreshToken = this.cookieService.getAuthCookie(req);
-    
+    async refreshToken(@Req() req: Request): Promise<AuthenticatedUserDto> {
+        const refreshToken = this.cookieService.getRefreshToken(req);
+
         if (!refreshToken) {
             throw new UnauthorizedException('Refresh token not found');
         }

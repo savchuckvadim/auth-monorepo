@@ -13,8 +13,11 @@ export const loginThunk = createAsyncThunk<
             try {
                 const authService = new AuthService();
                 const response = await authService.login(form.email, form.password);
-                localStorage.setItem(AUTH_ACCESS_TOKEN_NAME_PUBLIC, response.tokens.accessToken);
+
+                // localStorage.setItem(AUTH_ACCESS_TOKEN_NAME_PUBLIC, response.tokens.accessToken);
+
                 return response.user;
+
             } catch (error) {
                 return rejectWithValue(getApiErrorMessage(error));
             }
@@ -30,7 +33,7 @@ export const registerThunk =
             const authService = new AuthService();
             try {
                 const response = await authService.registration(form);
-                localStorage.setItem(AUTH_ACCESS_TOKEN_NAME_PUBLIC, response.tokens.accessToken);
+                // localStorage.setItem(AUTH_ACCESS_TOKEN_NAME_PUBLIC, response.tokens.accessToken);
 
                 return response.user;
             } catch (error: any) {
@@ -47,9 +50,11 @@ export const logoutThunk = createAsyncThunk<
     try {
         const authService = new AuthService();
         await authService.logout();
-        localStorage.removeItem(AUTH_ACCESS_TOKEN_NAME_PUBLIC);
+        // localStorage.removeItem(AUTH_ACCESS_TOKEN_NAME_PUBLIC);
+        window.location.href = '/auth/login';
         return true;
     } catch (error) {
+        window.location.href = '/auth/login';
         return rejectWithValue(getApiErrorMessage(error));
     }
 });
@@ -60,14 +65,13 @@ export const checkAuthThunk = createAsyncThunk<
     void
 >('auth/checkAuth', async (_, { rejectWithValue }) => {
     try {
-        debugger
+
         const authService = new AuthService();
         const response = await authService.refreshToken();
-        localStorage.setItem(AUTH_ACCESS_TOKEN_NAME_PUBLIC, response.tokens.accessToken);
-        debugger
+
         return response.user;
     } catch (error) {
-        debugger
+
         return rejectWithValue(getApiErrorMessage(error));
     }
 });

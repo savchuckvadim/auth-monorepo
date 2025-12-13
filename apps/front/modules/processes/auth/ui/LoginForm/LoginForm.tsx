@@ -19,7 +19,7 @@ export const LoginForm = () => {
 
 
     const [showPassword, setShowPassword] = useState(false);
-    const { login, isLoading, error } = useAuth();
+    const { login, isLoading, error, currentUser } = useAuth();
     const {
         register,
         handleSubmit,
@@ -28,7 +28,7 @@ export const LoginForm = () => {
     } = useForm<ILoginForm>()
     const onSubmit: SubmitHandler<ILoginForm> = (data) => login(data);
 
-
+ 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 

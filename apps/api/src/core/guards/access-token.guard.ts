@@ -21,10 +21,10 @@ export class AccessTokenGuard implements CanActivate {
 
         let accessToken: string | undefined;
         // 1) Берём из заголовка Authorization
-        const authHeader = req.headers.authorization;
-        if (authHeader?.startsWith('Bearer ')) {
-            accessToken = authHeader.split(' ')[1];
-        }
+        // const authHeader = req.headers.authorization;
+        // if (authHeader?.startsWith('Bearer ')) {
+        //     accessToken = authHeader.split(' ')[1];
+        // }
 
         // 2) fallback: берём из Cookies
         if (!accessToken && req.cookies?.accessToken) {

@@ -9,7 +9,7 @@ import {
 
 import { appReducer } from './slice/AppSlice';
 import { errorHandler } from '../lib/error-handler';
-import { authReducer } from '@/modules/processes/auth/model/AuthSlice';
+import { authReducer } from '@/modules/processes/auth';
 
 
 const listenerMiddleware = createListenerMiddleware();

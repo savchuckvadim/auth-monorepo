@@ -3,10 +3,11 @@ import React from 'react';
 
 import Orb from '@workspace/ui/components/Orb';
 import { cn } from '@workspace/ui/lib/utils';
+import { User } from '@/modules/entities/user';
 
 
 
-export const Hero2: React.FC = () => {
+export const Hero2: React.FC<{ userId: string }> = ({ userId }) => {
 
     return (
         <section id="hero" className={
@@ -27,7 +28,8 @@ export const Hero2: React.FC = () => {
             {/* Content */}
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="max-w-4xl mx-auto text-center">
-                    <h1 className="text-4xl font-bold text-white">   Auth Monorepo App </h1>
+                    {/* <h1 className="text-4xl font-bold text-white">   Auth Monorepo App </h1> */}
+                    <User userId={userId} />
                 </div>
             </div>
         </section>

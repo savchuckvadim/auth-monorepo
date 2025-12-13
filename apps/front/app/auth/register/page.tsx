@@ -1,5 +1,5 @@
 'use client';
-import { RegistrationForm } from "@/modules/processes/auth/ui/RegistredForm/RegistredForm";
+import { RegistrationForm } from "@/modules/processes/auth";
 import { Card, CardHeader } from "@workspace/ui/components/card";
 import { CardTitle } from "@workspace/ui/components/card";
 import { CardDescription } from "@workspace/ui/components/card";
