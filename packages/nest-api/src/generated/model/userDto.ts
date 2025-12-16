@@ -15,4 +15,8 @@ export interface UserDto {
     name: string;
     /** Activation Link */
     activationLink: string;
+    /** Role */
+    role: string;
+    /** Is Activated */
+    isAcivated: boolean;
 }

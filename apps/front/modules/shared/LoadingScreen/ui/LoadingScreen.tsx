@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import './loading.css';
-import Image from 'next/image';
+
 import { usePace } from '../hooks/usePace';
 import GradientText from '@workspace/ui/components/GradientText';
-const LoadingScreen = () => {
+
+
+export const LoadingScreen = () => {
     const [isVisible, setIsVisible] = useState(true);
 
     usePace();
@@ -44,5 +46,5 @@ const LoadingScreen = () => {
     );
 };
 
-export default LoadingScreen;
+
 

@@ -1,14 +1,14 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { IAuthState } from "../type/auth.type";
 import { checkAuthThunk, loginThunk, logoutThunk, registerThunk } from "./AuthThunk";
-import { UserResponseDto } from "@workspace/nest-api";
+import { UserDto } from "@workspace/nest-api";
 
 
 const initialState: IAuthState = {
     isAuthenticated: false,
     isLoading: false,
     error: null as string | null,
-    currentUser: null as UserResponseDto | null,
+    currentUser: null as UserDto | null,
 };
 
 export const authSlice = createSlice({
@@ -23,10 +23,15 @@ export const authSlice = createSlice({
         },
     },
     extraReducers: (builder) => {
-        builder.addCase(loginThunk.fulfilled, (state: IAuthState, action: PayloadAction<UserResponseDto>) => {
+        builder.addCase(loginThunk.fulfilled, (state: IAuthState, action: PayloadAction<UserDto>) => {
             state.isAuthenticated = true;
             state.currentUser = action.payload;
             state.isLoading = false;
+            if (action.payload) {
+                window.location.href = '/network/profile';
+            } else {
+                window.location.href = '/auth/confirm';
+            }
         });
         builder.addCase(loginThunk.rejected, (state: IAuthState, action) => {
             state.error = (action.payload as string) || action.error?.message || 'Login failed';
@@ -36,20 +41,19 @@ export const authSlice = createSlice({
             state.isLoading = true;
             state.error = null;
         });
-        builder.addCase(checkAuthThunk.fulfilled, (state: IAuthState, action: PayloadAction<UserResponseDto>) => {
+        builder.addCase(checkAuthThunk.fulfilled, (state: IAuthState, action: PayloadAction<UserDto>) => {
             state.isAuthenticated = true;
             state.currentUser = action.payload;
 
         });
-        // builder.addCase(checkAuthThunk.rejected, (state: IAuthState, action) => {
-        //     state.error = (action.payload as string) || action.error?.message || 'Login failed';
-        //     state.isLoading = false;
-        // });
  
+
         builder.addCase(registerThunk.fulfilled, (state: IAuthState, action) => {
             state.isAuthenticated = true;
             state.currentUser = action.payload;
             state.isLoading = false;
+
+            window.location.href = '/auth/confirm';
         });
         builder.addCase(registerThunk.rejected, (state: IAuthState, action) => {
             state.error = (action.payload as string) || action.error?.message || 'Registration failed';
@@ -63,6 +67,8 @@ export const authSlice = createSlice({
             state.isAuthenticated = false;
             state.currentUser = null;
             state.isLoading = false;
+
+            window.location.href = '/auth/login';
         });
         builder.addCase(logoutThunk.rejected, (state: IAuthState, action) => {
             state.error = (action.payload as string) || action.error?.message || 'Logout failed';

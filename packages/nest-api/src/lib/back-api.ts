@@ -26,14 +26,41 @@ const $api = axios.create({
     withCredentials: true,
     headers: headers,
 });
-// // 🔐 автоматически добавляем JWT
-$api.interceptors.request.use((config) => {
-    const token = localStorage.getItem(AUTH_TOKEN_NAME);
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+// // // 🔐 автоматически добавляем JWT
+// $api.interceptors.request.use((config) => {
+//     const token = localStorage.getItem(AUTH_TOKEN_NAME);
+//     if (token) {
+//         config.headers.Authorization = `Bearer ${token}`;
+//     }
+//     return config;
+// });
+$api.interceptors.response.use((response) => {
+    return response;
+}, async (error) => {
+    console.log(error.response.request.responseURL);
+    const isRefresh = error.response.request.responseURL.includes('auth/refresh');
+
+    if (error.response.status === 401 && error.config && !isRefresh) {
+
+        const originalRequest = error.config;
+
+        originalRequest._isRetry = true; // TODO: не работает как в видосе
+        try {
+            const res = await $api.post('/api/auth/refresh');
+            if (res.data.resultCode === EResultCode.SUCCESS) {
+
+                return $api(originalRequest);
+            }
+
+        } catch (e) {
+            console.log('НЕ АВТОРИЗОВАН');
+        }
+
     }
-    return config;
+    throw error;
+
 });
+
 export const customAxios = async<T>({
     url,
     method,

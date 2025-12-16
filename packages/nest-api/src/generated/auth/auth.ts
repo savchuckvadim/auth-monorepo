@@ -41,8 +41,11 @@ export const getAuth = () => {
             method: 'GET',
         });
     };
+    /**
+     * @summary Logout
+     */
     const authLogout = () => {
-        return customAxios<void>({ url: `/api/auth/logout`, method: 'GET' });
+        return customAxios<boolean>({ url: `/api/auth/logout`, method: 'GET' });
     };
     /**
      * @summary Refresh token

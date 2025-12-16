@@ -1,27 +1,30 @@
-import { AUTH_ACCESS_TOKEN_NAME_PUBLIC } from '@workspace/nest-api';
+import { AUTH_ACCESS_TOKEN_NAME_PUBLIC, AUTH_REFRESH_TOKEN_NAME_PUBLIC } from '@workspace/nest-api';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export async function middleware(req: NextRequest) {
-    const cookie = await req.cookies.get(AUTH_ACCESS_TOKEN_NAME_PUBLIC);
+    const accessToken = await req.cookies.get(AUTH_ACCESS_TOKEN_NAME_PUBLIC);
+    const refreshToken = await req.cookies.get(AUTH_REFRESH_TOKEN_NAME_PUBLIC);
 
-    const token = cookie?.value;
+    const hasToken = accessToken || refreshToken;
     const url = req.nextUrl;
-    const isAuthPage = url.pathname.startsWith('/auth');
-    const isProtected = url.pathname.startsWith('/network');
 
+    const isConfirmPage = url.pathname.startsWith('/auth/confirm');
+    const isAuthPage = url.pathname.startsWith('/auth') && !isConfirmPage;
+    const isProtected = url.pathname.startsWith('/network');
+    const isUndefinedPath = !isAuthPage && !isProtected && !isConfirmPage;
 
     // Если нет токена — редирект на логин
-    if (!token && isProtected) {
-
+    if (!hasToken && (isProtected || isUndefinedPath)) {
+        console.log('redirect to login');
         return NextResponse.redirect(new URL('/auth/login', req.url));
     }
 
-    if (token && isAuthPage) {
-
-        return NextResponse.redirect(new URL('/network', req.url));
+    if (hasToken && (isAuthPage || isUndefinedPath)) {
+        console.log('redirect to profile');
+        return NextResponse.redirect(new URL('/network/profile', req.url));
     }
-    if (!token && isAuthPage) {
+    if (!hasToken && isAuthPage || isConfirmPage) {
 
         return NextResponse.next();
     }
@@ -31,7 +34,7 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
     matcher: [
-
+        '/',
         '/network/:path*',
         '/auth/:path*',
 

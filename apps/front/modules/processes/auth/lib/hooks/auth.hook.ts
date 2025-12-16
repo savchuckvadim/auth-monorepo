@@ -4,8 +4,8 @@ import { loginThunk, registerThunk, logoutThunk } from '../../model/AuthThunk';
 import { useAppDispatch, useAppSelector } from '@/modules/app';
 import { ILoginForm, IRegisterForm } from '../../type/auth.type';
 import { authActions } from '../../model/AuthSlice';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+// import { useEffect } from 'react';
+// import { useRouter } from 'next/navigation';
 
 export const useAuth = () => {
     const dispatch = useAppDispatch();
@@ -16,12 +16,16 @@ export const useAuth = () => {
 
     const logout = () => dispatch(logoutThunk());
     const clearError = () => dispatch(authActions.clearError());
-    const router = useRouter();
-    useEffect(() => {
-        if (auth.isAuthenticated && auth.currentUser) {
-            router.replace('/network');
-        }
-    }, [auth.isAuthenticated, auth.currentUser]);
+    // const router = useRouter();
+    // if(auth.currentUser && !auth.currentUser.isAcivated){
+    //     // router.push('/auth/confirm');
+    //     window.location.href = '/auth/confirm';
+    // }
+    // useEffect(() => {
+    //     if (auth.isAuthenticated && auth.currentUser) {
+    //         router.replace('/network');
+    //     }
+    // }, [auth.isAuthenticated, auth.currentUser]);
 
 
 

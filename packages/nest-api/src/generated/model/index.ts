@@ -14,6 +14,4 @@ export * from './loginDto';
 export * from './telegramSendMessageDto';
 export * from './telegramSendMessageDtoApp';
 export * from './tokensDto';
-export * from './tokensResponseDto';
 export * from './userDto';
-export * from './userResponseDto';

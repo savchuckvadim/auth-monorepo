@@ -3,10 +3,11 @@
 import { Badge } from "@workspace/ui/components/badge";
 import { Users } from "lucide-react";
 
+
 export default function Layout({ children }: { children: React.ReactNode }) {
     return (
         <div className="min-h-screen bg-background/90">
-            {/* Навигационная панель */}
+
             <nav className="bg-background/90 border-b shadow-sm">
                 <div className="max-w-7xl mx-auto px-6 py-4">
                     <div className="flex items-center justify-between">
@@ -27,15 +28,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </nav>
 
             <div className="max-w-4xl mx-auto p-6">
-                {/* Заголовок */}
+
                 <div className="text-center mb-12">
                     <h1 className="text-3xl font-bold text-foreground mb-4">
                        Аутентификация и Регистрация
                     </h1>
 
                 </div>
-
-
 
                 {children}
 

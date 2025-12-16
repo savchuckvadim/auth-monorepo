@@ -1,7 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { AuthService } from "../lib/api/AuthService";
-import { IAuthState, ILoginForm, IRegisterForm } from "../type/auth.type";
-import { AUTH_ACCESS_TOKEN_NAME_PUBLIC, EResultCode, UserDto } from "@workspace/nest-api";
+import { ILoginForm, IRegisterForm } from "../type/auth.type";
+import {  UserDto } from "@workspace/nest-api";
 import { getApiErrorMessage } from "../lib/utils/api-error.util";
 
 

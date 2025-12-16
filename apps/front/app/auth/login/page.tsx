@@ -5,6 +5,8 @@ import { CardTitle } from "@workspace/ui/components/card";
 import { CardDescription } from "@workspace/ui/components/card";
 import { CardContent } from "@workspace/ui/components/card";
 import Link from "next/link";
+
+
 export default function Page() {
     return (
         <Card className="max-w-2xl mx-auto">

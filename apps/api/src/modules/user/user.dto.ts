@@ -1,6 +1,6 @@
 import { IsPassword } from "@/core/decorators/dto/password.decorator";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDate, IsEmail, IsEnum, IsString } from "class-validator";
+import { IsBoolean, IsDate, IsEmail, IsEnum, IsString } from "class-validator";
 import { Token, User, user_roles } from "generated/prisma";
 
 
@@ -30,6 +30,8 @@ export class UserDto implements Partial<User> {
         this.email = user.email;
         this.name = user.name;
         this.activationLink = user.activationLink;
+        this.role = user.role;
+        this.isAcivated = user.isAcivated;
     }
 
     @ApiProperty({ description: 'ID', example: '1' })
@@ -48,6 +50,14 @@ export class UserDto implements Partial<User> {
     @ApiProperty({ description: 'Activation Link', example: 'https://example.com/activate' })
     @IsString()
     activationLink: string;
+
+    @ApiProperty({ description: 'Role', example: 'user' })
+    @IsEnum(user_roles)
+    role: user_roles;
+
+    @ApiProperty({ description: 'Is Activated', example: true })
+    @IsBoolean({ message: 'IsActivated must be a boolean' })
+    isAcivated: boolean;
 
 }
 

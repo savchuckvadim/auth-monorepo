@@ -11,7 +11,7 @@ import { EyeOff, AlertTriangle } from "lucide-react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { ILoginForm } from "../../type/auth.type";
 import { useAuth } from "../../lib/hooks/auth.hook";
-import Link from "next/link";
+
 
 
 
@@ -28,7 +28,7 @@ export const LoginForm = () => {
     } = useForm<ILoginForm>()
     const onSubmit: SubmitHandler<ILoginForm> = (data) => login(data);
 
- 
+
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 

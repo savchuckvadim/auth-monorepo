@@ -27,9 +27,12 @@ export class CookieService {
 
         };
         if (maxAge) {
+            // options.maxAge = maxAge === 'access'
+            //     ? 15 * 60 * 1000  // 15 минут
+            //     : 30 * 24 * 60 * 60 * 1000 // 30 дней
             options.maxAge = maxAge === 'access'
-                ? 15 * 60 * 1000  // 15 минут
-                : 30 * 24 * 60 * 60 * 1000 // 30 дней
+                ? 1 * 60 * 1000  // 1 минут
+                : 2 * 60 * 1000 //  2 минут
         }
         return options;
     }

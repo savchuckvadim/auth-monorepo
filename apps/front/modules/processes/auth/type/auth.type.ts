@@ -1,4 +1,4 @@
-import { LoginDto, CreateUserDto, UserResponseDto } from "@workspace/nest-api";
+import { LoginDto, CreateUserDto, UserDto } from "@workspace/nest-api";
 
 
 export interface IRegisterForm extends CreateUserDto {
@@ -22,6 +22,6 @@ export interface IAuthState {
     isAuthenticated: boolean;
     isLoading: boolean;
     error: string | null;
-    currentUser: UserResponseDto | null;
+    currentUser: UserDto | null;
 
 }

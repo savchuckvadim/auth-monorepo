@@ -2,7 +2,8 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import '@workspace/ui/globals.css';
 import '@workspace/theme/themes.css';
 import { Providers } from '@/components/providers';
-import LoadingScreen from '@/modules/shared/components/LoadingScreen/ui/LoadingScreen';
+import { APP_DESCRIPTION, APP_TITLE } from '@/modules/app';
+import { Metadata } from 'next';
 
 
 
@@ -16,6 +17,10 @@ const fontMono = Geist_Mono({
     variable: '--font-mono',
 });
 
+const metadata: Metadata = {
+    title: APP_TITLE,
+    description: APP_DESCRIPTION,
+};
 
 export default function RootLayout({
     children,
