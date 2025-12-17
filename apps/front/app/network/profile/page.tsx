@@ -11,7 +11,7 @@ import { User } from '@/modules/entities/user';
 
 export default function NetworkProfilePage() {
     const { currentUser } = useAuth();
-    if (!currentUser || !currentUser.id) {
+    if (!currentUser || !currentUser?.id) {
         return <LoadingScreen />
     }
 

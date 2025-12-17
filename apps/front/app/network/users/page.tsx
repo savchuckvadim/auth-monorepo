@@ -6,7 +6,7 @@ import { LoadingScreen } from "@/modules/shared";
 
 export default function NetworkUsersage() {
     const { currentUser } = useAuth();
-    if (!currentUser || !currentUser.id) {
+    if (!currentUser || !currentUser?.id) {
         return <LoadingScreen />
     }
 

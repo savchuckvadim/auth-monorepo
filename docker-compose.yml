@@ -24,7 +24,7 @@ services:
       dockerfile: docker/Back.Dockerfile
     container_name: api-auth-monorepo
     ports:
-      - "3000:3000"
+      - "7000:3000"
     environment:
       - NODE_ENV=production
       - REDIS_HOST=redis
@@ -47,7 +47,7 @@ services:
     image: redis:7
     container_name: redis-auth-monorepo
     ports:
-      - "6334:6379"
+      - "7034:6379"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -67,7 +67,7 @@ services:
       # MYSQL_USER: root # Имя пользователя
       MYSQL_PASSWORD: cf # Пароль пользователя
     ports:
-      - "3310:3306"
+      - "3317:3306"
     volumes:
       - ./apps/api/db_data:/var/lib/mysql
       # - ./apps/api/db_dev:/docker-entrypoint-initdb.d
