@@ -6,12 +6,21 @@
  * OpenAPI spec version: 1.0
  */
 
+export * from './addMemberDto';
 export * from './authenticatedUserDto';
+export * from './chatDto';
+export * from './createChatDto';
+export * from './createMessageDto';
 export * from './createUserDto';
 export * from './errorResponseDto';
 export * from './errorResponseDtoResultCode';
+export * from './followDto';
 export * from './loginDto';
+export * from './messageDto';
+export * from './messagesGetChatMessagesParams';
 export * from './telegramSendMessageDto';
 export * from './telegramSendMessageDtoApp';
 export * from './tokensDto';
+export * from './updateChatDto';
 export * from './userDto';
+export * from './userWithFollowStatusDto';

@@ -5,11 +5,12 @@ import { cn } from '@workspace/ui/lib/utils';
 import dynamic from 'next/dynamic';
 import { useAuth } from '@/modules/processes/auth';
 import { LoadingScreen } from '@/modules/shared';
+import { Header } from '@/modules/widgetes';
 
 
-const DynamicHeader = dynamic(() => import('./components/Header').then(mod => mod.Header), {
-    ssr: false,
-});
+// const DynamicHeader = dynamic(() => import('../../modules/widgetes').then(mod => mod.Header), {
+//     ssr: false,
+// });
 
 
 export default function NetworkLayout({ children }: { children: React.ReactNode }) {
@@ -19,7 +20,7 @@ export default function NetworkLayout({ children }: { children: React.ReactNode 
     }
     return (
         <div className="min-h-screen flex flex-col scrollbar-hide">
-            <DynamicHeader />
+            <Header />
             <main className="flex-grow">
 
                 <section id="hero" className={

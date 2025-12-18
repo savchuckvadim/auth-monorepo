@@ -1,7 +1,7 @@
 'use client';
 import { Provider } from 'react-redux';
 import { store } from '../model/store';
-import { ErrorBoundary } from './ErrorBoundary';
+import { ErrorBoundary } from './error-boundry.provider';
 import App from '../ui/App';
 
 export function AppProvider({ children }: { children: React.ReactNode }) {

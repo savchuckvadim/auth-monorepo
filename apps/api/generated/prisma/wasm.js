@@ -113,6 +113,71 @@ exports.Prisma.TokenScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ChatScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  name: 'name',
+  description: 'description',
+  avatar: 'avatar',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  userId: 'userId'
+};
+
+exports.Prisma.ChatMemberScalarFieldEnum = {
+  id: 'id',
+  chatId: 'chatId',
+  userId: 'userId',
+  role: 'role',
+  joinedAt: 'joinedAt',
+  leftAt: 'leftAt',
+  lastReadAt: 'lastReadAt'
+};
+
+exports.Prisma.MessageScalarFieldEnum = {
+  id: 'id',
+  chatId: 'chatId',
+  senderId: 'senderId',
+  content: 'content',
+  type: 'type',
+  fileUrl: 'fileUrl',
+  fileName: 'fileName',
+  fileSize: 'fileSize',
+  replyToId: 'replyToId',
+  editedAt: 'editedAt',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.MessageReadStatusScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  userId: 'userId',
+  readAt: 'readAt'
+};
+
+exports.Prisma.CallScalarFieldEnum = {
+  id: 'id',
+  chatId: 'chatId',
+  initiatorId: 'initiatorId',
+  receiverId: 'receiverId',
+  type: 'type',
+  status: 'status',
+  startedAt: 'startedAt',
+  endedAt: 'endedAt',
+  duration: 'duration',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.FollowScalarFieldEnum = {
+  id: 'id',
+  followerId: 'followerId',
+  followingId: 'followingId',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -136,15 +201,99 @@ exports.Prisma.TokenOrderByRelevanceFieldEnum = {
   userId: 'userId',
   refreshToken: 'refreshToken'
 };
+
+exports.Prisma.ChatOrderByRelevanceFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  avatar: 'avatar',
+  createdBy: 'createdBy',
+  userId: 'userId'
+};
+
+exports.Prisma.ChatMemberOrderByRelevanceFieldEnum = {
+  id: 'id',
+  chatId: 'chatId',
+  userId: 'userId'
+};
+
+exports.Prisma.MessageOrderByRelevanceFieldEnum = {
+  id: 'id',
+  chatId: 'chatId',
+  senderId: 'senderId',
+  content: 'content',
+  fileUrl: 'fileUrl',
+  fileName: 'fileName',
+  replyToId: 'replyToId'
+};
+
+exports.Prisma.MessageReadStatusOrderByRelevanceFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  userId: 'userId'
+};
+
+exports.Prisma.CallOrderByRelevanceFieldEnum = {
+  id: 'id',
+  chatId: 'chatId',
+  initiatorId: 'initiatorId',
+  receiverId: 'receiverId'
+};
+
+exports.Prisma.FollowOrderByRelevanceFieldEnum = {
+  id: 'id',
+  followerId: 'followerId',
+  followingId: 'followingId'
+};
 exports.user_roles = exports.$Enums.user_roles = {
   owner: 'owner',
   admin: 'admin',
   user: 'user'
 };
 
+exports.ChatType = exports.$Enums.ChatType = {
+  PRIVATE: 'PRIVATE',
+  GROUP: 'GROUP'
+};
+
+exports.ChatMemberRole = exports.$Enums.ChatMemberRole = {
+  OWNER: 'OWNER',
+  ADMIN: 'ADMIN',
+  MEMBER: 'MEMBER'
+};
+
+exports.MessageType = exports.$Enums.MessageType = {
+  TEXT: 'TEXT',
+  IMAGE: 'IMAGE',
+  VIDEO: 'VIDEO',
+  AUDIO: 'AUDIO',
+  FILE: 'FILE',
+  SYSTEM: 'SYSTEM'
+};
+
+exports.CallType = exports.$Enums.CallType = {
+  AUDIO: 'AUDIO',
+  VIDEO: 'VIDEO'
+};
+
+exports.CallStatus = exports.$Enums.CallStatus = {
+  INITIATED: 'INITIATED',
+  RINGING: 'RINGING',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED',
+  MISSED: 'MISSED',
+  ENDED: 'ENDED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
-  Token: 'Token'
+  Token: 'Token',
+  Chat: 'Chat',
+  ChatMember: 'ChatMember',
+  Message: 'Message',
+  MessageReadStatus: 'MessageReadStatus',
+  Call: 'Call',
+  Follow: 'Follow'
 };
 /**
  * Create the Client
@@ -201,13 +350,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "generator client {\n  provider      = \"prisma-client-js\"\n  output        = \"../generated/prisma\"\n  binaryTargets = [\"native\", \"debian-openssl-1.1.x\", \"debian-openssl-3.0.x\"]\n}\n\ndatasource db {\n  provider = \"mysql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id             String     @id @default(uuid())\n  name           String     @db.VarChar(255)\n  email          String     @unique(map: \"users_email_unique\") @db.VarChar(255)\n  isAcivated     Boolean    @default(false)\n  activationLink String     @unique(map: \"users_activation_link_unique\") @db.VarChar(255)\n  role           user_roles\n  password       String\n  createdAt      DateTime?  @default(now())\n  updatedAt      DateTime?  @default(now())\n  tokens         Token[]\n\n  @@unique([email])\n  @@map(\"users\")\n}\n\nmodel Token {\n  id           String @id @default(uuid())\n  userId       String @map(\"user_id\") @db.VarChar(255)\n  refreshToken String @map(\"refresh_token\") @db.VarChar(255)\n\n  createdAt DateTime? @default(now())\n  updatedAt DateTime? @default(now())\n\n  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)\n\n  @@map(\"tokens\")\n}\n\nenum user_roles {\n  owner\n  admin\n  user\n}\n",
-  "inlineSchemaHash": "be49a93154099edaeed0f0527336a107f6ffcb0e0df2396756545ecdbdb50c37",
+  "inlineSchema": "generator client {\n  provider      = \"prisma-client-js\"\n  output        = \"../generated/prisma\"\n  binaryTargets = [\"native\", \"debian-openssl-1.1.x\", \"debian-openssl-3.0.x\"]\n}\n\ndatasource db {\n  provider = \"mysql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id             String     @id @default(uuid())\n  name           String     @db.VarChar(255)\n  email          String     @unique(map: \"users_email_unique\") @db.VarChar(255)\n  isAcivated     Boolean    @default(false)\n  activationLink String     @unique(map: \"users_activation_link_unique\") @db.VarChar(255)\n  role           user_roles\n  password       String\n  createdAt      DateTime?  @default(now())\n  updatedAt      DateTime?  @default(now())\n  tokens         Token[]\n\n  // Messenger relations\n  createdChats  Chat[]              @relation(\"ChatCreator\")\n  chatMembers   ChatMember[]\n  messages      Message[]\n  sentCalls     Call[]              @relation(\"CallInitiator\")\n  receivedCalls Call[]              @relation(\"CallReceiver\")\n  messageReads  MessageReadStatus[]\n  chats         Chat[]\n\n  // Followers relations\n  followers Follow[] @relation(\"UserFollowers\")\n  following Follow[] @relation(\"UserFollowing\")\n\n  @@unique([email])\n  @@map(\"users\")\n}\n\nmodel Token {\n  id           String @id @default(uuid())\n  userId       String @map(\"user_id\") @db.VarChar(255)\n  refreshToken String @map(\"refresh_token\") @db.VarChar(255)\n\n  createdAt DateTime? @default(now())\n  updatedAt DateTime? @default(now())\n\n  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)\n\n  @@map(\"tokens\")\n}\n\nenum user_roles {\n  owner\n  admin\n  user\n}\n\n// Messenger models\n\nmodel Chat {\n  id          String   @id @default(uuid())\n  type        ChatType @default(PRIVATE)\n  name        String?  @db.VarChar(255) // Для групповых чатов\n  description String?  @db.Text // Для групповых чатов\n  avatar      String?  @db.VarChar(500) // URL аватара\n  createdBy   String   @map(\"created_by\") @db.VarChar(255)\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  members  ChatMember[]\n  messages Message[]\n  calls    Call[]\n\n  creator User    @relation(\"ChatCreator\", fields: [createdBy], references: [id], onDelete: Cascade)\n  user    User?   @relation(fields: [userId], references: [id])\n  userId  String?\n\n  @@index([type])\n  @@index([createdAt])\n  @@map(\"chats\")\n}\n\nmodel ChatMember {\n  id         String         @id @default(uuid())\n  chatId     String         @map(\"chat_id\") @db.VarChar(255)\n  userId     String         @map(\"user_id\") @db.VarChar(255)\n  role       ChatMemberRole @default(MEMBER)\n  joinedAt   DateTime       @default(now()) @map(\"joined_at\")\n  leftAt     DateTime?      @map(\"left_at\")\n  lastReadAt DateTime?      @map(\"last_read_at\")\n\n  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)\n  user User @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@unique([chatId, userId])\n  @@index([userId])\n  @@index([chatId])\n  @@map(\"chat_members\")\n}\n\nmodel Message {\n  id        String      @id @default(uuid())\n  chatId    String      @map(\"chat_id\") @db.VarChar(255)\n  senderId  String      @map(\"sender_id\") @db.VarChar(255)\n  content   String      @db.Text\n  type      MessageType @default(TEXT)\n  fileUrl   String?     @map(\"file_url\") @db.VarChar(500)\n  fileName  String?     @map(\"file_name\") @db.VarChar(255)\n  fileSize  Int?        @map(\"file_size\")\n  replyToId String?     @map(\"reply_to_id\") @db.VarChar(255)\n  editedAt  DateTime?   @map(\"edited_at\")\n  deletedAt DateTime?   @map(\"deleted_at\")\n  createdAt DateTime    @default(now())\n  updatedAt DateTime    @updatedAt\n\n  chat       Chat                @relation(fields: [chatId], references: [id], onDelete: Cascade)\n  sender     User                @relation(fields: [senderId], references: [id], onDelete: Cascade)\n  replyTo    Message?            @relation(\"MessageReply\", fields: [replyToId], references: [id], onDelete: SetNull)\n  replies    Message[]           @relation(\"MessageReply\")\n  readStatus MessageReadStatus[]\n\n  @@index([chatId, createdAt])\n  @@index([senderId])\n  @@index([replyToId])\n  @@map(\"messages\")\n}\n\nmodel MessageReadStatus {\n  id        String   @id @default(uuid())\n  messageId String   @map(\"message_id\") @db.VarChar(255)\n  userId    String   @map(\"user_id\") @db.VarChar(255)\n  readAt    DateTime @default(now()) @map(\"read_at\")\n\n  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)\n  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@unique([messageId, userId])\n  @@index([userId])\n  @@index([messageId])\n  @@map(\"message_read_status\")\n}\n\nmodel Call {\n  id          String     @id @default(uuid())\n  chatId      String     @map(\"chat_id\") @db.VarChar(255)\n  initiatorId String     @map(\"initiator_id\") @db.VarChar(255)\n  receiverId  String?    @map(\"receiver_id\") @db.VarChar(255)\n  type        CallType   @default(VIDEO)\n  status      CallStatus @default(INITIATED)\n  startedAt   DateTime?  @map(\"started_at\")\n  endedAt     DateTime?  @map(\"ended_at\")\n  duration    Int? // Длительность в секундах\n  createdAt   DateTime   @default(now())\n\n  chat      Chat  @relation(fields: [chatId], references: [id], onDelete: Cascade)\n  initiator User  @relation(\"CallInitiator\", fields: [initiatorId], references: [id], onDelete: Cascade)\n  receiver  User? @relation(\"CallReceiver\", fields: [receiverId], references: [id], onDelete: SetNull)\n\n  @@index([chatId])\n  @@index([initiatorId])\n  @@index([status])\n  @@map(\"calls\")\n}\n\nenum ChatType {\n  PRIVATE\n  GROUP\n}\n\nenum ChatMemberRole {\n  OWNER\n  ADMIN\n  MEMBER\n}\n\nenum MessageType {\n  TEXT\n  IMAGE\n  VIDEO\n  AUDIO\n  FILE\n  SYSTEM\n}\n\nenum CallType {\n  AUDIO\n  VIDEO\n}\n\nenum CallStatus {\n  INITIATED\n  RINGING\n  ACCEPTED\n  REJECTED\n  MISSED\n  ENDED\n}\n\n// Followers model\n\nmodel Follow {\n  id          String   @id @default(uuid())\n  followerId  String   @map(\"follower_id\") @db.VarChar(255)\n  followingId String   @map(\"following_id\") @db.VarChar(255)\n  createdAt   DateTime @default(now())\n\n  follower  User @relation(\"UserFollowers\", fields: [followerId], references: [id], onDelete: Cascade)\n  following User @relation(\"UserFollowing\", fields: [followingId], references: [id], onDelete: Cascade)\n\n  @@unique([followerId, followingId])\n  @@index([followerId])\n  @@index([followingId])\n  @@map(\"follows\")\n}\n",
+  "inlineSchemaHash": "e4621220b24b255adfc8c8b39b100870a7bd9a920abcf939abc1609a779af1c6",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isAcivated\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"activationLink\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"user_roles\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"tokens\",\"kind\":\"object\",\"type\":\"Token\",\"relationName\":\"TokenToUser\"}],\"dbName\":\"users\"},\"Token\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"user_id\"},{\"name\":\"refreshToken\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"refresh_token\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"TokenToUser\"}],\"dbName\":\"tokens\"}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isAcivated\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"activationLink\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"user_roles\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"tokens\",\"kind\":\"object\",\"type\":\"Token\",\"relationName\":\"TokenToUser\"},{\"name\":\"createdChats\",\"kind\":\"object\",\"type\":\"Chat\",\"relationName\":\"ChatCreator\"},{\"name\":\"chatMembers\",\"kind\":\"object\",\"type\":\"ChatMember\",\"relationName\":\"ChatMemberToUser\"},{\"name\":\"messages\",\"kind\":\"object\",\"type\":\"Message\",\"relationName\":\"MessageToUser\"},{\"name\":\"sentCalls\",\"kind\":\"object\",\"type\":\"Call\",\"relationName\":\"CallInitiator\"},{\"name\":\"receivedCalls\",\"kind\":\"object\",\"type\":\"Call\",\"relationName\":\"CallReceiver\"},{\"name\":\"messageReads\",\"kind\":\"object\",\"type\":\"MessageReadStatus\",\"relationName\":\"MessageReadStatusToUser\"},{\"name\":\"chats\",\"kind\":\"object\",\"type\":\"Chat\",\"relationName\":\"ChatToUser\"},{\"name\":\"followers\",\"kind\":\"object\",\"type\":\"Follow\",\"relationName\":\"UserFollowers\"},{\"name\":\"following\",\"kind\":\"object\",\"type\":\"Follow\",\"relationName\":\"UserFollowing\"}],\"dbName\":\"users\"},\"Token\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"user_id\"},{\"name\":\"refreshToken\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"refresh_token\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"TokenToUser\"}],\"dbName\":\"tokens\"},\"Chat\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"type\",\"kind\":\"enum\",\"type\":\"ChatType\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"avatar\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdBy\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"created_by\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"members\",\"kind\":\"object\",\"type\":\"ChatMember\",\"relationName\":\"ChatToChatMember\"},{\"name\":\"messages\",\"kind\":\"object\",\"type\":\"Message\",\"relationName\":\"ChatToMessage\"},{\"name\":\"calls\",\"kind\":\"object\",\"type\":\"Call\",\"relationName\":\"CallToChat\"},{\"name\":\"creator\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"ChatCreator\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"ChatToUser\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"}],\"dbName\":\"chats\"},\"ChatMember\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"chatId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"chat_id\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"user_id\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"ChatMemberRole\"},{\"name\":\"joinedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"joined_at\"},{\"name\":\"leftAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"left_at\"},{\"name\":\"lastReadAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"last_read_at\"},{\"name\":\"chat\",\"kind\":\"object\",\"type\":\"Chat\",\"relationName\":\"ChatToChatMember\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"ChatMemberToUser\"}],\"dbName\":\"chat_members\"},\"Message\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"chatId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"chat_id\"},{\"name\":\"senderId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"sender_id\"},{\"name\":\"content\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"type\",\"kind\":\"enum\",\"type\":\"MessageType\"},{\"name\":\"fileUrl\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"file_url\"},{\"name\":\"fileName\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"file_name\"},{\"name\":\"fileSize\",\"kind\":\"scalar\",\"type\":\"Int\",\"dbName\":\"file_size\"},{\"name\":\"replyToId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"reply_to_id\"},{\"name\":\"editedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"edited_at\"},{\"name\":\"deletedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"deleted_at\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"chat\",\"kind\":\"object\",\"type\":\"Chat\",\"relationName\":\"ChatToMessage\"},{\"name\":\"sender\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"MessageToUser\"},{\"name\":\"replyTo\",\"kind\":\"object\",\"type\":\"Message\",\"relationName\":\"MessageReply\"},{\"name\":\"replies\",\"kind\":\"object\",\"type\":\"Message\",\"relationName\":\"MessageReply\"},{\"name\":\"readStatus\",\"kind\":\"object\",\"type\":\"MessageReadStatus\",\"relationName\":\"MessageToMessageReadStatus\"}],\"dbName\":\"messages\"},\"MessageReadStatus\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"messageId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"message_id\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"user_id\"},{\"name\":\"readAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"read_at\"},{\"name\":\"message\",\"kind\":\"object\",\"type\":\"Message\",\"relationName\":\"MessageToMessageReadStatus\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"MessageReadStatusToUser\"}],\"dbName\":\"message_read_status\"},\"Call\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"chatId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"chat_id\"},{\"name\":\"initiatorId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"initiator_id\"},{\"name\":\"receiverId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"receiver_id\"},{\"name\":\"type\",\"kind\":\"enum\",\"type\":\"CallType\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"CallStatus\"},{\"name\":\"startedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"started_at\"},{\"name\":\"endedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\",\"dbName\":\"ended_at\"},{\"name\":\"duration\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"chat\",\"kind\":\"object\",\"type\":\"Chat\",\"relationName\":\"CallToChat\"},{\"name\":\"initiator\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"CallInitiator\"},{\"name\":\"receiver\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"CallReceiver\"}],\"dbName\":\"calls\"},\"Follow\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"followerId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"follower_id\"},{\"name\":\"followingId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"following_id\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"follower\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"UserFollowers\"},{\"name\":\"following\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"UserFollowing\"}],\"dbName\":\"follows\"}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: async () => require('./query_engine_bg.js'),
