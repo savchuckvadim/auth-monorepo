@@ -67,15 +67,6 @@ export class PeerService {
         if (audioSender?.track) {
             audioSender.track.enabled = !audioSender.track.enabled;
         }
-
-        // Также переключаем локальные треки
-        const localStreams = this.peer.getLocalStreams();
-        if (localStreams.length > 0) {
-            const audioTracks = localStreams[0].getAudioTracks();
-            audioTracks.forEach((track) => {
-                track.enabled = !track.enabled;
-            });
-        }
     }
 
     /**

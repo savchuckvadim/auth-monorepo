@@ -1,3 +1,5 @@
+import { MessageDto } from "@workspace/nest-api";
+
 export enum MessageType {
     TEXT = 'TEXT',
     IMAGE = 'IMAGE',
@@ -7,7 +9,7 @@ export enum MessageType {
     SYSTEM = 'SYSTEM',
 }
 
-export interface Message {
+export interface Message extends MessageDto {
     id: string;
     chatId: string;
     senderId: string;

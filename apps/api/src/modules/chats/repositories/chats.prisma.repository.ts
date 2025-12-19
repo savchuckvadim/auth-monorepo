@@ -2,12 +2,13 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { PrismaService } from '@/core';
 import { ChatsRepository } from './chats.repository';
 import { Chat, ChatMember, ChatType, ChatMemberRole } from 'generated/prisma';
+import { ChatMemberWithUser } from '../types/chat-member-with-user.type';
 
 @Injectable()
 export class ChatsPrismaRepository implements ChatsRepository {
     constructor(private readonly prisma: PrismaService) { }
 
-    async findById(id: string, userId?: string): Promise<Chat & { members?: ChatMember[] }> {
+    async findById(id: string, userId?: string): Promise<Chat & { members?: ChatMemberWithUser[] }> {
         const chat = await this.prisma.chat.findUnique({
             where: { id },
             include: {
@@ -39,7 +40,7 @@ export class ChatsPrismaRepository implements ChatsRepository {
         return chat;
     }
 
-    async findByUserId(userId: string): Promise<(Chat & { members?: ChatMember[] })[]> {
+    async findByUserId(userId: string): Promise<(Chat & { members?: ChatMemberWithUser[] })[]> {
         return this.prisma.chat.findMany({
             where: {
                 members: {
@@ -95,12 +96,12 @@ export class ChatsPrismaRepository implements ChatsRepository {
         name?: string;
         description?: string;
         memberIds: string[];
-    }): Promise<Chat & { members: ChatMember[] }> {
+    }): Promise<Chat & { members: ChatMemberWithUser[] }> {
         // Для приватного чата проверяем, не существует ли уже такой чат
         if (data.type === ChatType.PRIVATE && data.memberIds.length === 2) {
             const existingChat = await this.findPrivateChat(data.memberIds[0], data.memberIds[1]);
             if (existingChat) {
-                return this.findById(existingChat.id) as Promise<Chat & { members: ChatMember[] }>;
+                return this.findById(existingChat.id) as Promise<Chat & { members: ChatMemberWithUser[] }>;
             }
         }
 
@@ -138,7 +139,7 @@ export class ChatsPrismaRepository implements ChatsRepository {
         });
     }
 
-    async addMember(chatId: string, userId: string, role: ChatMemberRole = ChatMemberRole.MEMBER): Promise<ChatMember> {
+    async addMember(chatId: string, userId: string, role: ChatMemberRole = ChatMemberRole.MEMBER): Promise<ChatMemberWithUser> {
         const existingMember = await this.prisma.chatMember.findUnique({
             where: {
                 chatId_userId: {
@@ -160,6 +161,15 @@ export class ChatsPrismaRepository implements ChatsRepository {
                     leftAt: null,
                     role,
                 },
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                        },
+                    },
+                },
             });
         }
 
@@ -168,6 +178,15 @@ export class ChatsPrismaRepository implements ChatsRepository {
                 chatId,
                 userId,
                 role,
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
             },
         });
     }

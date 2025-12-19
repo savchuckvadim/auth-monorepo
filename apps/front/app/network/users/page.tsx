@@ -13,7 +13,7 @@ export default function NetworkUsersage() {
 
 
     return (
-        <Users userId={currentUser?.id!} />
+        <Users userId={currentUser.id!} />
     );
 }
 

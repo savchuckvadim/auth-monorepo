@@ -2,8 +2,7 @@
 
 import { useCallback, useEffect, useState, useRef } from 'react';
 import { useAuth } from '@/modules/processes';
-import { PeerService } from '@/lib/webrtc/peer-service';
-import { connectCallsSocket, getCallsSocket } from '@/lib/socket/calls-socket';
+
 import { VideoPlayer } from './VideoPlayer';
 import { CallControls } from './CallControls';
 import { Button } from '@workspace/ui/components/button';
@@ -16,6 +15,7 @@ import type {
     CallEndData,
     CallInitiatedData,
 } from '../lib/types/webrtc.types';
+import { connectCallsSocket, PeerService } from '@/modules/shared';
 
 interface SecretChatPageProps {
     chatId: string;

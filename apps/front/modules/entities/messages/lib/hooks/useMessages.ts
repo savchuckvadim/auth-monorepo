@@ -19,6 +19,7 @@ export const useChatMessages = (chatId: string, limit?: number, offset?: number)
         },
         enabled: !!currentUser?.id && !!chatId,
     });
+    
 };
 
 export const useMessageById = (messageId: string) => {

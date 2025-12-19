@@ -1,3 +1,5 @@
+import { ChatDto, ChatMemberDto, CreateChatDto } from "@workspace/nest-api";
+
 export enum ChatType {
     PRIVATE = 'PRIVATE',
     GROUP = 'GROUP',
@@ -9,33 +11,33 @@ export enum ChatMemberRole {
     MEMBER = 'MEMBER',
 }
 
-export interface ChatMember {
-    id: string;
-    chatId: string;
-    userId: string;
-    role: ChatMemberRole;
-    joinedAt: string;
-    leftAt?: string;
-    lastReadAt?: string;
-    user?: {
-        id: string;
-        name: string;
-        email: string;
-    };
-}
+// export interface ChatMember {
+//     id: string;
+//     chatId: string;
+//     userId: string;
+//     role: ChatMemberRole;
+//     joinedAt: string;
+//     leftAt?: string;
+//     lastReadAt?: string;
+//     user?: {
+//         id: string;
+//         name: string;
+//         email: string;
+//     };
+// }
 
-export interface Chat {
+export interface Chat extends ChatDto {
     id: string;
     type: ChatType;
-    name?: string;
-    description?: string;
-    avatar?: string;
+    name: string;
+    description: string;
+    avatar: string;
     createdBy: string;
     createdAt: string;
     updatedAt: string;
-    members?: ChatMember[];
-    unreadCount?: number;
-    lastMessage?: {
+    members: ChatMemberDto[];
+    unreadCount: number;
+    lastMessage: {
         id: string;
         content: string;
         createdAt: string;
@@ -43,10 +45,10 @@ export interface Chat {
     };
 }
 
-export interface CreateChat {
+export interface CreateChat extends CreateChatDto {
     type: ChatType;
-    name?: string;
-    description?: string;
+    name: string;
+    description: string;
     memberIds: string[];
 }
 

@@ -5,7 +5,30 @@
  * API for auth backend for monorepo
  * OpenAPI spec version: 1.0
  */
+import type { ChatMemberDto } from './chatMemberDto';
+import type { MessageDto } from './messageDto';
 
 export interface ChatDto {
-    [key: string]: unknown;
+    /** ID */
+    id: string;
+    /** Type */
+    type: string;
+    /** Name */
+    name: string;
+    /** Description */
+    description: string;
+    /** Avatar */
+    avatar: string;
+    /** Created By */
+    createdBy: string;
+    /** Created At */
+    createdAt: string;
+    /** Updated At */
+    updatedAt: string;
+    /** Members */
+    members: ChatMemberDto[];
+    /** Unread Count */
+    unreadCount: number;
+    /** Last Message */
+    lastMessage: MessageDto;
 }

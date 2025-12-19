@@ -1,23 +1,27 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+
+
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useUserChats, useCreateChat, useMarkChatAsRead } from '@/modules/entities/chats/lib/hooks/useChats';
-import { useChatMessages, useCreateMessage, useMarkChatAsRead as useMarkMessagesRead } from '@/modules/entities/messages/lib/hooks/useMessages';
+import { useChatMessages, useCreateMessage } from '@/modules/entities/messages/lib/hooks/useMessages';
 import { useAllUsers } from '@/modules/entities/followers/lib/hooks/useFollowers';
-import { Chat, ChatType, CreateChat } from '@/modules/entities/chats/lib/types/chats.types';
-import { Message } from '@/modules/entities/messages/lib/types/messages.types';
+import { Chat, ChatType, CreateChat} from '@/modules/entities/chats/lib/types/chats.types';
+import { Message, MessageType } from '@/modules/entities/messages/lib/types/messages.types';
 import { UserWithFollowStatus } from '@/modules/entities/followers/lib/types/followers.types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@workspace/ui/components/card';
 import { Button } from '@workspace/ui/components/button';
 import { Input } from '@workspace/ui/components/input';
 import { MessageCircle, Send, Plus, Search, Users, Lock } from 'lucide-react';
 import { useAuth } from '@/modules/processes';
-import { LoadingScreen } from '@/modules/shared';
+import { LoadingScreen } from '@/modules/shared/ui';
 // import { connectNotificationsSocket, disconnectNotificationsSocket, getNotificationsSocket } from '@/modules/shared';
-import { connectMessagesSocket, disconnectMessagesSocket, getMessagesSocket } from '@/modules/shared';
+import { connectMessagesSocket } from '@/modules/shared/lib/socket/messages-socket';
 
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
+import { ChatMemberDto, CreateChatDto } from '@workspace/nest-api';
+
 
 export default function ChatsPage() {
     const { currentUser } = useAuth();
@@ -40,12 +44,13 @@ export default function ChatsPage() {
     const createChatMutation = useCreateChat();
     const createMessageMutation = useCreateMessage();
     const markChatReadMutation = useMarkChatAsRead();
-    const markMessagesReadMutation = useMarkMessagesRead();
+    // const markMessagesReadMutation = useMarkMessagesRead();
 
     // Сообщения уже приходят в порядке возрастания (старые -> новые),
     // поэтому просто используем их как есть - последние будут внизу
-    const sortedMessages = messages ? (messages as unknown as Message[]) : [];
-    debugger
+    const sortedMessages = useMemo(() => {
+        return messages ? (messages as unknown as Message[]) : [];
+    }, [messages]);
     // Логирование для отладки
     useEffect(() => {
         if (selectedChatId && sortedMessages.length > 0) {
@@ -63,7 +68,7 @@ export default function ChatsPage() {
         const messagesSocket = connectMessagesSocket(currentUser.id);
 
         // Обработчик новых сообщений (регистрируем ДО подключения, чтобы не пропустить события)
-        const handleNewMessage = (newMessage: any) => {
+        const handleNewMessage = (newMessage: Message) => {
             console.log('📨 New message received via WebSocket:', newMessage);
             console.log('📨 Current chatId:', selectedChatId);
             console.log('📨 Message chatId:', newMessage.chatId);
@@ -74,20 +79,20 @@ export default function ChatsPage() {
                 // Оптимистично добавляем сообщение в кэш
                 queryClient.setQueryData(
                     ['messages', 'chat', selectedChatId, 50, 0],
-                    (oldData: any) => {
+                    (oldData: Message[] | undefined) => {
                         console.log('📝 Old data:', oldData?.length, 'messages');
                         if (!oldData) {
                             console.log('📝 No old data, returning new message');
                             return [newMessage];
                         }
                         // Проверяем, нет ли уже такого сообщения
-                        const exists = oldData.some((msg: any) => msg.id === newMessage.id);
+                        const exists = oldData.some((msg: Message) => msg.id === newMessage.id);
                         if (exists) {
                             console.log('⚠️ Message already exists in cache');
                             return oldData;
                         }
                         // Удаляем временные сообщения с таким же контентом
-                        const filtered = oldData.filter((msg: any) =>
+                        const filtered = oldData.filter((msg: Message) =>
                             !(msg.id?.startsWith('temp-') && msg.content === newMessage.content && msg.senderId === newMessage.senderId)
                         );
                         console.log('📝 Adding new message to cache, total:', filtered.length + 1);
@@ -114,7 +119,7 @@ export default function ChatsPage() {
         messagesSocket.on('message:new', handleNewMessage);
 
         // Дополнительное логирование всех событий для отладки
-        const onAnyHandler = (event: string, ...args: any[]) => {
+        const onAnyHandler = (event: string, ...args: unknown[]) => {
             console.log('🔔 WebSocket event received:', event, args);
             if (event === 'message:new') {
                 console.log('📨 message:new event detected!', args[0]);
@@ -123,7 +128,7 @@ export default function ChatsPage() {
         messagesSocket.onAny(onAnyHandler);
 
         // Логирование подключения к комнате
-        messagesSocket.on('chat:joined', (data: any) => {
+        messagesSocket.on('chat:joined', (data: { chatId?: string;[key: string]: unknown }) => {
             console.log('✅ Joined chat room:', data);
         });
 
@@ -131,7 +136,7 @@ export default function ChatsPage() {
         // Но мы все равно вызываем chat:join для явного подтверждения
         const joinChat = () => {
             console.log('📤 Joining chat:', selectedChatId);
-            messagesSocket.emit('chat:join', { chatId: selectedChatId }, (response: any) => {
+            messagesSocket.emit('chat:join', { chatId: selectedChatId }, (response: { error?: string;[key: string]: unknown } | null) => {
                 if (response?.error) {
                     console.error('❌ Chat join error:', response.error);
                 } else {
@@ -178,7 +183,7 @@ export default function ChatsPage() {
         if (selectedChatId) {
             markChatReadMutation.mutate(selectedChatId);
         }
-    }, [selectedChatId]);
+    }, [selectedChatId, markChatReadMutation]);
 
     useEffect(() => {
         // Автопрокрутка к последнему сообщению
@@ -212,7 +217,7 @@ export default function ChatsPage() {
             chatId: selectedChatId,
             senderId: currentUser.id,
             content,
-            type: 'TEXT' as any,
+            type: MessageType.TEXT,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             sender: {
@@ -225,7 +230,7 @@ export default function ChatsPage() {
         // Оптимистично добавляем сообщение в UI
         queryClient.setQueryData(
             ['messages', 'chat', selectedChatId, 50, 0],
-            (oldData: any) => {
+            (oldData: Message[] | undefined) => {
                 if (!oldData) return [tempMessage];
                 return [...oldData, tempMessage];
             }
@@ -246,23 +251,23 @@ export default function ChatsPage() {
             console.log('✅ Message sent via REST API:', sentMessage);
 
             // customAxios уже извлекает data, так что sentMessage - это объект сообщения
-            const messageData = sentMessage as any;
+            const messageData = sentMessage as Message;
             console.log('📝 Message data to add to cache:', messageData);
 
             // Заменяем временное сообщение на реальное
             queryClient.setQueryData(
                 ['messages', 'chat', selectedChatId, 50, 0],
-                (oldData: any) => {
+                (oldData: Message[] | undefined) => {
                     console.log('📝 Updating cache, old data length:', oldData?.length);
                     if (!oldData) {
                         console.log('📝 No old data, returning new message');
                         return [messageData];
                     }
                     // Удаляем временное сообщение и добавляем реальное
-                    const filtered = oldData.filter((msg: any) => !msg.id?.startsWith('temp-'));
+                    const filtered = oldData.filter((msg: Message) => !msg.id?.startsWith('temp-'));
                     console.log('📝 After filtering temp messages, length:', filtered.length);
                     // Проверяем, нет ли уже такого сообщения
-                    const exists = filtered.some((msg: any) => msg.id === messageData.id);
+                    const exists = filtered.some((msg: Message) => msg.id === messageData.id);
                     if (exists) {
                         console.log('⚠️ Message already exists in cache');
                         return filtered;
@@ -285,9 +290,9 @@ export default function ChatsPage() {
             // Удаляем временное сообщение при ошибке
             queryClient.setQueryData(
                 ['messages', 'chat', selectedChatId, 50, 0],
-                (oldData: any) => {
+                (oldData: Message[] | undefined) => {
                     if (!oldData) return [];
-                    return oldData.filter((msg: any) => !msg.id?.startsWith('temp-'));
+                    return oldData.filter((msg: Message) => !msg.id?.startsWith('temp-'));
                 }
             );
             setMessageText(content); // Возвращаем текст при ошибке
@@ -301,8 +306,10 @@ export default function ChatsPage() {
             const chatData: CreateChat = {
                 type: selectedUserIds.length === 1 ? ChatType.PRIVATE : ChatType.GROUP,
                 memberIds: selectedUserIds,
+                name: '',
+                description: '',
             };
-            const chat = await createChatMutation.mutateAsync(chatData as any);
+            const chat = await createChatMutation.mutateAsync(chatData as CreateChatDto);
             setSelectedChatId((chat as unknown as Chat).id);
             setShowNewChatDialog(false);
             setSelectedUserIds([]);
@@ -316,7 +323,7 @@ export default function ChatsPage() {
         const searchLower = searchQuery.toLowerCase();
         return (
             chat.name?.toLowerCase().includes(searchLower) ||
-            chat.members?.some((m: any) =>
+            chat.members?.some((m: ChatMemberDto) =>
                 m.user?.name.toLowerCase().includes(searchLower) ||
                 m.user?.email.toLowerCase().includes(searchLower)
             )
@@ -365,7 +372,7 @@ export default function ChatsPage() {
                         <div className="p-2">
                             {filteredChats.map((chat: Chat) => {
                                 const otherMembers = chat.members?.filter(
-                                    (m: any) => m.userId !== currentUser.id
+                                    (m: ChatMemberDto) => m.userId !== currentUser.id
                                 ) || [];
                                 const chatName =
                                     chat.type === ChatType.PRIVATE
@@ -431,7 +438,7 @@ export default function ChatsPage() {
                             <h3 className="font-semibold">
                                 {selectedChat?.type === ChatType.PRIVATE
                                     ? selectedChat.members
-                                        ?.find((m: any) => m.userId !== currentUser.id)
+                                        ?.find((m: ChatMemberDto) => m.userId !== currentUser.id)
                                         ?.user?.name || 'Пользователь'
                                     : selectedChat?.name || 'Групповой чат'}
                             </h3>

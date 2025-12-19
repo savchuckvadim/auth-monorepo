@@ -15,6 +15,10 @@ export class UserPrismaRepository implements UserPrismaRepository {
         return this.prisma.user.findMany();
     }
 
+    public async getByIds(ids: string[]): Promise<User[]> {
+        return this.prisma.user.findMany({ where: { id: { in: ids } } });
+    }
+
     public async findByEmail(email: string): Promise<User> {
         const user = await this.prisma.user.findUnique({ where: { email } });
         if (!user) {

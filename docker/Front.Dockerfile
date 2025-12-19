@@ -32,7 +32,7 @@ WORKDIR /app
 
 
 RUN npm install -g pnpm
-
+RUN pnpm add typescript
 # Копируем только необходимые файлы
 
 COPY --from=base /app/apps/${APP}/.next ./.next
@@ -48,8 +48,8 @@ COPY --from=base /app/apps/${APP}/.env ./.env
 
 
 # Установка PNPM и зависимостей
-RUN pnpm install --prod --no-frozen-lockfile && \
-    pnpm --filter ${APP} install --prod --no-frozen-lockfile
+# RUN pnpm install --prod --no-frozen-lockfile && \
+#     pnpm --filter ${APP} install --prod --no-frozen-lockfile
 
 
 

@@ -7,5 +7,10 @@
  */
 
 export interface UpdateChatDto {
-    [key: string]: unknown;
+    /** Name */
+    name: string;
+    /** Description */
+    description: string;
+    /** Avatar */
+    avatar: string;
 }

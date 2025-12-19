@@ -7,5 +7,12 @@
  */
 
 export interface CreateChatDto {
-    [key: string]: unknown;
+    /** Type */
+    type: string;
+    /** Name */
+    name: string;
+    /** Description */
+    description: string;
+    /** Avatar */
+    memberIds: string[];
 }

@@ -32,4 +32,8 @@ export class UserService {
     public async activateUser(activationLink: string) {
         return new UserDto(await this.repo.activate(activationLink));
     }
+
+    public async getUsersByIds(ids: string[]): Promise<UserDto[]> {
+        return (await this.repo.getByIds(ids)).map(user => new UserDto(user));
+    }
 }

@@ -1,7 +1,6 @@
 'use client';
 
 import { Badge } from "@workspace/ui/components/badge";
-import Orb from "@workspace/ui/components/Orb";
 import { Users } from "lucide-react";
 
 
@@ -9,7 +8,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     return (
         <>
 
-        
+
             <div className="min-h-screen bg-background/90">
                 {/* Video Background */}
 

@@ -9,6 +9,7 @@
 export * from './addMemberDto';
 export * from './authenticatedUserDto';
 export * from './chatDto';
+export * from './chatMemberDto';
 export * from './createChatDto';
 export * from './createMessageDto';
 export * from './createUserDto';

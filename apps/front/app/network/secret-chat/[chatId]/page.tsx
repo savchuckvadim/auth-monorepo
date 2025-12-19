@@ -6,6 +6,8 @@ import { useAuth } from '@/modules/processes';
 import { useUserChats } from '@/modules/entities/chats/lib/hooks/useChats';
 import { LoadingScreen } from '@/modules/shared';
 
+import { ChatDto, ChatMemberDto } from '@workspace/nest-api';
+
 export default function SecretChatRoute() {
     const params = useParams();
     const router = useRouter();
@@ -17,7 +19,7 @@ export default function SecretChatRoute() {
         return <LoadingScreen />;
     }
 
-    const chat = Array.isArray(chats) ? chats.find((c: any) => c.id === chatId) : null;
+    const chat = Array.isArray(chats) ? chats.find((c: ChatDto) => c.id === chatId) : null;
     if (!chat) {
         return (
             <div className="flex items-center justify-center h-screen">
@@ -27,12 +29,12 @@ export default function SecretChatRoute() {
     }
 
     // Находим другого пользователя (для приватного чата)
-    const members = (chat as any).members || [];
+    const members = (chat as ChatDto).members || [];
     const otherMember = members.find(
-        (m: any) => m.userId !== currentUser?.id
+        (m: ChatMemberDto) => m.userId !== currentUser?.id
     );
     const otherUserId = otherMember?.userId || '';
-    const otherUserName = otherMember?.user?.name || 'Пользователь';
+    const otherUserName = `otherMember?.user?.userName` ;
 
     return (
         <SecretChatPage

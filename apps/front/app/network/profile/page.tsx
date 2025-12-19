@@ -16,7 +16,7 @@ export default function NetworkProfilePage() {
     }
 
     return (
-        <User userId={currentUser?.id!} />
+        <User userId={currentUser.id!} />
     );
 }
 
