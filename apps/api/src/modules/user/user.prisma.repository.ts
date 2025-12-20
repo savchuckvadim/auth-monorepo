@@ -4,11 +4,12 @@ import { User, user_roles } from "generated/prisma";
 import { CreateUserDto } from "./user.dto";
 import { hash } from "bcrypt";
 import { randomUUID } from "crypto";
+import { UserRepository } from "./user.repository";
 
 
 
 @Injectable()
-export class UserPrismaRepository implements UserPrismaRepository {
+export class UserPrismaRepository implements UserRepository {
     constructor(private readonly prisma: PrismaService) { }
 
     public async getAll(): Promise<User[]> {
@@ -69,5 +70,9 @@ export class UserPrismaRepository implements UserPrismaRepository {
 
     public async update(user: User): Promise<User> {
         return await this.prisma.user.update({ where: { id: user.id }, data: user });
+    }
+
+    public async delete(id: string): Promise<void> {
+        await this.prisma.user.delete({ where: { id } });
     }
 }
