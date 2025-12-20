@@ -32,4 +32,10 @@ export class UserService {
     public async activateUser(activationLink: string) {
         return new UserDto(await this.repo.activate(activationLink));
     }
+
+    public async deleteUser(id: string): Promise<void> {
+        return await this.repo.delete(id);
+    }
+
+
 }
