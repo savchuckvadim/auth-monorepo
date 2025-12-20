@@ -1,7 +1,8 @@
 import type { NextConfig } from 'next';
 
 // Проверяем наличие обязательных переменных окружения
-const requiredEnvVars = ['API_URL',];
+// NEXT_PUBLIC_ префикс обязателен для переменных, доступных в браузере
+const requiredEnvVars = ['NEXT_PUBLIC_API_URL'];
 for (const envVar of requiredEnvVars) {
     if (!process.env[envVar]) {
         console.error(`Missing required environment variable: ${envVar}`);
@@ -10,10 +11,9 @@ for (const envVar of requiredEnvVars) {
 }
 
 const nextConfig: NextConfig = {
-
+    // Next.js автоматически встраивает переменные с префиксом NEXT_PUBLIC_ в клиентский код
     env: {
-        API_URL: process.env.API_URL,
-
+        NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     },
     // Добавляем поддержку TypeScript для конфигурации
     typescript: {
@@ -22,6 +22,12 @@ const nextConfig: NextConfig = {
     },
     // Настройки для монорепозитория
     transpilePackages: ['@workspace/api', '@workspace/ui', '@workspace/nest-api'],
+    // Отключаем кэширование transpiled пакетов для workspace пакетов
+    // Это гарантирует, что изменения в пакетах всегда применяются
+    experimental: {
+        // Принудительно пересобираем transpiled пакеты при каждой сборке
+        optimizePackageImports: ['@workspace/nest-api'],
+    },
 };
 
 export default nextConfig;

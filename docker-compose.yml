@@ -7,9 +7,15 @@ services:
       dockerfile: docker/Front.Dockerfile
       args:
         APP: front
+        # URL бэкенда берется из .env файла в корне проекта
+        # Если переменной нет, используется дефолт (только для build)
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:7000}
     container_name: front-auth-monorepo
     ports:
       - "7001:5000"
+    # Автоматически загружает переменные из .env файла в корне проекта
+    env_file:
+      - .env
     environment:
       - LOG_FILE_PATH=/app/logs/server.log
     volumes:
@@ -18,35 +24,39 @@ services:
     networks:
       - app-network
 
-  # api-auth-monorepo:
-  #   build:
-  #     context: .
-  #     dockerfile: docker/Back.Dockerfile
-  #   container_name: api-auth-monorepo
-  #   ports:
-  #     - "7000:3000"
-  #   environment:
-  #     - NODE_ENV=production
-  #     - REDIS_HOST=redis
-  #     - REDIS_PORT=7034
-  #     - PORT=7000 # для app.listen
-  #   depends_on:
-  #     redis-auth-monorepo:
-  #       condition: service_healthy
-  #   restart: unless-stopped
-  #   volumes:
-  #     - ./apps/api/src:/app/src # 🔁 Монтируем исходники
-  #     - ./apps/api/tsconfig.json:/app/tsconfig.json
-  #     - ./apps/api/nest-cli.json:/app/nest-cli.json
-  #     - ./apps/api/storage:/app/storage
-  #   networks:
-  #     - app-network
+  api-auth-monorepo:
+    build:
+      context: .
+      dockerfile: docker/Back.Dockerfile
+    container_name: api-auth-monorepo
+    ports:
+      - "7000:3000"
+    environment:
+      - NODE_ENV=production
+      # Внутри Docker сети используем внутренние порты и имена сервисов
+      # Внешние порты (3317, 7034) используются только для доступа с хоста
+      - REDIS_HOST=redis-auth-monorepo
+      - REDIS_PORT=6379 # Внутренний порт Redis (внешний 7034 только для доступа с хоста)
+      - PORT=3000
+      - DATABASE_URL=mysql://root:cf@db-auth-monorepo:3306/auth-monorepo # Внутренний порт MySQL (внешний 3317 только для доступа с хоста)
+    depends_on:
+      db-auth-monorepo:
+        condition: service_healthy
+      redis-auth-monorepo:
+        condition: service_healthy
+    restart: unless-stopped
+    volumes:
+      - ./apps/api/src:/app/src # 🔁 Монтируем исходники
+      - ./apps/api/tsconfig.json:/app/tsconfig.json
+      - ./apps/api/nest-cli.json:/app/nest-cli.json
+      - ./apps/api/storage:/app/storage
+    networks:
+      - app-network
 
   redis-auth-monorepo:
     image: redis:7
     container_name: redis-auth-monorepo
-    ports:
-      - "7034:6379"
+    # Порт не пробрасываем наружу - используется только внутри Docker сети
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -65,11 +75,25 @@ services:
       MYSQL_DATABASE: auth-monorepo # Название базы данных
       # MYSQL_USER: root # Имя пользователя
       MYSQL_PASSWORD: cf # Пароль пользователя
-    ports:
-      - "3317:3306"
+    # Порт не пробрасываем наружу - используется только внутри Docker сети
     volumes:
       - ./apps/api/db_data:/var/lib/mysql
-      # - ./apps/api/db_dev:/docker-entrypoint-initdb.d
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p$$MYSQL_ROOT_PASSWORD",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
     networks:
       - app-network
 
