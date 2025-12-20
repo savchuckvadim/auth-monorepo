@@ -5,7 +5,7 @@ import { ApiOperation, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
 
 
 @ApiTags('User Admin')
-@Controller('user/admin')
+@Controller('admin/user')
 export class UserAdminController {
     constructor(
         private readonly service: UserService,

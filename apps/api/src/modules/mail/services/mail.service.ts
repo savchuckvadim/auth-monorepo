@@ -2,8 +2,8 @@ import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
 import { Injectable, Logger } from '@nestjs/common';
 import { render } from '@react-email/components';
 import { EmailVerificationTemplate } from '../templates/email-verification.template';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue } from 'bull';
+// import { InjectQueue } from '@nestjs/bull';
+// import { Queue } from 'bull';
 import { ConfigService } from '@nestjs/config';
 import { SendMailActivationLinkDto } from '../dtos/activation-link.dto';
 
@@ -15,7 +15,7 @@ export class MailService {
     constructor(
         private readonly mailerService: MailerService,
         private readonly configService: ConfigService,
-        @InjectQueue('mail') private readonly queue: Queue,
+        // @InjectQueue('mail') private readonly queue: Queue,
 
     ) { }
 
@@ -36,7 +36,7 @@ export class MailService {
         await this.sendEmail({
             subject: 'Активация аккаунта на сайте ' + clientUrl,
             html: html,
-            to: [email ?? 'april-app@mail.ru'],
+            to: [email ?? 'manager@sociopath-network.ru'],
             context: {
                 name: name,
             },
@@ -58,7 +58,7 @@ export class MailService {
         }>;
     }) {
         try {
-            const from = `"Test" <${process.env.SMTP_FROM || 'manager@april-app.ru'}>`
+            const from = `"Test" <${process.env.MAIL_LOGIN || 'manager@sociopath-network.ru'}>`
 
             const emailsList: string[] = params.to;
 
