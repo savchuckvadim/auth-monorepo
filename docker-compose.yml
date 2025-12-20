@@ -12,7 +12,7 @@ services:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:7000}
     container_name: front-auth-monorepo
     ports:
-      - "7001:5000"
+      - "7001:3000"
     # Автоматически загружает переменные из .env файла в корне проекта
     env_file:
       - .env
