@@ -18,29 +18,29 @@ services:
     networks:
       - app-network
 
-  api-auth-monorepo:
-    build:
-      context: .
-      dockerfile: docker/Back.Dockerfile
-    container_name: api-auth-monorepo
-    ports:
-      - "7000:3000"
-    environment:
-      - NODE_ENV=production
-      - REDIS_HOST=redis
-      - REDIS_PORT=7034
-      - PORT=7000 # для app.listen
-    depends_on:
-      redis-auth-monorepo:
-        condition: service_healthy
-    restart: unless-stopped
-    volumes:
-      - ./apps/api/src:/app/src # 🔁 Монтируем исходники
-      - ./apps/api/tsconfig.json:/app/tsconfig.json
-      - ./apps/api/nest-cli.json:/app/nest-cli.json
-      - ./apps/api/storage:/app/storage
-    networks:
-      - app-network
+  # api-auth-monorepo:
+  #   build:
+  #     context: .
+  #     dockerfile: docker/Back.Dockerfile
+  #   container_name: api-auth-monorepo
+  #   ports:
+  #     - "7000:3000"
+  #   environment:
+  #     - NODE_ENV=production
+  #     - REDIS_HOST=redis
+  #     - REDIS_PORT=7034
+  #     - PORT=7000 # для app.listen
+  #   depends_on:
+  #     redis-auth-monorepo:
+  #       condition: service_healthy
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./apps/api/src:/app/src # 🔁 Монтируем исходники
+  #     - ./apps/api/tsconfig.json:/app/tsconfig.json
+  #     - ./apps/api/nest-cli.json:/app/nest-cli.json
+  #     - ./apps/api/storage:/app/storage
+  #   networks:
+  #     - app-network
 
   redis-auth-monorepo:
     image: redis:7

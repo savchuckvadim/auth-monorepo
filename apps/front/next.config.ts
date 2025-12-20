@@ -10,6 +10,7 @@ for (const envVar of requiredEnvVars) {
 }
 
 const nextConfig: NextConfig = {
+
     env: {
         API_URL: process.env.API_URL,
 

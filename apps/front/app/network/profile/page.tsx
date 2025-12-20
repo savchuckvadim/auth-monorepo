@@ -1,4 +1,8 @@
 'use client'
+export const dynamic = 'force-dynamic';
+
+
+
 import React from 'react';
 
 import { useAuth } from '@/modules/processes';
@@ -16,7 +20,7 @@ export default function NetworkProfilePage() {
     }
 
     return (
-        <User userId={currentUser?.id!} />
+        <User userId={currentUser.id!} />
     );
 }
 

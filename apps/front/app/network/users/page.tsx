@@ -1,4 +1,7 @@
 'use client'
+export const dynamic = 'force-dynamic';
+
+
 import { Users } from "@/modules/entities/user";
 import { useAuth } from "@/modules/processes";
 import { LoadingScreen } from "@/modules/shared";
@@ -13,7 +16,7 @@ export default function NetworkUsersage() {
 
 
     return (
-        <Users userId={currentUser?.id!} />
+        <Users userId={currentUser.id!} />
     );
 }
 
