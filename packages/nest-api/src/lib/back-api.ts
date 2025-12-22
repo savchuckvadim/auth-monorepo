@@ -11,8 +11,7 @@ const url = 'https://api.sociopath-network.ru';
 
 
 const AUTH_TOKEN_NAME = 'accessToken';
-console.log(`🔴 Backend URL (HARDCODED): ${url}`);
-console.log(`🔴 API Base URL: ${url}`);
+
 export interface IBackResponse<T> {
     resultCode: EResultCode; // 0 - успех, 1 - ошибка
     data?: T; // данные ответа (при успехе)
@@ -36,7 +35,6 @@ const $api = axios.create({
 });
 
 // ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА - логируем baseURL при создании инстанса
-console.log(`🔴 Axios instance created with baseURL: ${$api.defaults.baseURL}`);
 // // // 🔐 автоматически добавляем JWT
 // $api.interceptors.request.use((config) => {
 //     const token = localStorage.getItem(AUTH_TOKEN_NAME);
@@ -86,7 +84,7 @@ export const customAxios = async<T>({
     headers?: any;
 }): Promise<T> => {
     // // Orval всегда ждёт, что mutator возвращает **данные**, а не { resultCode, data }
-    console.log(`Backend request to ${url}`);
+
     const res = await $api.request<IBackResponse<T>>({
         url,
         method: method as Method,

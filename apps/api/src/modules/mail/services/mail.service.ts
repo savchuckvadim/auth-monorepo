@@ -59,9 +59,7 @@ export class MailService {
     }) {
         try {
             const from = `"Test" <${process.env.MAIL_LOGIN || 'manager@sociopath-network.ru'}>`
-            console.log('from', from);
-            console.log('to', params.to);
-            console.log('subject', params.subject);
+         
 
             const emailsList: string[] = params.to;
 
