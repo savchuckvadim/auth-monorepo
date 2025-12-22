@@ -2,6 +2,7 @@
 import { Injectable, OnModuleDestroy, Logger } from '@nestjs/common';
 import Redis from 'ioredis';
 import { ConfigService } from '@nestjs/config';
+import { createRedisOptions } from './redis.config';
 
 @Injectable()
 export class RedisService implements OnModuleDestroy {
@@ -10,17 +11,8 @@ export class RedisService implements OnModuleDestroy {
 
     constructor(private readonly configService: ConfigService) {
         this.logger.log('Создание Redis клиента...');
-        const redisUrl = this.configService.get<string>('REDIS_URL');
-        if (!redisUrl) {
-            console.error('REDIS_URL не задан');
 
-        }
-        const host = this.configService.get<string>('REDIS_HOST') ?? 'redis';
-        const port = parseInt(
-            this.configService.get<string>('REDIS_PORT') ?? '6379',
-            10,
-        );
-
+        const { url: redisUrl, host, port, connectTimeout, maxRetriesPerRequest } = createRedisOptions(this.configService);
         this.logger.log(`Получены настройки Redis из конфига:`);
         this.logger.log(`REDIS_HOST: ${host}`);
         this.logger.log(`REDIS_PORT: ${port}`);
@@ -36,8 +28,8 @@ export class RedisService implements OnModuleDestroy {
                     this.logger.log(`Повторная попытка через ${delay}ms`);
                     return delay;
                 },
-                maxRetriesPerRequest: 3,
-                connectTimeout: 10000,
+                maxRetriesPerRequest,
+                connectTimeout,
             });
 
         } else {
@@ -51,8 +43,8 @@ export class RedisService implements OnModuleDestroy {
                     );
                     return delay;
                 },
-                maxRetriesPerRequest: 3,
-                connectTimeout: 10000,
+                maxRetriesPerRequest,
+                connectTimeout,
             });
         }
         this.client.on('connect', () => {
