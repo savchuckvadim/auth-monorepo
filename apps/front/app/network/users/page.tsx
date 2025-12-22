@@ -2,6 +2,7 @@
 export const dynamic = 'force-dynamic';
 
 
+import { useApp } from "@/modules/app";
 import { Users } from "@/modules/entities/user";
 import { useAuth } from "@/modules/processes";
 import { LoadingScreen } from "@/modules/shared";
@@ -9,7 +10,8 @@ import { LoadingScreen } from "@/modules/shared";
 
 export default function NetworkUsersage() {
     const { currentUser } = useAuth();
-    if (!currentUser || !currentUser?.id) {
+    const { isClient } = useApp();
+    if (!currentUser || !currentUser?.id || !isClient) {
         return <LoadingScreen />
     }
 

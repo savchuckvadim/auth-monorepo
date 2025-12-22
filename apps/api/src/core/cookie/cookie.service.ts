@@ -50,9 +50,10 @@ export class CookieService {
 
     clearAuthCookies(res: Response) {
 
-        //для clear не передавать maxAge
-        res.clearCookie(this.ACCESS_COOKIE_NAME, this.getCookieOptions());
-        res.clearCookie(this.REFRESH_COOKIE_NAME, this.getCookieOptions());
+        const options = this.getCookieOptions(); // БЕЗ maxAge
+
+        res.clearCookie(this.ACCESS_COOKIE_NAME, options);
+        res.clearCookie(this.REFRESH_COOKIE_NAME, options);
     }
 
     getRefreshToken(req: Request) {

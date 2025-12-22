@@ -8,6 +8,7 @@ import React from 'react';
 import { useAuth } from '@/modules/processes';
 import { LoadingScreen } from '@/modules/shared';
 import { User } from '@/modules/entities/user';
+import { useApp } from '@/modules/app';
 
 
 
@@ -15,7 +16,8 @@ import { User } from '@/modules/entities/user';
 
 export default function NetworkProfilePage() {
     const { currentUser } = useAuth();
-    if (!currentUser || !currentUser?.id) {
+    const { isClient } = useApp();
+    if (!currentUser || !currentUser?.id || !isClient) {
         return <LoadingScreen />
     }
 
