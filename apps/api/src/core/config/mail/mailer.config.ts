@@ -7,7 +7,12 @@ export function getMailerConfig(configService: ConfigService): MailerOptions {
 
     const mode = configService.getOrThrow<string>('NODE_ENV');
     const isProd = mode != 'development';
+    console.log('isProd', isProd);
+    console.log('mode', mode);
     const secure = isProd ? true : false;
+    console.log('secure', secure);
+
+
     return {
         transport: {
             host: configService.getOrThrow<string>('MAIL_HOST'),
