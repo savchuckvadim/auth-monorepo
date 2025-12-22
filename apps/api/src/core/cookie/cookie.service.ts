@@ -18,8 +18,7 @@ export class CookieService {
     private getCookieOptions(maxAge?: 'access' | 'refresh'): CookieOptions {
         const domain = this.configService.get('CLIENT_DOMAIN');
         const isProd = this.isProd();
-        console.log('isProd', isProd);
-        console.log('domain', domain);
+
         const options: CookieOptions = {
             httpOnly: true,
             secure: isProd,
@@ -52,8 +51,8 @@ export class CookieService {
     clearAuthCookies(res: Response) {
 
         //для clear не передавать maxAge
-        res.clearCookie(this.ACCESS_COOKIE_NAME);
-        res.clearCookie(this.REFRESH_COOKIE_NAME);
+        res.clearCookie(this.ACCESS_COOKIE_NAME, this.getCookieOptions());
+        res.clearCookie(this.REFRESH_COOKIE_NAME, this.getCookieOptions());
     }
 
     getRefreshToken(req: Request) {
