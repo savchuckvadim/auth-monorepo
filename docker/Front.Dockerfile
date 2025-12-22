@@ -44,7 +44,7 @@ COPY --from=base /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
 COPY --from=base /app/packages ./packages
 COPY --from=base /app/apps/${APP}/public ./public
 COPY --from=base /app/apps/${APP}/next.config.js ./next.config.js
-COPY --from=base /app/apps/${APP}/.env ./.env
+# COPY --from=base /app/apps/${APP}/.env ./.env
 
 
 # Установка PNPM и зависимостей
