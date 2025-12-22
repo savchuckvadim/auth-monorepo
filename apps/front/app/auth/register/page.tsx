@@ -1,10 +1,15 @@
 'use client';
-import { RegistrationForm } from "@/modules/processes/auth";
+
 import { Card, CardHeader } from "@workspace/ui/components/card";
 import { CardTitle } from "@workspace/ui/components/card";
 import { CardDescription } from "@workspace/ui/components/card";
 import { CardContent } from "@workspace/ui/components/card";
+import dynamic from "next/dynamic";
 
+const DynamicRegistrationForm = dynamic(() => import('@/modules/processes/auth/ui/RegistredForm/RegistredForm')
+    .then(mod => mod.RegistrationForm), {
+    ssr: false,
+});
 
 export default function Page() {
     return (
@@ -16,7 +21,7 @@ export default function Page() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <RegistrationForm />
+                <DynamicRegistrationForm />
             </CardContent>
         </Card>
     );
