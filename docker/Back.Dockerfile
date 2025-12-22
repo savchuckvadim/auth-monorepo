@@ -23,6 +23,6 @@ RUN pnpm --filter back exec prisma generate
 # Строим только API
 RUN pnpm --filter back build
 
-EXPOSE 3000
+EXPOSE 7000
 CMD ["node", "apps/api/dist/main"]
 

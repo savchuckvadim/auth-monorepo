@@ -54,6 +54,8 @@ RUN pnpm install --prod --no-frozen-lockfile && \
 
 
 # Запуск NextJS
+EXPOSE 7001
+
 CMD ["pnpm", "start"]
 
 
