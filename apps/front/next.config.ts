@@ -11,15 +11,7 @@ for (const envVar of requiredEnvVars) {
 }
 
 const nextConfig: NextConfig = {
-    //for debug on prod build
-    // webpack(config, { dev, isServer }) {
-    //     if (!dev) {
-    //         config.optimization.minimize = false;
-    //     }
-    //     return config;
-    // },
-    // reactStrictMode: true,
-    // Next.js автоматически встраивает переменные с префиксом NEXT_PUBLIC_ в клиентский код
+
     env: {
         NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     },

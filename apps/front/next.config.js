@@ -1,17 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
 
-
-    //for debug
-    // webpack(config, { dev, isServer }) {
-    //     if (!dev) {
-    //         config.optimization.minimize = false;
-    //     }
-    //     return config;
-    // },
-    // reactStrictMode: true,
-
-
     env: {
         NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     },
