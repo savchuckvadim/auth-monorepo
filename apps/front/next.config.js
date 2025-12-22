@@ -2,14 +2,14 @@
 const nextConfig = {
 
 
-    //for debug 
-    webpack(config, { dev, isServer }) {
-        if (!dev) {
-            config.optimization.minimize = false;
-        }
-        return config;
-    },
-    reactStrictMode: true,
+    //for debug
+    // webpack(config, { dev, isServer }) {
+    //     if (!dev) {
+    //         config.optimization.minimize = false;
+    //     }
+    //     return config;
+    // },
+    // reactStrictMode: true,
 
 
     env: {
