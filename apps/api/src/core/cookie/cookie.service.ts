@@ -16,7 +16,7 @@ export class CookieService {
         return this.configService.get('NODE_ENV') === 'production';
     }
     private getCookieOptions(maxAge?: 'access' | 'refresh'): CookieOptions {
-        const domain = this.configService.get('CLIENT_URL');
+        const domain = this.configService.get('CORS_ORIGIN');
         const isProd = this.isProd();
         console.log('isProd', isProd);
         console.log('domain', domain);
