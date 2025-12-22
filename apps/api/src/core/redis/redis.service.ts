@@ -10,7 +10,11 @@ export class RedisService implements OnModuleDestroy {
 
     constructor(private readonly configService: ConfigService) {
         this.logger.log('Создание Redis клиента...');
+        const redisUrl = this.configService.get<string>('REDIS_URL');
+        if (!redisUrl) {
+            console.error('REDIS_URL не задан');
 
+        }
         const host = this.configService.get<string>('REDIS_HOST') ?? 'redis';
         const port = parseInt(
             this.configService.get<string>('REDIS_PORT') ?? '6379',
@@ -23,20 +27,34 @@ export class RedisService implements OnModuleDestroy {
         this.logger.log(`process.env.REDIS_HOST: ${process.env.REDIS_HOST}`);
         this.logger.log(`process.env.REDIS_PORT: ${process.env.REDIS_PORT}`);
 
-        this.client = new Redis({
-            host,
-            port,
-            retryStrategy: times => {
-                const delay = Math.min(times * 50, 2000);
-                this.logger.log(
-                    `Повторная попытка подключения к Redis через ${delay}ms...`,
-                );
-                return delay;
-            },
-            maxRetriesPerRequest: 3,
-            connectTimeout: 10000,
-        });
+        if (redisUrl) {
+            this.logger.log(`Используем REDIS_URL`);
 
+            this.client = new Redis(redisUrl, {
+                retryStrategy: times => {
+                    const delay = Math.min(times * 50, 2000);
+                    this.logger.log(`Повторная попытка через ${delay}ms`);
+                    return delay;
+                },
+                maxRetriesPerRequest: 3,
+                connectTimeout: 10000,
+            });
+
+        } else {
+            this.client = new Redis({
+                host,
+                port,
+                retryStrategy: times => {
+                    const delay = Math.min(times * 50, 2000);
+                    this.logger.log(
+                        `Повторная попытка подключения к Redis через ${delay}ms...`,
+                    );
+                    return delay;
+                },
+                maxRetriesPerRequest: 3,
+                connectTimeout: 10000,
+            });
+        }
         this.client.on('connect', () => {
             this.logger.log('Redis подключён ✅');
         });
