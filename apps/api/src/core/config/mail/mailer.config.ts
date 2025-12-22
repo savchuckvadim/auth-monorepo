@@ -1,7 +1,6 @@
 import type { MailerOptions } from '@nestjs-modules/mailer'
-import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter'
 import { ConfigService } from '@nestjs/config'
-import path from 'path'
+
 
 export function getMailerConfig(configService: ConfigService): MailerOptions {
 

@@ -1,5 +1,5 @@
 // src/common/services/cookie.service.ts
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CookieOptions, Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 
@@ -16,12 +16,15 @@ export class CookieService {
         return this.configService.get('NODE_ENV') === 'production';
     }
     private getCookieOptions(maxAge?: 'access' | 'refresh'): CookieOptions {
-
+        const domain = this.configService.get('CLIENT_URL');
+        const isProd = this.isProd();
+        console.log('isProd', isProd);
+        console.log('domain', domain);
         const options: CookieOptions = {
             httpOnly: true,
-            secure: this.isProd(),
-            sameSite: this.isProd() ? 'none' : 'lax',
-            domain: this.isProd() ? '.example.ru' : 'localhost',
+            secure: isProd,
+            sameSite: isProd ? 'none' : 'lax',
+            domain: isProd ? domain : 'localhost',
             path: '/'
 
 
@@ -31,7 +34,7 @@ export class CookieService {
                 ? 15 * 60 * 1000  // 15 минут
                 : 30 * 24 * 60 * 60 * 1000 // 30 дней
 
-            //for test 
+            //for test
             // options.maxAge = maxAge === 'access'
             //     ? 1 * 60 * 1000  // 1 минут
             //     : 2 * 60 * 1000 //  2 минут
