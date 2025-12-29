@@ -36,4 +36,9 @@ export class UserService {
     public async getUsersByIds(ids: string[]): Promise<UserDto[]> {
         return (await this.repo.getByIds(ids)).map(user => new UserDto(user));
     }
+    public async deleteUser(id: string): Promise<void> {
+        return await this.repo.delete(id);
+    }
+
+
 }

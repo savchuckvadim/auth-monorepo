@@ -1,10 +1,8 @@
 import { Global, Module } from '@nestjs/common';
 import { MailService } from './services/mail.service';
 import { MailerModule } from '@nestjs-modules/mailer';
-
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getMailerConfig } from '@/core/config/mail/mailer.config';
-import { BullModule } from '@nestjs/bull';
 import { SendMailActivationLinkUseCase } from './use-cases/send-activation-link.use-case';
 import { QueueModule } from '@/core/queue';
 import { MailProcessor } from './queue/mail.processor';

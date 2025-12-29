@@ -1,10 +1,16 @@
 'use client';
 
+import { useApp } from "@/modules/app";
+import { LoadingScreen } from "@/modules/shared";
 import { Badge } from "@workspace/ui/components/badge";
 import { Users } from "lucide-react";
 
 
 export default function Layout({ children }: { children: React.ReactNode }) {
+    const { isClient } = useApp();
+    if (!isClient) {
+        return <LoadingScreen />
+    }
     return (
         <>
 
@@ -42,7 +48,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
                     {children}
 
+                    <div className="text-center mb-12">
+                        <h1 className="text-3xl font-bold text-foreground mb-4">
+                            Аутентификация и Регистрация
+                        </h1>
 
+                    </div>
                 </div>
             </div>
         </>

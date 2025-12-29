@@ -4,7 +4,11 @@ import { useApp } from '../lib/hooks/app';
 import { LoadingScreen } from '@/modules/shared';
 
 export const App = ({ children }: { children: React.ReactNode }) => {
-    const {  isLoading} = useApp();
+    const { isLoading, isClient } = useApp();
+
+    if (!isClient) {
+        return <LoadingScreen />
+    }
 
     return (
         <div className="h-calc(100vh - 300px)">

@@ -38,7 +38,7 @@ export class AccessTokenGuard implements CanActivate {
             throw new UnauthorizedException('Invalid access token');
         }
         (req as any).user = user;
-        console.log('user in guard', user);
+
         return true;
 
 

@@ -13,10 +13,12 @@
             "outputs": [
                 ".next/**",
                 "!.next/cache/**",
-                "src/generated/**"
+                "src/generated/**",
+                "dist/**"
             ],
             "env": [
-                "REDIS_HOST"
+                "REDIS_HOST",
+                "NEXT_PUBLIC_API_URL"
             ]
         },
         "lint": {

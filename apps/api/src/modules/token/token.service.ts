@@ -47,7 +47,7 @@ export class TokenService {
 
     public async validateRefreshToken(refreshToken: string): Promise<TokenPayloadDto | null> {
         const userData = await this.jwtService.verify(refreshToken, { secret: this.configService.get('JWT_REFRESH_SECRET') });
-        console.log('userData in validateRefreshToken', userData);
+        
         return userData || null;
     }
 }

@@ -1,8 +1,15 @@
 import axios, { Method } from 'axios';
 
+// URL бэкенда из переменной окружения
+// Для Next.js используем NEXT_PUBLIC_ префикс (доступно в браузере)
+// Next.js встраивает NEXT_PUBLIC_ переменные в код во время сборки как строковые литералы
+// В браузере process.env.NEXT_PUBLIC_API_URL будет заменен на реальное значение во время сборки
+// ХАРДКОД
+// В браузере Next.js заменяет process.env.NEXT_PUBLIC_API_URL на строковое значение
+// Если переменная не установлена, используется дефолт
+const url = 'https://api.sociopath-network.ru';
 
 
-const url = `http://localhost:3000`;
 const AUTH_TOKEN_NAME = 'accessToken';
 
 export interface IBackResponse<T> {
@@ -26,6 +33,8 @@ const $api = axios.create({
     withCredentials: true,
     headers: headers,
 });
+
+// ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА - логируем baseURL при создании инстанса
 // // // 🔐 автоматически добавляем JWT
 // $api.interceptors.request.use((config) => {
 //     const token = localStorage.getItem(AUTH_TOKEN_NAME);

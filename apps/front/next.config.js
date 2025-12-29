@@ -1,16 +1,5 @@
-import type { NextConfig } from 'next';
-
-// Проверяем наличие обязательных переменных окружения
-// NEXT_PUBLIC_ префикс обязателен для переменных, доступных в браузере
-const requiredEnvVars = ['NEXT_PUBLIC_API_URL'];
-for (const envVar of requiredEnvVars) {
-    if (!process.env[envVar]) {
-        console.error(`Missing required environment variable: ${envVar}`);
-        throw new Error(`Missing required environment variable: ${envVar}`);
-    }
-}
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
 
     env: {
         NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
@@ -28,6 +17,6 @@ const nextConfig: NextConfig = {
         // Принудительно пересобираем transpiled пакеты при каждой сборке
         optimizePackageImports: ['@workspace/nest-api'],
     },
-};
+}
 
-export default nextConfig;
+export default nextConfig
