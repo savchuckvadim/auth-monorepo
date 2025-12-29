@@ -5,6 +5,7 @@ import { CreateUserDto } from "./user.dto";
 import { hash } from "bcrypt";
 import { randomUUID } from "crypto";
 import { UserRepository } from "./user.repository";
+import { UserWithFollowStatusType } from "./user.type";
 
 
 
@@ -12,8 +13,31 @@ import { UserRepository } from "./user.repository";
 export class UserPrismaRepository implements UserRepository {
     constructor(private readonly prisma: PrismaService) { }
 
-    public async getAll(): Promise<User[]> {
-        return this.prisma.user.findMany();
+    public async getAll(currentUserId: string): Promise<UserWithFollowStatusType[]> {
+        const users = await this.prisma.user.findMany({
+            where: {
+                id: {
+                    not: currentUserId,
+                }
+            },
+            include: {
+                followers: true,
+                following: true,
+            }
+        });
+        return users.map((user) => {
+
+            const isFollowing = user.following.some(follower => follower.followerId === currentUserId);
+            const isFollower = user.followers.some(following => following.followingId === currentUserId);
+            const isFriend = isFollowing && isFollower;
+
+            return {
+                ...user,
+                isFollowing,
+                isFollower,
+                isFriend,
+            };
+        });
     }
 
     public async getByIds(ids: string[]): Promise<User[]> {

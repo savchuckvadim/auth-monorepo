@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Button } from "@workspace/ui/components/button";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { UserCard } from "./UserCard";
 
 export const Users = ({ userId }: { userId: string }) => {
     const { users } = useUser(userId);
@@ -33,7 +34,8 @@ export const Users = ({ userId }: { userId: string }) => {
                     {
                         filteredUsers?.map((user) => (
                             <div key={user.id}>
-                                <Card>
+                                <UserCard user={user} />
+                                {/* <Card>
                                     <CardHeader>
                                         <CardTitle>{user.name}</CardTitle>
                                         <CardDescription>{user.email}</CardDescription>
@@ -45,7 +47,7 @@ export const Users = ({ userId }: { userId: string }) => {
 
                                         </Badge>
                                     </CardContent>
-                                </Card>
+                                </Card> */}
                             </div>
                         ))
                     }

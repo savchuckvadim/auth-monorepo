@@ -21,8 +21,8 @@ export class UserService {
         return compare(password, hashedPassword);
     }
 
-    public async getAllUsers(): Promise<UserDto[]> {
-        return (await this.repo.getAll()).map(user => new UserDto(user));
+    public async getAllUsers(currentUserId: string): Promise<UserDto[]> {
+        return (await this.repo.getAll(currentUserId)).map(user => new UserDto(user));
     }
 
     public async createUser(user: CreateUserDto): Promise<UserDto> {

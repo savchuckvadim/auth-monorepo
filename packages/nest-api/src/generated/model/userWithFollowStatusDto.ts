@@ -7,5 +7,16 @@
  */
 
 export interface UserWithFollowStatusDto {
-    [key: string]: unknown;
+    /** ID */
+    id: string;
+    /** Name */
+    name: string;
+    /** Email */
+    email: string;
+    /** Is Following */
+    isFollowing: boolean;
+    /** Is Follower */
+    isFollower: boolean;
+    /** Is Friend */
+    isFriend: boolean;
 }

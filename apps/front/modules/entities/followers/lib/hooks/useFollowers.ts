@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { getFollowers } from '@workspace/nest-api';
+import { getFollowers, UserDto, UserWithFollowStatusDto } from '@workspace/nest-api';
 import { useAuth } from '@/modules/processes';
 
 const followersApi = getFollowers();
@@ -7,7 +7,7 @@ const followersApi = getFollowers();
 export const useAllUsers = () => {
     const { currentUser } = useAuth();
 
-    return useQuery({
+    return useQuery<UserWithFollowStatusDto[]>({
         queryKey: ['followers', 'users'],
         queryFn: () => followersApi.followersGetAllUsers(),
         enabled: !!currentUser?.id,
@@ -59,8 +59,21 @@ export const useFollow = () => {
 
     return useMutation({
         mutationFn: (userId: string) => followersApi.followersFollow(userId),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['followers'] });
+        onSuccess: (_, userId) => {
+            queryClient.setQueryData<UserDto[]>(
+                ['users'],
+                (users) =>
+                    users?.map(user => {
+
+                        const result = user.id === userId
+                            ? { ...user, isFollowing: true, isFriend: user.isFollower }
+                            : user
+                        debugger
+                        return result
+
+                    }
+                    )
+            );
         },
     });
 };
@@ -70,8 +83,16 @@ export const useUnfollow = () => {
 
     return useMutation({
         mutationFn: (userId: string) => followersApi.followersUnfollow(userId),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['followers'] });
+        onSuccess: (_, userId) => {
+            queryClient.setQueryData<UserDto[]>(
+                ['users'],
+                (users) =>
+                    users?.map(user =>
+                        user.id === userId
+                            ? { ...user, isFollowing: false, isFriend: false }
+                            : user
+                    )
+            );
         },
     });
 };

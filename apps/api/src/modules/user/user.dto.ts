@@ -2,6 +2,7 @@ import { IsPassword } from "@/core/decorators/dto/password.decorator";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsBoolean, IsDate, IsEmail, IsEnum, IsString } from "class-validator";
 import { Token, User, user_roles } from "generated/prisma";
+import { UserWithFollowStatusType } from "./user.type";
 
 
 
@@ -25,13 +26,16 @@ export class CreateUserDto {
 
 
 export class UserDto implements Partial<User> {
-    constructor(user: User) {
+    constructor(user: UserWithFollowStatusType) {
         this.id = user.id;
         this.email = user.email;
         this.name = user.name;
         this.activationLink = user.activationLink;
         this.role = user.role;
         this.isAcivated = user.isAcivated;
+        this.isFollowing = user.isFollowing || false;
+        this.isFollower = user.isFollower || false;
+        this.isFriend = user.isFriend || false;
     }
 
     @ApiProperty({ description: 'ID', example: '1' })
@@ -58,6 +62,20 @@ export class UserDto implements Partial<User> {
     @ApiProperty({ description: 'Is Activated', example: true })
     @IsBoolean({ message: 'IsActivated must be a boolean' })
     isAcivated: boolean;
+
+
+    @ApiProperty({ description: 'Is Following', example: true, type: Boolean })
+    @IsBoolean({ message: 'IsFollowing must be a boolean' })
+    isFollowing: boolean;
+
+
+    @ApiProperty({ description: 'Is Follower', example: true, type: Boolean })
+    @IsBoolean({ message: 'IsFollower must be a boolean' })
+    isFollower: boolean;
+
+    @ApiProperty({ description: 'Is Friend', example: true, type: Boolean })
+    @IsBoolean({ message: 'IsFriend must be a boolean' })
+    isFriend: boolean;
 
 }
 

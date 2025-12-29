@@ -13,16 +13,18 @@ const DynamicRegistrationForm = dynamic(() => import('@/modules/processes/auth/u
 
 export default function Page() {
     return (
-        <Card className="max-w-2xl mx-auto">
-            <CardHeader>
-                <CardTitle className="text-center">Вход в систему</CardTitle>
-                <CardDescription className="text-center">
-                    Зарегистрируйтесь в системе
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <DynamicRegistrationForm />
-            </CardContent>
-        </Card>
+        <div className="flex w-full flex-row justify-center items-start pt-30">
+            <Card className="w-full max-w-2xl mx-auto">
+                <CardHeader>
+                    <CardTitle className="text-center">Вход в систему</CardTitle>
+                    <CardDescription className="text-center">
+                        Зарегистрируйтесь в системе
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <DynamicRegistrationForm />
+                </CardContent>
+            </Card>
+        </div>
     );
 }

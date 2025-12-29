@@ -15,7 +15,9 @@ export class UserAdminController {
     @ApiResponse({ status: 200, description: 'Users list', type: [UserDto] })
     @Get()
     async getAllUsers(): Promise<UserDto[]> {
-        return await this.service.getAllUsers();
+        const currentUserId = '1';
+   
+        return await this.service.getAllUsers(currentUserId);
     }
 
     @ApiOperation({ summary: 'Get user by id' })

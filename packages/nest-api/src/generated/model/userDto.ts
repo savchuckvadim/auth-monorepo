@@ -19,4 +19,10 @@ export interface UserDto {
     role: string;
     /** Is Activated */
     isAcivated: boolean;
+    /** Is Following */
+    isFollowing: boolean;
+    /** Is Follower */
+    isFollower: boolean;
+    /** Is Friend */
+    isFriend: boolean;
 }

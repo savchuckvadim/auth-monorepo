@@ -7,8 +7,10 @@ import React from 'react';
 
 import { useAuth } from '@/modules/processes';
 import { LoadingScreen } from '@/modules/shared';
-import { User } from '@/modules/entities/user';
+
 import { useApp } from '@/modules/app';
+import { ProfileInformation, Post } from '@/modules/widgetes';
+import { div } from 'framer-motion/client';
 
 
 
@@ -22,7 +24,31 @@ export default function NetworkProfilePage() {
     }
 
     return (
-        <User userId={currentUser.id!} />
+        <div className='w-full flex flex-col gap-4 pt-25'>
+            <ProfileInformation />
+            <div className='mt-10 '>
+                <Post />
+                <Post />
+                <Post />
+            </div>
+
+        </div>
+
+        // <div className='flex flex-row gap-4'>
+        //     <div className='w-1/3 flex flex-col gap-4 pt-15'>
+        //     навигация слева
+        //     </div>
+        //     <div className='w-full flex flex-col gap-4 pt-25'>
+        //         <ProfileInformation />
+        //         <div className='mt-10 '>
+        //             <Post />
+        //             <Post />
+        //             <Post />
+        //         </div>
+
+        //     </div>
+        // </div>
+
     );
 }
 

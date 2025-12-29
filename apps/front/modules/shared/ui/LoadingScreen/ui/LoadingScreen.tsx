@@ -1,50 +1,49 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import './loading.css';
 
-import { usePace } from '../hooks/usePace';
-import GradientText from '@workspace/ui/components/GradientText';
-
-
+import Image from 'next/image';
 export const LoadingScreen = () => {
     const [isVisible, setIsVisible] = useState(true);
 
-    usePace();
     useEffect(() => {
         const timer = setTimeout(() => {
             setIsVisible(false);
-        }, 2000); // 3 секунды прелоадер
+        }, 3000); // 3 секунды прелоадер
 
         return () => clearTimeout(timer);
     }, []);
 
     return (
-        <div className="">
+        <div className="bg-white">
+            {isVisible &&
 
-            {isVisible && (
-                <div
+                (
+                    <motion.div
+                        className="loading-screen bg-foreground"
+                        initial={{ opacity: 1 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.5, ease: 'easeInOut' }}
+                    >
+                        <div className="center-spinner color-primary flex flex-col justify-center items-center">
 
-                >
-                    <div className="bg-gray-700 center-spinner flex flex-col justify-center items-center h-full w-full">
+                            <Image
+                                src="/logo.svg"
+                                alt="Logo"
+                                width={120}
+                                height={85}
+                                className="backgound:invert"
+                                priority
+                            />
+                            <p className='text-primary'>Loading...</p>
+                        </div>
 
 
-                        <GradientText
-                            colors={['#bb52d4', '#30c3ef', '#bb52d4', '#30c3ef',]}
-                        >   <p className="mt-1 text-md tracking-widest font-bold ">
-                                Загрузка...
-                            </p>
-                        </GradientText>
-
-                    </div>
-
-
-
-                </div>
-            )}
+                    </motion.div>
+                )}
         </div>
     );
 };
-
-
-

@@ -1,5 +1,7 @@
 import { ChatDto, ChatMemberDto, CreateChatDto } from "@workspace/nest-api";
 
+export type { ChatMemberDto };
+
 export enum ChatType {
     PRIVATE = 'PRIVATE',
     GROUP = 'GROUP',

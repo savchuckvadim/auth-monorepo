@@ -23,5 +23,6 @@ export * from './telegramSendMessageDto';
 export * from './telegramSendMessageDtoApp';
 export * from './tokensDto';
 export * from './updateChatDto';
+export * from './userBasicDto';
 export * from './userDto';
 export * from './userWithFollowStatusDto';

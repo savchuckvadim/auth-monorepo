@@ -1,9 +1,11 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, ForbiddenException, Get, Param, Post, UseGuards } from "@nestjs/common";
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { UserService } from "./user.service";
 
 import { AccessTokenGuard } from "@/core/guards/access-token.guard";
 import { UserDto } from "./user.dto";
+import { CurrentUser } from "@/core/decorators/auth/current-user.decorator";
+import { TokenPayloadDto } from "../token";
 
 
 @UseGuards(AccessTokenGuard) // защита всех эндпоинтов этого контроллера
@@ -13,13 +15,16 @@ export class UserController {
     constructor(
         private readonly service: UserService,
     ) { }
-    
+
 
     @ApiOperation({ summary: 'Get all users' })
     @ApiResponse({ status: 200, description: 'Users list', type: [UserDto] })
     @Get()
-    async getAllUsers() {
-        return await this.service.getAllUsers();
+    async getAllUsers(@CurrentUser() user: TokenPayloadDto) {
+        if (!user?.userId) {
+            throw new ForbiddenException('User not authenticated');
+        }
+        return await this.service.getAllUsers(user.userId);
     }
 
     @ApiOperation({ summary: 'Get user by id' })

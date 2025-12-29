@@ -5,7 +5,19 @@
  * API for auth backend for monorepo
  * OpenAPI spec version: 1.0
  */
+import type { UserBasicDto } from './userBasicDto';
 
 export interface FollowDto {
-    [key: string]: unknown;
+    /** ID */
+    id: string;
+    /** Follower ID */
+    followerId: string;
+    /** Following ID */
+    followingId: string;
+    /** Created At */
+    createdAt: string;
+    /** Follower */
+    follower: UserBasicDto;
+    /** Following */
+    following: UserBasicDto;
 }

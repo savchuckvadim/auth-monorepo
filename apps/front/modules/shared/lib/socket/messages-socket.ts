@@ -6,15 +6,16 @@ export const connectMessagesSocket = (userId: string): Socket => {
     if (socket?.connected) {
         return socket;
     }
-
-    socket = io(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/messages`, {
+    const socketUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/messages`;
+    debugger
+    socket = io(socketUrl, {
         query: {
             userId,
         },
         transports: ['websocket'],
         withCredentials: true, // Важно для отправки cookies (httpOnly cookies отправятся автоматически)
     });
-
+    debugger
     // Логирование событий для отладки
     socket.on('connect', () => {
         console.log('🔌 Messages WebSocket connected');
@@ -25,6 +26,7 @@ export const connectMessagesSocket = (userId: string): Socket => {
     });
 
     socket.on('connect_error', (error) => {
+        debugger
         console.error('❌ Messages WebSocket connection error:', error);
     });
 
@@ -32,7 +34,9 @@ export const connectMessagesSocket = (userId: string): Socket => {
 };
 
 export const disconnectMessagesSocket = () => {
+
     if (socket) {
+        debugger
         socket.disconnect();
         socket = null;
     }
