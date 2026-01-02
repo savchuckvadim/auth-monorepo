@@ -40,6 +40,7 @@ export const useCallEngine = (
     const isProcessingIncomingCallRef = useRef(false);
     const processedAnswerRef = useRef<string | null>(null); // Для защиты от повторной обработки answer
     const processedIncomingCallRef = useRef<string | null>(null); // Для защиты от повторной обработки incoming call
+    const iceCandidateBufferRef = useRef<RTCIceCandidateInit[]>([]); // Буфер для ICE candidates, которые пришли до установки remote description
 
     // ---------- socket init ----------
     useEffect(() => {
@@ -212,6 +213,7 @@ export const useCallEngine = (
         // Сбрасываем флаги обработанных событий для нового звонка
         processedAnswerRef.current = null;
         processedIncomingCallRef.current = null;
+        iceCandidateBufferRef.current = []; // Очищаем буфер ICE candidates
 
         console.log('🔄 [ACCEPT CALL] Recreating peer connection');
         peerService.recreate();
@@ -292,6 +294,27 @@ export const useCallEngine = (
             sendersCount: peerService.connection?.getSenders().length || 0
         });
 
+        // ВАЖНО: После getAnswer remote description (offer) уже установлен
+        // Добавляем все буферизованные ICE candidates
+        if (iceCandidateBufferRef.current.length > 0) {
+            console.log('📦 [ACCEPT CALL] Processing buffered ICE candidates after getAnswer', {
+                count: iceCandidateBufferRef.current.length
+            });
+            const bufferedCandidates = [...iceCandidateBufferRef.current];
+            iceCandidateBufferRef.current = []; // Очищаем буфер
+
+            for (const candidate of bufferedCandidates) {
+                try {
+                    peerService.connection!.addIceCandidate(candidate);
+                    console.log('✅ [ACCEPT CALL] Buffered ICE candidate added', {
+                        candidate: candidate.candidate?.substring(0, 50)
+                    });
+                } catch (error: any) {
+                    console.error('❌ [ACCEPT CALL] Error adding buffered ICE candidate:', error);
+                }
+            }
+        }
+
         console.log('📤 [ACCEPT CALL] Sending call:accepted', {
             to: from,
             fromSocketId: socket.id,
@@ -365,6 +388,7 @@ export const useCallEngine = (
         // Сбрасываем флаги обработанных событий для нового звонка
         processedAnswerRef.current = null;
         processedIncomingCallRef.current = null;
+        iceCandidateBufferRef.current = []; // Очищаем буфер ICE candidates
 
         console.log('📞 [OUTGOING CALL] Initiating call', {
             type,
@@ -596,6 +620,26 @@ export const useCallEngine = (
                 iceGatheringState: peerService.connection.iceGatheringState
             });
 
+            // ВАЖНО: После установки remote description добавляем все буферизованные ICE candidates
+            if (iceCandidateBufferRef.current.length > 0) {
+                console.log('📦 [CALL ACCEPTED] Processing buffered ICE candidates', {
+                    count: iceCandidateBufferRef.current.length
+                });
+                const bufferedCandidates = [...iceCandidateBufferRef.current];
+                iceCandidateBufferRef.current = []; // Очищаем буфер
+
+                for (const candidate of bufferedCandidates) {
+                    try {
+                        peerService.connection!.addIceCandidate(candidate);
+                        console.log('✅ [CALL ACCEPTED] Buffered ICE candidate added', {
+                            candidate: candidate.candidate?.substring(0, 50)
+                        });
+                    } catch (error: any) {
+                        console.error('❌ [CALL ACCEPTED] Error adding buffered ICE candidate:', error);
+                    }
+                }
+            }
+
             // Проверяем, есть ли уже треки в соединении
             const receivers = peerService.connection.getReceivers();
             console.log('📊 [CALL ACCEPTED] Current receivers', {
@@ -825,6 +869,24 @@ export const useCallEngine = (
                 console.log('✅ [PEER NEGO DONE] Remote description set', {
                     newSignalingState: peerService.connection.signalingState
                 });
+
+                // ВАЖНО: После установки remote description добавляем все буферизованные ICE candidates
+                if (iceCandidateBufferRef.current.length > 0) {
+                    console.log('📦 [PEER NEGO DONE] Processing buffered ICE candidates', {
+                        count: iceCandidateBufferRef.current.length
+                    });
+                    const bufferedCandidates = [...iceCandidateBufferRef.current];
+                    iceCandidateBufferRef.current = []; // Очищаем буфер
+
+                    for (const candidate of bufferedCandidates) {
+                        try {
+                            peerService.connection!.addIceCandidate(candidate);
+                            console.log('✅ [PEER NEGO DONE] Buffered ICE candidate added');
+                        } catch (error: any) {
+                            console.error('❌ [PEER NEGO DONE] Error adding buffered ICE candidate:', error);
+                        }
+                    }
+                }
             } catch (error) {
                 console.error('❌ [PEER NEGO DONE] Error setting remote description:', error);
             }
@@ -844,19 +906,39 @@ export const useCallEngine = (
 
             const peer = peerService.connection;
             if (!peer) {
-                console.warn('⚠️ [SOCKET EVENTS] No peer connection for ICE candidate');
+                console.warn('⚠️ [SOCKET EVENTS] No peer connection for ICE candidate, buffering');
+                iceCandidateBufferRef.current.push(candidate);
+                return;
+            }
+
+            // ВАЖНО: Нельзя добавлять ICE candidates до установки remote description
+            const hasRemoteDescription = !!peer.remoteDescription;
+            if (!hasRemoteDescription) {
+                console.log('📦 [SOCKET EVENTS] Remote description not set yet, buffering ICE candidate', {
+                    signalingState: peer.signalingState,
+                    bufferedCount: iceCandidateBufferRef.current.length + 1
+                });
+                iceCandidateBufferRef.current.push(candidate);
                 return;
             }
 
             try {
-                console.log('➕ [SOCKET EVENTS] Adding ICE candidate to peer connection');
+                console.log('➕ [SOCKET EVENTS] Adding ICE candidate to peer connection', {
+                    signalingState: peer.signalingState,
+                    hasRemoteDescription: true
+                });
                 peer.addIceCandidate(candidate);
                 console.log('✅ [SOCKET EVENTS] ICE candidate added', {
                     signalingState: peer.signalingState,
                     iceConnectionState: peer.iceConnectionState
                 });
-            } catch (error) {
-                console.error('❌ [SOCKET EVENTS] Error adding ICE candidate:', error);
+            } catch (error: any) {
+                console.error('❌ [SOCKET EVENTS] Error adding ICE candidate:', {
+                    error: error.message,
+                    errorName: error.name,
+                    signalingState: peer.signalingState,
+                    hasRemoteDescription: !!peer.remoteDescription
+                });
             }
         });
         console.log('✅ [SOCKET EVENTS] Registered peer:ice-candidate handler');
