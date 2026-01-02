@@ -1,12 +1,14 @@
-
-export const dynamic = 'force-dynamic';
-
-
-
+'use client';
 import React from 'react';
-import { ProfileInformation, ProfilePosts } from '@/modules/widgetes';
+import dynamic from 'next/dynamic';
 
+const DynamicProfileInformation = dynamic(() => import('@/modules/widgetes/profile/information/ui/ProfileInformation').then(mod => mod.default), {
+    ssr: false
+});
 
+const DynamicProfilePosts = dynamic(() => import('@/modules/widgetes/profile/posts/ProfilePosts').then(mod => mod.default), {
+    ssr: false
+});
 
 
 
@@ -18,8 +20,8 @@ export default async function NetworkProfilePage({ params }: { params: Promise<{
 
     return (
         <div className='w-full flex flex-col gap-4 pt-25'>
-            <ProfileInformation userId={userId} />
-            <ProfilePosts userId={userId} />
+            <DynamicProfileInformation userId={userId} />
+            <DynamicProfilePosts userId={userId} />
 
         </div>
 

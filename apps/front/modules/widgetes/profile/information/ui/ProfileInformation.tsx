@@ -1,9 +1,9 @@
 'use client'
 import { useProfile } from '@/modules/entities/profile';
 import { useAuth } from '@/modules/processes';
-import { UserDto } from '@workspace/nest-api';
 import { Button } from '@workspace/ui/components/button';
 import Image from 'next/image'
+
 
 
 export default function ProfileInformation({ userId }: { userId: string }) {
