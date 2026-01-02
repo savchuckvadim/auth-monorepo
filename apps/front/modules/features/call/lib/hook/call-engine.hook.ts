@@ -38,6 +38,7 @@ export const useCallEngine = (
     const [isIncomingCall, setIsIncomingCall] = useState(false);
     const [incomingCallData, setIncomingCallData] = useState<IncomingCallData | null>(null);
     const isProcessingIncomingCallRef = useRef(false);
+    const processedAnswerRef = useRef<string | null>(null); // Для защиты от повторной обработки answer
 
     // ---------- socket init ----------
     useEffect(() => {
@@ -193,6 +194,9 @@ export const useCallEngine = (
         isProcessingIncomingCallRef.current = true;
         setIsIncomingCall(false);
 
+        // Сбрасываем флаг обработанного answer для нового звонка
+        processedAnswerRef.current = null;
+
         console.log('🔄 [ACCEPT CALL] Recreating peer connection');
         peerService.recreate();
         setRemoteSocketId(from);
@@ -342,6 +346,9 @@ export const useCallEngine = (
 
     // ---------- outgoing ----------
     const callUser = useCallback(async (offer: RTCSessionDescriptionInit, type: 'VIDEO' | 'AUDIO') => {
+        // Сбрасываем флаг обработанного answer для нового звонка
+        processedAnswerRef.current = null;
+
         console.log('📞 [OUTGOING CALL] Initiating call', {
             type,
             toUserId: otherUserId,
@@ -462,25 +469,61 @@ export const useCallEngine = (
 
     // ---------- call accepted handler ----------
     const handleCallAccepted = useCallback(({ ans }: CallAcceptedData) => {
+        // Создаем уникальный идентификатор для этого answer (используем первые 50 символов SDP)
+        const answerId = ans.sdp?.substring(0, 50) || '';
+
         console.log('✅ [CALL ACCEPTED] Received call:accepted', {
             answerType: ans.type,
             hasSdp: !!ans.sdp,
             hasPeer: !!peerService.connection,
             hasMyStream: !!media.myStream,
             peerSignalingState: peerService.connection?.signalingState,
-            peerConnectionState: peerService.connection?.connectionState
+            peerConnectionState: peerService.connection?.connectionState,
+            answerId,
+            alreadyProcessed: processedAnswerRef.current === answerId
         });
+
+        // Защита от повторной обработки того же answer
+        if (processedAnswerRef.current === answerId) {
+            console.log('⚠️ [CALL ACCEPTED] Answer already processed, skipping');
+            return;
+        }
 
         if (!peerService.connection) {
             console.error('❌ [CALL ACCEPTED] Peer connection not initialized');
             return;
         }
 
+        const peer = peerService.connection;
+
+        // Проверяем состояние peer connection перед установкой remote description
+        const currentState = peer.signalingState;
+        const hasRemoteDesc = !!peer.remoteDescription;
+
+        console.log('🔍 [CALL ACCEPTED] Checking peer connection state', {
+            signalingState: currentState,
+            hasRemoteDescription: hasRemoteDesc,
+            remoteDescriptionType: peer.remoteDescription?.type
+        });
+
+        // Если уже в stable и есть remote description, пропускаем
+        if (currentState === 'stable' && hasRemoteDesc) {
+            console.log('⚠️ [CALL ACCEPTED] Peer already in stable state with remote description, skipping setRemoteDescription');
+            // Помечаем как обработанный, но не устанавливаем remote description
+            processedAnswerRef.current = answerId;
+            setIsInCall(true);
+            return;
+        }
+
         try {
             console.log('📝 [CALL ACCEPTED] Setting remote description', {
-                beforeSignalingState: peerService.connection.signalingState,
+                beforeSignalingState: peer.signalingState,
                 answerSdpLength: ans.sdp?.length || 0
             });
+
+            // Помечаем как обработанный ДО установки, чтобы избежать повторных вызовов
+            processedAnswerRef.current = answerId;
+
             peerService.setRemoteDescription(ans);
             console.log('✅ [CALL ACCEPTED] Remote description set', {
                 afterSignalingState: peerService.connection.signalingState,
@@ -547,7 +590,12 @@ export const useCallEngine = (
                     });
                 }
             } else {
-                console.warn('⚠️ [CALL ACCEPTED] No myStream available to add tracks');
+                // Не предупреждаем, если треки уже есть в senders
+                if (existingSenders.length === 0) {
+                    console.warn('⚠️ [CALL ACCEPTED] No myStream available and no tracks in senders');
+                } else {
+                    console.log('✅ [CALL ACCEPTED] Tracks already present in senders, myStream not needed');
+                }
             }
 
             console.log('✅ [CALL ACCEPTED] Setting isInCall = true', {
@@ -616,7 +664,6 @@ export const useCallEngine = (
                 answerType: data.ans?.type,
                 hasSdp: !!data.ans?.sdp,
                 from: data.from,
-                fullData: data,
                 socketId: socket.id,
                 socketConnected: socket.connected,
                 timestamp: new Date().toISOString()
@@ -624,14 +671,6 @@ export const useCallEngine = (
             console.log('🔄 [SOCKET EVENTS] Calling handleCallAccepted');
             handleCallAccepted(data);
             console.log('✅ [SOCKET EVENTS] handleCallAccepted called');
-        });
-
-        // Дополнительное логирование: слушаем все события через once для отладки
-        socket.once('call:accepted', (data: any) => {
-            console.log('🔔 [SOCKET DEBUG] call:accepted event detected via once listener', {
-                hasData: !!data,
-                socketId: socket.id
-            });
         });
 
 
@@ -789,8 +828,10 @@ export const useCallEngine = (
             socket.removeAllListeners('peer:nego:done');
             socket.removeAllListeners('call:end');
             socket.removeAllListeners('call:initiated');
+            // Сбрасываем флаг обработанного answer при размонтировании
+            processedAnswerRef.current = null;
         };
-    }, [socket, onIncomingCall, handleCallAccepted, peerService, media, remoteSocketId]);
+    }, [socket, onIncomingCall, handleCallAccepted, peerService, media, remoteSocketId, isIncomingCall, incomingCallData]);
 
     const endCall = useCallback(() => {
         console.log('🛑 [END CALL] Ending call manually', {
