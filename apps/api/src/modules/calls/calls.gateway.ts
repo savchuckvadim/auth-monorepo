@@ -247,8 +247,24 @@ export class CallsGateway
             });
         }
 
+        return { success: true };
+    }
 
-        
+    @SubscribeMessage('peer:ice-candidate')
+    handlePeerIceCandidate(
+        @MessageBody() data: { to: string; candidate: RTCIceCandidateInit },
+        @ConnectedSocket() client: Socket,
+    ) {
+        const userId = this.onlineUsersService.getUserIdBySocketId(client.id);
+        if (!userId) {
+            return { error: 'Unauthorized' };
+        }
+
+        // Пересылаем ICE candidate другому пиру
+        this.server.to(data.to).emit('peer:ice-candidate', {
+            from: client.id,
+            candidate: data.candidate,
+        });
 
         return { success: true };
     }

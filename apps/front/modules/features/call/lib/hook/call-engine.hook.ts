@@ -39,6 +39,7 @@ export const useCallEngine = (
     const [incomingCallData, setIncomingCallData] = useState<IncomingCallData | null>(null);
     const isProcessingIncomingCallRef = useRef(false);
     const processedAnswerRef = useRef<string | null>(null); // Для защиты от повторной обработки answer
+    const processedIncomingCallRef = useRef<string | null>(null); // Для защиты от повторной обработки incoming call
 
     // ---------- socket init ----------
     useEffect(() => {
@@ -101,6 +102,9 @@ export const useCallEngine = (
 
     // ---------- incoming call ----------
     const onIncomingCall = useCallback(({ from, fromUserId, offer, type }: IncomingCallData) => {
+        // Создаем уникальный идентификатор для этого входящего звонка
+        const incomingCallId = `${from}-${offer.sdp?.substring(0, 50) || 'no-sdp'}`;
+
         console.log('📞 [INCOMING CALL] Received incoming call', {
             from,
             fromUserId,
@@ -109,14 +113,25 @@ export const useCallEngine = (
             hasSocket: !!socket,
             isProcessing: isProcessingIncomingCallRef.current,
             isInCall,
-            isIncomingCall
+            isIncomingCall,
+            incomingCallId,
+            alreadyProcessed: processedIncomingCallRef.current === incomingCallId
         });
+
+        // Защита от повторной обработки того же звонка
+        if (processedIncomingCallRef.current === incomingCallId) {
+            console.log('⚠️ [INCOMING CALL] Already processed, skipping');
+            return;
+        }
 
         // Защита от множественных вызовов
         if (isProcessingIncomingCallRef.current || isInCall || isIncomingCall) {
             console.log('⚠️ [INCOMING CALL] Already processing/in call, ignoring duplicate');
             return;
         }
+
+        // Помечаем как обработанный
+        processedIncomingCallRef.current = incomingCallId;
 
         if (!socket) {
             console.log('❌ [INCOMING CALL] Rejected - no socket');
@@ -194,8 +209,9 @@ export const useCallEngine = (
         isProcessingIncomingCallRef.current = true;
         setIsIncomingCall(false);
 
-        // Сбрасываем флаг обработанного answer для нового звонка
+        // Сбрасываем флаги обработанных событий для нового звонка
         processedAnswerRef.current = null;
+        processedIncomingCallRef.current = null;
 
         console.log('🔄 [ACCEPT CALL] Recreating peer connection');
         peerService.recreate();
@@ -346,8 +362,9 @@ export const useCallEngine = (
 
     // ---------- outgoing ----------
     const callUser = useCallback(async (offer: RTCSessionDescriptionInit, type: 'VIDEO' | 'AUDIO') => {
-        // Сбрасываем флаг обработанного answer для нового звонка
+        // Сбрасываем флаги обработанных событий для нового звонка
         processedAnswerRef.current = null;
+        processedIncomingCallRef.current = null;
 
         console.log('📞 [OUTGOING CALL] Initiating call', {
             type,
@@ -453,6 +470,53 @@ export const useCallEngine = (
         peer.onnegotiationneeded = null;
         console.log('✅ [NEGOTIATION] onnegotiationneeded disabled to prevent loops');
 
+        // КРИТИЧНО: Обработка ICE candidates для установки соединения
+        const handleIceCandidate = (event: RTCPeerConnectionIceEvent) => {
+            if (event.candidate) {
+                console.log('📡 [NEGOTIATION] ICE candidate found', {
+                    candidate: event.candidate.candidate,
+                    sdpMid: event.candidate.sdpMid,
+                    sdpMLineIndex: event.candidate.sdpMLineIndex
+                });
+                // Отправляем ICE-кандидата другому пиру
+                if (socket && remoteSocketId) {
+                    socket.emit('peer:ice-candidate', {
+                        to: remoteSocketId,
+                        candidate: event.candidate,
+                    });
+                }
+            } else {
+                console.log('📡 [NEGOTIATION] ICE gathering complete');
+            }
+        };
+        peer.onicecandidate = handleIceCandidate;
+
+        // Отслеживание состояния соединения
+        peer.onconnectionstatechange = () => {
+            console.log('🔄 [NEGOTIATION] Connection state changed', {
+                state: peer.connectionState,
+                iceConnectionState: peer.iceConnectionState,
+                iceGatheringState: peer.iceGatheringState,
+                signalingState: peer.signalingState
+            });
+        };
+
+        peer.oniceconnectionstatechange = () => {
+            console.log('🧊 [NEGOTIATION] ICE connection state changed', {
+                state: peer.iceConnectionState,
+                connectionState: peer.connectionState,
+                iceGatheringState: peer.iceGatheringState
+            });
+        };
+
+        peer.onicegatheringstatechange = () => {
+            console.log('📡 [NEGOTIATION] ICE gathering state changed', {
+                state: peer.iceGatheringState,
+                connectionState: peer.connectionState,
+                iceConnectionState: peer.iceConnectionState
+            });
+        };
+
         return () => {
             console.log('🧹 [NEGOTIATION] Cleaning up peer event handlers');
             peer.removeEventListener('track', handleTrack);
@@ -465,7 +529,7 @@ export const useCallEngine = (
             peer.onicegatheringstatechange = null;
             peer.onicecandidate = null;
         };
-    }, [peerService.connection, media.setRemoteStream]);
+    }, [peerService.connection, media.setRemoteStream, socket, remoteSocketId]);
 
     // ---------- call accepted handler ----------
     const handleCallAccepted = useCallback(({ ans }: CallAcceptedData) => {
@@ -768,6 +832,35 @@ export const useCallEngine = (
 
         console.log('✅ [SOCKET EVENTS] Registered peer:nego:done handler');
 
+        // КРИТИЧНО: Обработка входящих ICE candidates
+        socket.on('peer:ice-candidate', ({ from, candidate }: { from: string; candidate: RTCIceCandidateInit }) => {
+            console.log('📥 [SOCKET EVENTS] peer:ice-candidate received', {
+                from,
+                hasCandidate: !!candidate,
+                candidate: candidate?.candidate,
+                sdpMid: candidate?.sdpMid,
+                sdpMLineIndex: candidate?.sdpMLineIndex
+            });
+
+            const peer = peerService.connection;
+            if (!peer) {
+                console.warn('⚠️ [SOCKET EVENTS] No peer connection for ICE candidate');
+                return;
+            }
+
+            try {
+                console.log('➕ [SOCKET EVENTS] Adding ICE candidate to peer connection');
+                peer.addIceCandidate(candidate);
+                console.log('✅ [SOCKET EVENTS] ICE candidate added', {
+                    signalingState: peer.signalingState,
+                    iceConnectionState: peer.iceConnectionState
+                });
+            } catch (error) {
+                console.error('❌ [SOCKET EVENTS] Error adding ICE candidate:', error);
+            }
+        });
+        console.log('✅ [SOCKET EVENTS] Registered peer:ice-candidate handler');
+
         socket.on('call:end', ({ from }: CallEndData) => {
             console.log('📞 [CALL END] Received call:end', {
                 from,
@@ -828,8 +921,10 @@ export const useCallEngine = (
             socket.removeAllListeners('peer:nego:done');
             socket.removeAllListeners('call:end');
             socket.removeAllListeners('call:initiated');
-            // Сбрасываем флаг обработанного answer при размонтировании
+            socket.removeAllListeners('peer:ice-candidate');
+            // Сбрасываем флаги обработанных событий при размонтировании
             processedAnswerRef.current = null;
+            processedIncomingCallRef.current = null;
         };
     }, [socket, onIncomingCall, handleCallAccepted, peerService, media, remoteSocketId, isIncomingCall, incomingCallData]);
 
