@@ -9,17 +9,17 @@ export const metadata: Metadata = {
     description: "Sociopath authentication",
 };
 
-export default async function StartLayout({
+export default function StartLayout({
     children,
-    params,
+    // params,
 }: {
     children: React.ReactNode;
-    params: Promise<{ slug: string[] }>;
+    // params: Promise<{ slug: string[] }>;
 }) {
-    const param = await params
+    // const param = await params
     // const isAuthSubPage = pathname.split('/auth/')[1]?.length > 0;
     // console.log(isAuthSubPage)
-    console.log(param)
+    // console.log(param)
     return (
         <div className={`relative h-screen w-screen  flex items-center justify-center bg-mainBackground`}>
             {/* Фоновая картинка */}

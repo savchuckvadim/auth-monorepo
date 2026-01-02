@@ -1,4 +1,5 @@
 // useCallEngine.ts
+'use client';
 import {
     CallAcceptedData,
     CallEndData,

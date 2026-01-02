@@ -1,4 +1,5 @@
 // useCall.ts
+'use client';
 import { useCallMedia } from './call-media.hook';
 import { useCallControls } from './call-controls.hook';
 import { useCallEngine } from './call-engine.hook';
