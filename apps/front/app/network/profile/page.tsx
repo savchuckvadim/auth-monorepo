@@ -8,7 +8,7 @@ import React from 'react';
 import { useAuth } from '@/modules/processes';
 import { LoadingScreen } from '@/modules/shared';
 
-import { ProfileInformation, Post, ProfilePosts } from '@/modules/widgetes';
+import { ProfileInformation,  ProfilePosts } from '@/modules/widgetes';
 
 
 
@@ -24,8 +24,8 @@ export default function NetworkProfilePage() {
 
     return (
         <div className='w-full flex flex-col gap-4 pt-25'>
-            <ProfileInformation userId={currentUser?.id!} />
-            <ProfilePosts userId={currentUser?.id!} />
+            <ProfileInformation userId={currentUser.id!} />
+            <ProfilePosts userId={currentUser.id!} />
 
         </div>
 

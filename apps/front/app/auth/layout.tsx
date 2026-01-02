@@ -2,8 +2,7 @@
 
 import { useApp } from "@/modules/app";
 import { LoadingScreen } from "@/modules/shared";
-import { Badge } from "@workspace/ui/components/badge";
-import { Users } from "lucide-react";
+
 
 
 export default function Layout({ children }: { children: React.ReactNode }) {
