@@ -2,7 +2,7 @@ import React from 'react'
 import { Avatar, AvatarFallback } from '@workspace/ui/components/avatar'
 import { BreadcrumbEllipsis, BreadcrumbItem } from '@workspace/ui/components/breadcrumb'
 
-import { DropdownMenuContent, DropdownMenu, DropdownMenuTrigger, DropdownMenuItem  } from '@workspace/ui/components/dropdown-menu'
+import { DropdownMenuContent, DropdownMenu, DropdownMenuTrigger, DropdownMenuItem } from '@workspace/ui/components/dropdown-menu'
 import { AvatarImage } from '@workspace/ui/components/avatar'
 import Link from 'next/link'
 import { LikeIcon, EyeIcon, RepostIcon } from '@/modules/shared'
@@ -21,7 +21,7 @@ export default function Post() {
                     <div className='flex items-center gap-2'>
                         <Link href={'/profile'}>
                             <Avatar>
-                                <AvatarImage src="/profile-hero-test.jpg" />
+                                <AvatarImage src="/profile-hero-test.aiff" />
                                 <AvatarFallback>CN</AvatarFallback>
                             </Avatar>
                         </Link>

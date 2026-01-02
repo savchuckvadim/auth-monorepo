@@ -1,18 +1,19 @@
-'use client'
-export const dynamic = 'force-dynamic';
+'use client';
 
-
-
-import React from 'react';
-
+import dynamic from 'next/dynamic';
 import { useAuth } from '@/modules/processes';
 import { LoadingScreen } from '@/modules/shared';
 
-import { ProfileInformation,  ProfilePosts } from '@/modules/widgetes';
+// import { ProfileInformation,  ProfilePosts } from '@/modules/widgetes';
 
 
+const DynamicProfileInformation = dynamic(() => import('@/modules/widgetes/profile/information/ui/ProfileInformation').then(mod => mod.default), {
+    ssr: false
+});
 
-
+const DynamicProfilePosts = dynamic(() => import('@/modules/widgetes/profile/posts/ProfilePosts').then(mod => mod.default), {
+    ssr: false
+});
 
 
 export default function NetworkProfilePage() {
@@ -24,8 +25,8 @@ export default function NetworkProfilePage() {
 
     return (
         <div className='w-full flex flex-col gap-4 pt-25'>
-            <ProfileInformation userId={currentUser.id!} />
-            <ProfilePosts userId={currentUser.id!} />
+            <DynamicProfileInformation userId={currentUser.id!} />
+            <DynamicProfilePosts userId={currentUser.id!} />
 
         </div>
 

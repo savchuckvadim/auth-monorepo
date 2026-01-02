@@ -28,7 +28,7 @@ export const Header = () => {
 
 
                         <div className="flex items-center gap-2">
-                            <Link className="text-sm text-primary" href="/network">
+                            <Link className="text-sm text-primary" href="/network/profile">
                                 <Button
                                     variant={pathname === '/network/profile' ? 'default' : 'ghost'}
                                     size="sm"
