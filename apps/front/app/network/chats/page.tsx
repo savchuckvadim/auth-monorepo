@@ -7,7 +7,8 @@ import { ChatListWidget, ChatMessagesWidget, ChatInputWidget, CreateChatDialogWi
 import { useUserChats, useCreateChat, useMarkChatAsRead, useChatSocket, useSendMessage } from '@/modules/entities/chats';
 import { Chat, ChatType, CreateChat } from '@/modules/entities/chats';
 import { useAllUsers } from '@/modules/entities/followers';
-import { CreateChatDto } from '@workspace/nest-api';
+import { ChatMemberDto, CreateChatDto } from '@workspace/nest-api';
+import { CallWrapperWidget } from '@/modules/widgetes/call/CallWrapperWidget';
 
 export default function ChatsPage() {
     const { currentUser } = useAuth();
@@ -96,34 +97,37 @@ export default function ChatsPage() {
                 : [...prev, userId]
         );
     };
-
+    const otherUserId = selectedChat?.members?.find((m: ChatMemberDto) => m.userId !== currentUser?.id)?.userId || '';
     return (
-        <div className="h-screen bg-background flex overflow-hidden pt-15">
+        <div className="h-screen bg-background flex overflow-hidden pt-18">
+
             <ChatListWidget
                 currentUserId={currentUser.id}
                 selectedChatId={selectedChatId}
                 onChatSelect={setSelectedChatId}
                 onNewChatClick={() => setShowNewChatDialog(true)}
             />
+            <CallWrapperWidget chatId={selectedChatId || ''} otherUserId={otherUserId}>
 
-            <div className="flex-1 flex flex-col h-full overflow-hidden">
-                <ChatMessagesWidget
-                    chatId={selectedChatId}
-                    currentUserId={currentUser.id}
-                    selectedChat={selectedChat}
-                    messagesEndRef={messagesEndRef}
-                />
-
-                {selectedChatId && (
-                    <ChatInputWidget
-                        messageText={messageText}
-                        onMessageTextChange={setMessageText}
-                        onSendMessage={handleSendMessage}
-                        isPending={isSendingMessage}
+                <div className="flex-1 flex flex-col h-full overflow-hidden bg-card">
+                    <ChatMessagesWidget
+                        chatId={selectedChatId}
+                        currentUserId={currentUser.id}
+                        selectedChat={selectedChat}
+                        messagesEndRef={messagesEndRef}
                     />
-                )}
-            </div>
 
+                    {selectedChatId && (
+                        <ChatInputWidget
+                            messageText={messageText}
+                            onMessageTextChange={setMessageText}
+                            onSendMessage={handleSendMessage}
+                            isPending={isSendingMessage}
+                        />
+
+                    )}
+                </div>
+            </CallWrapperWidget>
             <CreateChatDialogWidget
                 isOpen={showNewChatDialog}
                 currentUserId={currentUser.id}
@@ -137,6 +141,7 @@ export default function ChatsPage() {
                 }}
                 isPending={createChatMutation.isPending}
             />
+
         </div>
     );
 }

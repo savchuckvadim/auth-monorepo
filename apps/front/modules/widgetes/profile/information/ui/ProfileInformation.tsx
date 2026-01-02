@@ -1,8 +1,21 @@
+'use client'
+import { useProfile } from '@/modules/entities/profile';
+import { useAuth } from '@/modules/processes';
+import { UserDto } from '@workspace/nest-api';
 import { Button } from '@workspace/ui/components/button';
 import Image from 'next/image'
 
 
-export default function ProfileInformation() {
+export default function ProfileInformation({ userId }: { userId: string }) {
+    const { currentUser } = useAuth()
+    const { profile, isLoading, error, posts, followers, following, slogan } = useProfile(userId)
+    const isOwnProfile = currentUser?.id === userId
+    if (isLoading) {
+        return <div>Loading...</div>
+    }
+    if (error) {
+        return <div>Error: {error.message}</div>
+    }
     return (
         <div className="relative w-full  mx-auto border rounded-3xl overflow-hidden bg-card shadow-md">
             {/* Верхняя часть с фоном */}
@@ -18,34 +31,34 @@ export default function ProfileInformation() {
 
             {/* Аватар */}
             <div className="absolute top-[230px] sm:top-[300px] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100px] h-[100px] bg-primary rounded-full flex items-center justify-center border-4 border-white shadow-lg">
-                <span className="text-white font-bold text-xl">JD</span>
+                <span className="text-white font-bold text-xl">{profile?.name?.charAt(0)}</span>
             </div>
 
             {/* Основной контент */}
             <div className="flex flex-col items-center text-center mt-16 px-6 pb-6">
-                <h2 className="text-mainBackground font-bold text-2xl mb-2">Jane D Mary</h2>
+                <h2 className="text-mainBackground font-bold text-2xl mb-2">{profile?.name}</h2>
                 <p className="text-gray-600 text-sm mb-4">
-                    Идейные соображения высшего порядка, а также внедрение современных методик предопределяет высокую востребованность кластеризации усилий.
+                    {slogan}
                 </p>
 
                 {/* Статистика */}
                 <div className="flex justify-between w-full max-w-md mb-6">
                     <div className="flex flex-col items-center">
-                        <p className="text-mainBackground font-bold text-md">1</p>
+                        <p className="text-mainBackground font-bold text-md">{posts}</p>
                         <p className="text-gray-500 text-sm">Posts</p>
                     </div>
                     <div className="flex flex-col items-center">
-                        <p className="text-mainBackground font-bold text-md">1</p>
+                        <p className="text-mainBackground font-bold text-md">{following}</p>
                         <p className="text-gray-500 text-sm">Following</p>
                     </div>
                     <div className="flex flex-col items-center">
-                        <p className="text-mainBackground font-bold text-md">1</p>
+                        <p className="text-mainBackground font-bold text-md">{followers}</p>
                         <p className="text-gray-500 text-sm">Followers</p>
                     </div>
                 </div>
 
                 {/* Кнопки */}
-                <div className="flex flex-wrap gap-4 justify-center w-full">
+                {!isOwnProfile && <div className="flex flex-wrap gap-4 justify-center w-full">
                     <Button
                         className="w-full sm:w-[48%] h-[50px]"
                         onClick={() => console.log('follow')}
@@ -60,7 +73,18 @@ export default function ProfileInformation() {
                     >
                         Send Message
                     </Button>
-                </div>
+                </div>}
+
+                {isOwnProfile && <div className="flex flex-wrap gap-4 justify-center w-full">
+                    <Button
+                        className="w-full  h-[50px]"
+                        onClick={() => console.log('follow')}
+                        variant="default"
+                    >
+                        Edit Profile
+                    </Button>
+
+                </div>}
             </div>
         </div>
     );

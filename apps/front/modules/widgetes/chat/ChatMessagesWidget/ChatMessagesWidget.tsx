@@ -1,9 +1,12 @@
 'use client';
 
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, Phone, Video } from 'lucide-react';
 import { Chat, ChatType } from '@/modules/entities/chats';
 import { MessageList, Message, useChatMessages } from '@/modules/entities/messages';
 import { ChatMemberDto } from '@workspace/nest-api';
+import { Button } from '@workspace/ui/components/button';
+import { AudioCallButton } from '@/modules/features/audio-call';
+import { VideoCallInitButton } from '@/modules/features/video-call';
 
 interface ChatMessagesWidgetProps {
     chatId: string | null;
@@ -39,24 +42,34 @@ export const ChatMessagesWidget = ({
         );
     }
 
+    const otherUser = selectedChat?.members?.find((m: ChatMemberDto) => m.userId !== currentUserId) || null;
     return (
         <div className="flex-1 flex flex-col h-full overflow-hidden">
             {/* Заголовок чата */}
-            <div className="border-b p-4 bg-card flex-shrink-0">
-                <h3 className="font-semibold">
-                    {selectedChat?.type === ChatType.PRIVATE
-                        ? selectedChat.members
-                            ?.find((m: ChatMemberDto) => m.userId !== currentUserId)
-                            ?.user?.name || 'Пользователь'
-                        : selectedChat?.name || 'Групповой чат'}
-                </h3>
-                {selectedChat?.type === ChatType.GROUP && (
-                    <p className="text-sm text-muted-foreground">
-                        {selectedChat.members?.length} участников
-                    </p>
-                )}
-            </div>
+            <div className="border-b p-4 bg-card flex-shrink-0 flex items-center justify-between">
+                <div className="flex-shrink-0">
+                    <h3 className="font-semibold">
+                        {selectedChat?.type === ChatType.PRIVATE
+                            ? otherUser?.user?.name || 'Пользователь'
+                            : selectedChat?.name || 'Групповой чат'}
+                    </h3>
+                    {selectedChat?.type === ChatType.GROUP && (
+                        <p className="text-sm text-muted-foreground">
+                            {selectedChat.members?.length} участников
+                        </p>
+                    )}
 
+
+                </div>
+                <div className="flex gap-2 justify-center">
+                    {otherUser && <AudioCallButton chatId={chatId} otherUserId={
+                        otherUser.userId || ''
+                    } />}
+                    {otherUser && <VideoCallInitButton chatId={chatId} otherUserId={
+                        otherUser.userId || ''
+                    } />}
+                </div>
+            </div>
             {/* Сообщения */}
             <div className="flex-1 overflow-y-auto p-4 min-h-0">
                 {messagesLoading ? (

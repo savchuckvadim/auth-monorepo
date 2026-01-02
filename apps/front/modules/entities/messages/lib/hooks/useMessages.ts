@@ -13,13 +13,13 @@ export const useChatMessages = (chatId: string, limit?: number, offset?: number)
             const params: { limit?: string; offset?: string } = {};
             if (limit !== undefined) params.limit = limit.toString();
             if (offset !== undefined) params.offset = offset.toString();
-            debugger;
+            ;
             console.log('params', params);
             return messagesApi.messagesGetChatMessages(chatId, params as any);
         },
         enabled: !!currentUser?.id && !!chatId,
     });
-    
+
 };
 
 export const useMessageById = (messageId: string) => {
@@ -39,7 +39,7 @@ export const useCreateMessage = () => {
         mutationFn: async (data: CreateMessageDto) => {
 
             const response = await messagesApi.messagesCreateMessage(data);
-            debugger;
+            ;
             return response;
         },
         // Не инвалидируем здесь - обновление делается вручную в компоненте

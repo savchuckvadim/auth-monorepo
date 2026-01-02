@@ -1,8 +1,5 @@
 'use client'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@workspace/ui/components/card";
 import { useUser } from "../lib/hook/user.hook";
-import { Badge } from "@workspace/ui/components/badge";
-import { div } from "framer-motion/client";
 import { Input } from "@workspace/ui/components/input";
 import { useState } from "react";
 import { Button } from "@workspace/ui/components/button";
@@ -35,19 +32,7 @@ export const Users = ({ userId }: { userId: string }) => {
                         filteredUsers?.map((user) => (
                             <div key={user.id}>
                                 <UserCard user={user} />
-                                {/* <Card>
-                                    <CardHeader>
-                                        <CardTitle>{user.name}</CardTitle>
-                                        <CardDescription>{user.email}</CardDescription>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <p>{user.role}</p>
-                                        <Badge variant={user.isAcivated ? 'default' : 'destructive'}>
-                                            <p>{user.isAcivated ? 'Activated' : 'Not Activated'}</p>
 
-                                        </Badge>
-                                    </CardContent>
-                                </Card> */}
                             </div>
                         ))
                     }

@@ -59,7 +59,7 @@ export default function Post() {
                     {/* Image Container */}
                     <div className='w-full mt-4 relative' style={{ aspectRatio: '4/3' }}>
                         <Image
-                            src={'/profile-hero-test.jpg'}
+                            src={'/profile-hero-test.avif'}
                             alt='post image'
                             fill
                             className='object-cover rounded-2xl'
@@ -71,7 +71,7 @@ export default function Post() {
             </div>
 
             <div className='flex w-full items-end justify-between mt-3'>
-                <div className='flex items-center gap-2'>
+                <div className='flex items-center gap-2 '>
                     <LikeIcon />
                     <RepostIcon />
                 </div>

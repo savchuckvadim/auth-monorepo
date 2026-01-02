@@ -18,7 +18,11 @@ export const UserCard = ({ user }: { user: UserDto }) => {
     return (
         <Card className="w-full bg-background/40">
             <CardHeader>
-                <CardTitle className="text-2xl font-bold">{user.name}</CardTitle>
+                <CardTitle className="text-2xl font-bold">
+                    <Link href={`/network/profile/${user.id}`}>
+                        {user.name}
+                    </Link>
+                </CardTitle>
                 {/* <CardDescription className="text-sm text-gray-500">{user.email}</CardDescription> */}
             </CardHeader>
             <CardContent className="flex flex-col gap-2">
@@ -33,6 +37,6 @@ export const UserCard = ({ user }: { user: UserDto }) => {
                 }
             </CardContent>
 
-        </Card>
+        </Card >
     )
 }

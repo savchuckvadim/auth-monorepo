@@ -68,7 +68,7 @@ export const useFollow = () => {
                         const result = user.id === userId
                             ? { ...user, isFollowing: true, isFriend: user.isFollower }
                             : user
-                        debugger
+
                         return result
 
                     }

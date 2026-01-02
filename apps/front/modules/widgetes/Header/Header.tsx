@@ -4,6 +4,7 @@ import { CurrentUser } from "@/modules/entities/user";
 import { Logout } from "@/modules/processes/"
 import { Button } from "@workspace/ui/components/button";
 import { Home, MessageCircle, Users } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -16,9 +17,14 @@ export const Header = () => {
             <div className="container mx-auto px-4 sm:px-6 lg:px-4 py-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center  gap-8">
-                        <h1 className="text-2xl font-bold text-foreground">
-                            {APP_TITLE}
-                        </h1>
+                        <Link href="/network/profile">
+                            <div className="flex items-center gap-2">
+                                <Image src="/logo.svg" alt="logo" width={30} height={30} />
+                                <h1 className="text-2xl font-bold text-foreground">
+                                    {APP_TITLE}
+                                </h1>
+                            </div>
+                        </Link>
 
 
                         <div className="flex items-center gap-2">

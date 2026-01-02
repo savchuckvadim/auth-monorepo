@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { FC, useEffect, useRef } from 'react';
 import { Card } from '@workspace/ui/components/card';
 
 interface VideoPlayerProps {
@@ -10,7 +10,7 @@ interface VideoPlayerProps {
     className?: string;
 }
 
-export const VideoPlayer: React.FC<VideoPlayerProps> = ({
+export const VideoPlayer: FC<VideoPlayerProps> = ({
     stream,
     name,
     isAudioMute = false,

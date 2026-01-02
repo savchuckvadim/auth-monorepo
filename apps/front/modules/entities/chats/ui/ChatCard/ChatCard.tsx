@@ -26,12 +26,11 @@ export const ChatCard = ({ chat, currentUserId, isSelected, onClick }: ChatCardP
 
     return (
         <Card
-            className={`mb-2 cursor-pointer hover:bg-accent transition-colors ${isSelected ? 'bg-accent' : ''
-                }`}
+            className={`mb-2 cursor-pointer hover:bg-accent transition-colors ${isSelected ? 'bg-accent' : '' }`}
             onClick={onClick}
         >
             <CardContent className="p-4">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 h-5 p-1">
                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                         <MessageCircle className="h-5 w-5 text-primary" />
                     </div>

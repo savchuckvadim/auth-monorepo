@@ -4,28 +4,22 @@ export const dynamic = 'force-dynamic';
 
 
 import React from 'react';
-
-import { useAuth } from '@/modules/processes';
-import { LoadingScreen } from '@/modules/shared';
-
-import { ProfileInformation, Post, ProfilePosts } from '@/modules/widgetes';
+import { ProfileInformation, ProfilePosts } from '@/modules/widgetes';
 
 
 
 
 
 
-export default function NetworkProfilePage() {
+export default async function NetworkProfilePage({ params }: { params: Promise<{ userId: string }> }) {
+    const p = await params;
+    const userId = p.userId;
 
-    const { currentUser } = useAuth();
-    if (!currentUser || !currentUser.id) {
-        return <LoadingScreen />
-    }
 
     return (
         <div className='w-full flex flex-col gap-4 pt-25'>
-            <ProfileInformation userId={currentUser?.id!} />
-            <ProfilePosts userId={currentUser?.id!} />
+            <ProfileInformation userId={userId} />
+            <ProfilePosts userId={userId} />
 
         </div>
 
