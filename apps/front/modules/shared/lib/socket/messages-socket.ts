@@ -6,8 +6,8 @@ export const connectMessagesSocket = (userId: string): Socket => {
     if (socket?.connected) {
         return socket;
     }
-    const socketUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/messages`;
-
+    // const socketUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/messages`;
+    const socketUrl = `${process.env.NEXT_PUBLIC_API_URL || 'https://api.sociopath-network.ru'}/messages`;
     socket = io(socketUrl, {
         query: {
             userId,

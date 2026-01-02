@@ -7,7 +7,8 @@ export const connectNotificationsSocket = (userId: string): Socket => {
         return socket;
     }
 
-    socket = io(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/notifications`, {
+    // socket = io(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/notifications`, {
+    socket = io(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.sociopath-network.ru'}/notifications`, {
         query: {
             userId,
         },
