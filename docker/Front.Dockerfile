@@ -17,7 +17,7 @@ COPY . .
 RUN pnpm config set fetch-retries 5 && \
     pnpm config set fetch-timeout 60000 && \
     pnpm install --no-frozen-lockfile
-RUN pnpm approve-builds
+# RUN pnpm approve-builds
 
 # Сборка NextJS API и проверка
 RUN pnpm --filter ${APP} run build
