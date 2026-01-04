@@ -4,17 +4,53 @@ import { useAuth } from '@/modules/processes';
 import { Button } from '@workspace/ui/components/button';
 import { ProfileHero } from './ProfileHero';
 import { ProfileAvatar } from './ProfileAvatar';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { ChatType, CreateChat, useCreateChat, useUserChats } from '@/modules/entities/chats';
+import { ChatDto, ChatMemberDto, CreateChatDto } from '@workspace/nest-api';
+import { LoadingComponent } from '@/modules/shared/ui/Loading/ui/LoadingComponent';
 
 export default function ProfileInformation({ userId }: { userId: string }) {
     const { currentUser } = useAuth()
+    const router = useRouter()
+    const { data: chats } = useUserChats()
+    const createChatMutation = useCreateChat()
     if (!currentUser) {
-        return <div>Loading...</div>
+        return <LoadingComponent />
     }
     const { profile, isLoading, error, posts, followers, following, slogan } = useProfile(userId)
     const isOwnProfile = currentUser?.id === userId
 
+    const handleRedirectToChat = async () => {
+        const searchedChatId = chats?.find((c: ChatDto) =>
+            c.members?.some((m: ChatMemberDto) => m.userId === userId))?.id;
+
+        if (searchedChatId) {
+            router.push(`/network/chats/${searchedChatId}`)
+        } else {
+            const createdChatId = await handleCreateChat()
+            router.push(`/network/chats/${createdChatId}`)
+        }
+    }
+    const handleCreateChat = async () => {
+
+
+        try {
+            const chatData: CreateChatDto = {
+                type: ChatType.PRIVATE,
+                memberIds: [currentUser.id, userId],
+                name: '',
+                description: '',
+            };
+            const chat = await createChatMutation.mutateAsync(chatData);
+            return chat.id
+        } catch (error) {
+            console.error('Failed to create chat:', error);
+        }
+    };
+
     if (isLoading || !profile) {
-        return <div>Loading...</div>
+        return <LoadingComponent />
     }
     if (error) {
         return <div>Error: {error.message}</div>
@@ -61,13 +97,16 @@ export default function ProfileInformation({ userId }: { userId: string }) {
                     >
                         Follow
                     </Button>
+
                     <Button
                         className="w-full sm:w-[48%] h-[50px]"
-                        onClick={() => console.log('send message')}
                         variant="outline"
+                        onClick={handleRedirectToChat}
                     >
                         Send Message
+
                     </Button>
+
                 </div>}
 
                 {isOwnProfile && <div className="flex flex-wrap gap-4 justify-center w-full">

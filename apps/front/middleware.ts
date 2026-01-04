@@ -22,7 +22,7 @@ export async function middleware(req: NextRequest) {
 
     if (hasToken && (isAuthPage || isUndefinedPath)) {
         console.log('redirect to profile');
-        return NextResponse.redirect(new URL('/network/profile', req.url));
+        return NextResponse.redirect(new URL('/network/me', req.url));
     }
     if (!hasToken && isAuthPage || isConfirmPage) {
 

@@ -1,5 +1,5 @@
 export * from './post.module';
-export * from './post.service';
-export * from './post.dto';
-export * from './post.repository';
+export * from './services/post.service';
+export * from './dto/post.dto';
+export * from './repositories/post.repository';
 

@@ -14,9 +14,9 @@ export default function NetworkLayout({ children }: { children: React.ReactNode 
         return <LoadingScreen />
     }
     return (
-        <div className="min-h-screen flex flex-col scrollbar-hide bg-background">
+        <div className="h-screen flex flex-col scrollbar-hide bg-background">
             <Header />
-            <main className="flex-grow">
+            <main className="flex-grow ">
 
                 <div
                     className={"relative min-h-screen flex items-center justify-center overflow-hidden"}
@@ -33,7 +33,7 @@ export default function NetworkLayout({ children }: { children: React.ReactNode 
                         </div>
 
                         <div className='w-full md:w-5/6 flex flex-col gap-4 pt-20 pb-20 md:pb-4'>
-                            <div className="container mx-auto px-4 sm:px-6 lg:px-4 ">
+                            <div className="container mx-auto p-2 sm:px-6 lg:px-0 ">
 
                                 {children}
 

@@ -9,19 +9,27 @@ import {
     Query,
     UseGuards,
     Patch,
+    UploadedFile,
+    UseInterceptors,
+    BadRequestException,
 } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { PostService } from './post.service';
-import { CreatePostDto, UpdatePostDto, PostDto, PaginatedPostsDto, RepostDto, PostRepostUserDto } from './post.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags, ApiConsumes } from '@nestjs/swagger';
+import { PostService } from '../services/post.service';
+import { CreatePostDto, UpdatePostDto, PostDto, PaginatedPostsDto, RepostDto, PostRepostUserDto } from '../dto/post.dto';
 import { AccessTokenGuard } from '@/core/guards/access-token.guard';
 import { CurrentUser } from '@/core/decorators/auth/current-user.decorator';
-import { TokenPayloadDto } from '../token';
+import { TokenPayloadDto } from '../../token';
+import { S3Service } from '@/core/s3';
 
 @Controller('posts')
 @UseGuards(AccessTokenGuard)
 @ApiTags('Posts')
 export class PostController {
-    constructor(private readonly postService: PostService) { }
+    constructor(
+        private readonly postService: PostService,
+        private readonly s3Service: S3Service,
+    ) { }
 
     @ApiOperation({ summary: 'Create a new post' })
     @ApiResponse({ status: 201, description: 'Post created', type: PostDto })
@@ -181,6 +189,35 @@ export class PostController {
         @Param('id') id: string,
     ): Promise<PostRepostUserDto[]> {
         return this.postService.getRepostUsers(id);
+    }
+
+    @ApiOperation({ summary: 'Upload media file for post (image or video)' })
+    @ApiConsumes('multipart/form-data')
+    @ApiResponse({ status: 200, description: 'Media uploaded', schema: { type: 'object', properties: { url: { type: 'string' } } } })
+    @Post('media')
+    @UseInterceptors(FileInterceptor('file'))
+    async uploadMedia(
+        @CurrentUser() user: TokenPayloadDto,
+        @UploadedFile() file: Express.Multer.File,
+    ): Promise<{ url: string }> {
+        if (!file) {
+            throw new BadRequestException('File is required');
+        }
+
+        // Проверяем тип файла (только изображения и видео)
+        if (!file.mimetype.startsWith('image/') && !file.mimetype.startsWith('video/')) {
+            throw new BadRequestException('File must be an image or video');
+        }
+
+        // Проверяем размер видео (максимум 20 секунд - это нужно проверять на фронтенде)
+        // Здесь проверяем только размер файла (например, максимум 100MB)
+        const maxSize = 100 * 1024 * 1024; // 100MB
+        if (file.size > maxSize) {
+            throw new BadRequestException('File size exceeds maximum allowed size');
+        }
+
+        const { url } = await this.s3Service.uploadPostMedia(file, user.userId);
+        return { url };
     }
 }
 

@@ -1,15 +1,21 @@
 import { Injectable } from "@nestjs/common";
-import { PostRepository } from "./post.repository";
-import { CreatePostDto, UpdatePostDto, PostDto, PaginatedPostsDto, RepostDto, PostRepostUserDto } from "./post.dto";
+import { PostRepository } from "../repositories/post.repository";
+import { CreatePostDto, UpdatePostDto, PostDto, PaginatedPostsDto, RepostDto, PostRepostUserDto } from "../dto/post.dto";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import { PostCreatedEvent, PostDeletedEvent, PostLikedEvent, PostUpdatedEvent } from "../events/post.events";
+import { PostEvent } from "../type/post-event.type";
 
 @Injectable()
 export class PostService {
     constructor(
         private readonly repo: PostRepository,
+        private readonly eventEmitter: EventEmitter2,
     ) { }
 
     public async createPost(userId: string, data: CreatePostDto): Promise<PostDto> {
-        return new PostDto(await this.repo.create(userId, data));
+        const post = new PostDto(await this.repo.create(userId, data));
+        this.eventEmitter.emit(PostEvent.CREATED, new PostCreatedEvent(post));
+        return post;
     }
 
     public async getPostById(id: string, currentUserId?: string): Promise<PostDto> {
@@ -17,11 +23,14 @@ export class PostService {
     }
 
     public async updatePost(id: string, userId: string, data: UpdatePostDto): Promise<PostDto> {
-        return new PostDto(await this.repo.update(id, userId, data));
+        const post = new PostDto(await this.repo.update(id, userId, data));
+        this.eventEmitter.emit(PostEvent.UPDATED, new PostUpdatedEvent(post));
+        return post;
     }
 
     public async deletePost(id: string, userId: string): Promise<void> {
-        return await this.repo.delete(id, userId);
+        await this.repo.delete(id, userId);
+        this.eventEmitter.emit(PostEvent.DELETED, new PostDeletedEvent(id));
     }
 
     public async getFeed(currentUserId: string, cursor?: string, limit?: number): Promise<PaginatedPostsDto> {
@@ -52,15 +61,18 @@ export class PostService {
     }
 
     public async likePost(postId: string, userId: string): Promise<void> {
-        return await this.repo.likePost(postId, userId, true);
+        await this.repo.likePost(postId, userId, true);
+        this.eventEmitter.emit(PostEvent.LIKED, new PostLikedEvent(postId, userId, true));
     }
 
     public async dislikePost(postId: string, userId: string): Promise<void> {
-        return await this.repo.likePost(postId, userId, false);
+        await this.repo.likePost(postId, userId, false);
+        this.eventEmitter.emit(PostEvent.LIKED, new PostLikedEvent(postId, userId, false));
     }
 
     public async unlikePost(postId: string, userId: string): Promise<void> {
-        return await this.repo.unlikePost(postId, userId);
+        await this.repo.unlikePost(postId, userId);
+        this.eventEmitter.emit(PostEvent.LIKED, new PostLikedEvent(postId, userId, false));
     }
 
     public async incrementViews(postId: string): Promise<void> {

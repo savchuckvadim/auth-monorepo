@@ -1,7 +1,7 @@
 import { PrismaService } from "@/core";
 import { Injectable, NotFoundException, ForbiddenException } from "@nestjs/common";
 import { Post } from "generated/prisma";
-import { CreatePostDto, UpdatePostDto, RepostDto } from "./post.dto";
+import { CreatePostDto, UpdatePostDto, RepostDto } from "../dto/post.dto";
 import { PostRepository, PostWithStats } from "./post.repository";
 
 @Injectable()

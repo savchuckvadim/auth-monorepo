@@ -1,5 +1,5 @@
 import { Post } from "generated/prisma";
-import { CreatePostDto, UpdatePostDto, RepostDto } from "./post.dto";
+import { CreatePostDto, UpdatePostDto, RepostDto } from "../dto/post.dto";
 
 export type PostWithStats = Post & {
     likesCount: number;

@@ -8,9 +8,10 @@ import { useState } from "react";
 
 
 export enum ENavigationType {
-    PROFILE = 'profile',
+    ME = 'me',
     MESSAGE = 'chats',
-    PEOPLE = 'people'
+    PEOPLE = 'people',
+ 
 }
 interface NavItemProps {
     label: string;
@@ -52,10 +53,10 @@ export const NavItem = ({ label, href, type, isActive }: NavItemProps) => {
                 <span className="flex items-center gap-2">
                     {
                         type === ENavigationType.PEOPLE
-                            ? <PeopleIcon color={iconColor} />
+                            ? <PeopleIcon color={iconColor} size={25} />
                             : type === ENavigationType.MESSAGE
-                                ? <MessageIcon color={iconColor} />
-                                : <ProfileIcon color={iconColor} />
+                                ? <MessageIcon color={iconColor} size={25} />
+                                : <ProfileIcon color={iconColor} size={25} />
                     }
                     <span className="hidden md:inline">{label}</span>
                 </span>

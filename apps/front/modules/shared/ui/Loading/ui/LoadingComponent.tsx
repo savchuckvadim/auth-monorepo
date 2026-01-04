@@ -1,41 +1,34 @@
 'use client';
 
+import { useTheme } from 'next-themes';
 import './loading.css';
 
 import Image from 'next/image';
+import { cn } from '@workspace/ui/lib/utils';
 export const LoadingComponent = () => {
-    // const [isVisible, setIsVisible] = useState(true);
 
-    // useEffect(() => {
-    //     const timer = setTimeout(() => {
-    //         setIsVisible(false);
-    //     }, 3000); // 3 секунды прелоадер
+    const { theme } = useTheme();
 
-    //     return () => clearTimeout(timer);
-    // }, []);
+    const isDarkMode = theme?.includes('dark');
+
+
 
     return (
-        <div className="bg-white">
+        <div className="bg-background h-[80vh] w-full flex justify-center items-center">
 
-
-
-            <div
-                className="bg-foreground"
-
-            >
-                <div className="center-spinner color-primary flex flex-col justify-center items-center">
+            <div  >
+                <div className=" flex-col justify-center items-center">
 
                     <Image
-                        src="/logo.svg"
+                        src="/grey-logo.svg"
                         alt="Logo"
                         width={120}
-                        height={85}
-                        className="backgound:invert"
+                        height={120}
+                        className={cn("backgound:invert", !isDarkMode && "opacity-20")}
                         priority
                     />
-                    <p className='text-primary'>Loading...</p>
+                    <p className='text-muted-foreground/20 text-center'>Loading...</p>
                 </div>
-
 
             </div>
 

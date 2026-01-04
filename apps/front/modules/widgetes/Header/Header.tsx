@@ -16,12 +16,15 @@ export const Header = () => {
             <div className="container mx-auto px-4 sm:px-6 lg:px-4 py-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center  gap-8">
-                        <Link href="/network/profile">
+                        <Link href="/network/me">
                             <div className="flex items-center gap-2">
                                 <Image src="/logo.svg" alt="logo" width={30} height={30} />
                                 <h1 className="hidden md:block text-2xl font-bold text-foreground">
                                     {APP_TITLE}
                                 </h1>
+                                {/* <h1 className="block md:hidden text-xl font-bold text-foreground">
+                                    <CurrentUser />
+                                </h1> */}
                             </div>
                         </Link>
 
@@ -34,7 +37,10 @@ export const Header = () => {
 
                     <div className="flex items-center gap-4">
                         <ThemeToggle />
-                        <CurrentUser />
+                        <div className="hidden md:block ">
+
+                            <CurrentUser />
+                        </div>
                         <Logout />
                     </div>
                 </div>

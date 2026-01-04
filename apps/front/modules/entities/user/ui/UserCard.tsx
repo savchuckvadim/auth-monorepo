@@ -19,7 +19,7 @@ export const UserCard = ({ user }: { user: UserDto }) => {
         <Card className="w-full bg-background/40">
             <CardHeader>
                 <CardTitle className="text-2xl font-bold">
-                    <Link href={`/network/profile/${user.id}`}>
+                    <Link href={`/network/people/${user.id}`}>
                         {user.name}
                     </Link>
                 </CardTitle>

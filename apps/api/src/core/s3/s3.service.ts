@@ -122,4 +122,29 @@ export class S3Service {
         const url = `https://${this.bucket}.s3.${this.region}.amazonaws.com/${key}`;
         return { url };
     }
+
+    /**
+     * Загружает медиа файл для поста (изображение или видео)
+     */
+    async uploadPostMedia(file: Express.Multer.File, userId: string): Promise<{ url: string }> {
+        this.validateS3Config();
+
+        const fileExtension = file.originalname.split('.').pop();
+        const fileName = `${userId}-${randomUUID()}.${fileExtension}`;
+        const folder = file.mimetype.startsWith('video/') ? 'posts/videos' : 'posts/images';
+        const key = `${folder}/${fileName}`;
+
+        const command = new PutObjectCommand({
+            Bucket: this.bucket,
+            Key: key,
+            Body: file.buffer,
+            ContentType: file.mimetype,
+        });
+
+        await this.s3!.send(command);
+
+        // Формируем URL с правильным регионом
+        const url = `https://${this.bucket}.s3.${this.region}.amazonaws.com/${key}`;
+        return { url };
+    }
 }

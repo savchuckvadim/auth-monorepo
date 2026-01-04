@@ -20,6 +20,7 @@ import { FollowersModule } from "@/modules/followers";
 import { NotificationsModule } from "@/modules/notifications/notifications.module";
 import { ProfileModule } from "@/modules/profile";
 import { PostModule } from "@/modules/post";
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 
 
@@ -36,6 +37,7 @@ import { PostModule } from "@/modules/post";
                 }),
             ],
         }),
+        EventEmitterModule.forRoot(),
         CookieModule,
         PrismaModule,
         QueueModule,

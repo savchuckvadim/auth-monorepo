@@ -4,10 +4,10 @@ import { EIconColor } from '../type/icon-type';
 import { useTheme } from 'next-themes';
 
 
-export default function LikeIcon({ }) {
+export default function LikeIcon({ isLiked }: { isLiked: boolean }) {
     const [isHovered, setIsHovered] = useState(false);
     const {theme} = useTheme()
-    const iconColor = isHovered ? EIconColor.RED : theme === 'dark' ? EIconColor.DARK : EIconColor.LIGHT;
+    const iconColor = isHovered ? EIconColor.RED : isLiked ? EIconColor.RED : theme === 'dark' ? EIconColor.DARK : EIconColor.LIGHT;
 
     return (
 

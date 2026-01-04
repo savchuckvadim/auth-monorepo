@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/modules/processes';
 import { LoadingScreen } from '@/modules/shared/ui';
-import { Chat, ChatType, useUserChats } from '@/modules/entities/chats';
+import { Chat,  useUserChats } from '@/modules/entities/chats';
 import { ChatMemberDto, MessageDto } from '@workspace/nest-api';
 import { Button } from '@workspace/ui/components/button';
 
@@ -13,6 +13,7 @@ import { useChatSocket, useSendMessage } from '@/modules/entities/chats';
 
 import { CallWrapperWidget } from '@/modules/widgetes/call/CallWrapperWidget';
 import { ChatInputWidget, ChatMessagesWidget,  } from '@/modules/widgetes/chat';
+import { LoadingComponent } from '@/modules/shared/ui/Loading/ui/LoadingComponent';
 
 export default function ChatPage() {
     const { currentUser } = useAuth();
@@ -25,7 +26,7 @@ export default function ChatPage() {
     const { data: chats } = useUserChats();
     const selectedChat = (chats as Chat[] | undefined)?.find((c) => c.id === chatId);
     const otherUserId = selectedChat?.members?.find((m: ChatMemberDto) => m.userId !== currentUser?.id)?.userId || '';
-    const { data: messages } = useChatMessages(chatId || '', 50, 0);
+    const { data: messages, isPending: isMessagesPending } = useChatMessages(chatId || '', 50, 0);
     const sortedMessages = messages ? (messages as MessageDto[]) : [];
 
     // WebSocket hook
@@ -51,6 +52,9 @@ export default function ChatPage() {
 
     if (!currentUser) {
         return <LoadingScreen />;
+    }
+    if (isMessagesPending) {
+        return <LoadingComponent />;
     }
 
     if (!chatId || !selectedChat) {
@@ -85,7 +89,7 @@ export default function ChatPage() {
     };
 
     return (
-        <div className="h-[88vh] bg-background flex overflow-hidden border-2 rounded-3xl">
+        <div className="h-[82vh] bg-background flex overflow-hidden border-2 rounded-3xl">
 
 
             <CallWrapperWidget chatId={chatId || ''} otherUserId={otherUserId}>

@@ -7,3 +7,5 @@ export {default as LikeIcon} from './ui/LikeIcon';
 export {default as EyeIcon} from './ui/EyeIcon';
 export {default as RepostIcon} from './ui/RepostIcon';
 export {EIconColor} from './type/icon-type';
+
+export {default as EmptyIcon} from './ui/EmptyIcon';

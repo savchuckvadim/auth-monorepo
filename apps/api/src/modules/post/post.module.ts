@@ -1,15 +1,18 @@
 import { Module } from "@nestjs/common";
-import { PostController } from "./post.controller";
-import { PostService } from "./post.service";
-import { PostRepository } from "./post.repository";
-import { PostPrismaRepository } from "./post.prisma.repository";
+import { PostController } from "./controllers/post.controller";
+import { PostService } from "./services/post.service";
+import { PostRepository } from "./repositories/post.repository";
+import { PostPrismaRepository } from "./repositories/post.prisma.repository";
+import { PostGateway } from "./socket/post.gateway";
 import { TokenModule } from "../token";
+import { S3Module } from "@/core/s3";
 
 @Module({
-    imports: [TokenModule],
+    imports: [TokenModule, S3Module],
     controllers: [PostController],
     providers: [
         PostService,
+        PostGateway,
         {
             provide: PostRepository,
             useClass: PostPrismaRepository,

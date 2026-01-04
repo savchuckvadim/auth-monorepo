@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getChats, CreateChatDto, UpdateChatDto, AddMemberDto } from '@workspace/nest-api';
 import { useAuth } from '@/modules/processes';
+import { CreateChat } from '../types/chats.types';
 
 const chatsApi = getChats();
 

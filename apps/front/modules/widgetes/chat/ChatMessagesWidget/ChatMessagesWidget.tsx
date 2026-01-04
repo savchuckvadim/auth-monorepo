@@ -1,12 +1,14 @@
 'use client';
 
-import { MessageCircle, Phone, Video } from 'lucide-react';
+import { ArrowLeft, MessageCircle, Phone, Video } from 'lucide-react';
 import { Chat, ChatType } from '@/modules/entities/chats';
 import { MessageList, Message, useChatMessages } from '@/modules/entities/messages';
 import { ChatMemberDto } from '@workspace/nest-api';
 import { Button } from '@workspace/ui/components/button';
 import { AudioCallButton } from '@/modules/features/audio-call';
 import { VideoCallInitButton } from '@/modules/features/video-call';
+import { LoadingComponent } from '@/modules/shared/ui/Loading/ui/LoadingComponent';
+import Link from 'next/link';
 
 interface ChatMessagesWidgetProps {
     chatId: string | null;
@@ -47,7 +49,11 @@ export const ChatMessagesWidget = ({
         <div className="flex flex-col h-full overflow-hidden">
             {/* Заголовок чата */}
             <div className="border-b p-4 bg-card flex-shrink-0 flex items-center justify-between">
-                <div className="flex-shrink-0">
+                <div className="flex-shrink-0 flex items-center gap-2">
+                    <Link href="/network/chats">
+                        <ArrowLeft className="h-4 w-4 text-muted-foreground" />
+                    </Link>
+
                     <h3 className="font-semibold">
                         {selectedChat?.type === ChatType.PRIVATE
                             ? otherUser?.user?.name || 'Пользователь'
@@ -72,12 +78,12 @@ export const ChatMessagesWidget = ({
             </div>
             {/* Сообщения */}
             <div className="overflow-y-auto p-4 min-h-0">
-                {messagesLoading ? (
-                    <div className="h-full flex items-center justify-center">
-                        <div className="text-center text-muted-foreground">
-                            Загрузка сообщений...
-                        </div>
-                    </div>
+                {messagesLoading ? (<LoadingComponent />
+                    // <div className="h-full flex items-center justify-center">
+                    //     <div className="text-center text-muted-foreground">
+                    //         Загрузка сообщений...
+                    //     </div>
+                    // </div>
                 ) : (
                     <MessageList
                         messages={sortedMessages}
