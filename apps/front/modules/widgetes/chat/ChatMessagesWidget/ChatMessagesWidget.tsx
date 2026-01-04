@@ -31,7 +31,7 @@ export const ChatMessagesWidget = ({
 
     if (!chatId) {
         return (
-            <div className="flex-1 flex items-center justify-center h-full">
+            <div className="flex items-center justify-center h-full">
                 <div className="text-center">
                     <MessageCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground">
@@ -44,7 +44,7 @@ export const ChatMessagesWidget = ({
 
     const otherUser = selectedChat?.members?.find((m: ChatMemberDto) => m.userId !== currentUserId) || null;
     return (
-        <div className="flex-1 flex flex-col h-full overflow-hidden">
+        <div className="flex flex-col h-full overflow-hidden">
             {/* Заголовок чата */}
             <div className="border-b p-4 bg-card flex-shrink-0 flex items-center justify-between">
                 <div className="flex-shrink-0">
@@ -71,7 +71,7 @@ export const ChatMessagesWidget = ({
                 </div>
             </div>
             {/* Сообщения */}
-            <div className="flex-1 overflow-y-auto p-4 min-h-0">
+            <div className="overflow-y-auto p-4 min-h-0">
                 {messagesLoading ? (
                     <div className="h-full flex items-center justify-center">
                         <div className="text-center text-muted-foreground">

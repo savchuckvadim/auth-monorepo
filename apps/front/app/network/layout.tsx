@@ -4,7 +4,8 @@ import React from 'react';
 import { cn } from '@workspace/ui/lib/utils';
 import { useAuth } from '@/modules/processes/auth';
 import { LoadingScreen } from '@/modules/shared';
-import { Header } from '@/modules/widgetes';
+import { Header, Navigation } from '@/modules/widgetes';
+
 
 
 export default function NetworkLayout({ children }: { children: React.ReactNode }) {
@@ -17,21 +18,29 @@ export default function NetworkLayout({ children }: { children: React.ReactNode 
             <Header />
             <main className="flex-grow">
 
-                <section id="hero" className={
-                    cn(
-                        "relative min-h-screen flex items-center justify-center overflow-hidden"
-                    )
-                }
+                <div
+                    className={"relative min-h-screen flex items-center justify-center overflow-hidden"}
 
                 >
+                    <div className={
+                        cn(
+                            'container mx-auto p-0 sm:px-6 lg:px-4 md:p-4 flex flex-row md:gap-4',
+                        )
+                    }>
 
-                    <div className="container mx-auto px-4 sm:px-6 lg:px-4 relative z-10">
+                        <div className='w-0 md:block md:w-1/6 h-screen  pt-20'>
+                            <Navigation />
+                        </div>
 
-                        {children}
+                        <div className='w-full md:w-5/6 flex flex-col gap-4 pt-20 pb-20 md:pb-4'>
+                            <div className="container mx-auto px-4 sm:px-6 lg:px-4 ">
 
+                                {children}
+
+                            </div>
+                        </div>
                     </div>
-                </section>
-
+                </div>
             </main>
 
         </div>

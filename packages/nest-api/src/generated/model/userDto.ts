@@ -25,4 +25,12 @@ export interface UserDto {
     isFollower: boolean;
     /** Is Friend */
     isFriend: boolean;
+    /** Followers count */
+    followersCount: number;
+    /** Following count */
+    followingCount: number;
+    /** Posts count */
+    postsCount: number;
+    /** Avatar URL */
+    avatarUrl: string;
 }

@@ -6,4 +6,7 @@ export * from './messages/messages';
 export * from './followers/followers';
 
 
+export * from './profile/profile';
+export * from './posts/posts';
+
 export * from './model';

@@ -1,14 +1,19 @@
-import React from 'react'
+'use client'
 import { EIconColor } from '../type/icon-type';
+
 
 interface PeopleIconProps {
     size?: number;
     color?: EIconColor;
 
 }
-export default function PeopleIcon({ size, color = EIconColor.DARK }: PeopleIconProps) {
+export default function PeopleIcon({ size, color }: PeopleIconProps) {
+
     return (
-        <svg width={size} height={size}
+        <svg
+            // onMouseEnter={() => setIsHovered(true)}
+            // onMouseLeave={() => setIsHovered(false)}
+            width={size} height={size}
             className={`h-[${size}px] w-[${size}px]`}
             viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path

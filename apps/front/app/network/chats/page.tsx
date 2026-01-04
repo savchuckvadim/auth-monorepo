@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/modules/processes';
 import { LoadingScreen } from '@/modules/shared/ui';
-import { ChatListWidget, ChatMessagesWidget, ChatInputWidget, CreateChatDialogWidget } from '@/modules/widgetes/chat';
+import { ChatMessagesWidget, ChatInputWidget, CreateChatDialogWidget } from '@/modules/widgetes/chat';
 import { useUserChats, useCreateChat, useMarkChatAsRead, useChatSocket, useSendMessage } from '@/modules/entities/chats';
 import { Chat, ChatType, CreateChat } from '@/modules/entities/chats';
 import { useAllUsers } from '@/modules/entities/followers';
@@ -99,17 +99,17 @@ export default function ChatsPage() {
     };
     const otherUserId = selectedChat?.members?.find((m: ChatMemberDto) => m.userId !== currentUser?.id)?.userId || '';
     return (
-        <div className="h-screen bg-background flex overflow-hidden pt-18">
+        <div className="h-[88vh] bg-background flex overflow-hidden border-2 rounded-3xl">
 
-            <ChatListWidget
+            {/* <ChatListWidget
                 currentUserId={currentUser.id}
                 selectedChatId={selectedChatId}
                 onChatSelect={setSelectedChatId}
                 onNewChatClick={() => setShowNewChatDialog(true)}
-            />
+            /> */}
             <CallWrapperWidget chatId={selectedChatId || ''} otherUserId={otherUserId}>
 
-                <div className="flex-1 flex flex-col h-full overflow-hidden bg-card">
+                <div className=" flex flex-col h-full overflow-hidden bg-card">
                     <ChatMessagesWidget
                         chatId={selectedChatId}
                         currentUserId={currentUser.id}

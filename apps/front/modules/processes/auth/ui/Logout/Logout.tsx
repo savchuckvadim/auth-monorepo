@@ -11,7 +11,7 @@ export const Logout = () => {
         <div className="cursor-pointer">
             <Button variant="outline" onClick={logout} disabled={isLoading}>
                 {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
-                Выйти
+               <span className="hidden md:block">Выйти</span>   
             </Button>
         </div>
     )

@@ -23,19 +23,31 @@ export class UserPrismaRepository implements UserRepository {
             include: {
                 followers: true,
                 following: true,
+                posts: {
+                    where: {
+                        deletedAt: null,
+                    },
+                },
+                profile: true,
             }
         });
+
         return users.map((user) => {
 
             const isFollowing = user.following.some(follower => follower.followerId === currentUserId);
             const isFollower = user.followers.some(following => following.followingId === currentUserId);
             const isFriend = isFollowing && isFollower;
-
+            const avatarUrl = user.profile?.avatar || '';
+         
             return {
                 ...user,
+                avatarUrl,
                 isFollowing,
                 isFollower,
                 isFriend,
+                followersCount: user.followers.length,
+                followingCount: user.following.length,
+                postsCount: user.posts.length,
             };
         });
     }
@@ -53,7 +65,18 @@ export class UserPrismaRepository implements UserRepository {
     }
 
     public async findById(id: string): Promise<User> {
-        const user = await this.prisma.user.findUnique({ where: { id } });
+        const user = await this.prisma.user.findUnique({
+            where: { id },
+            include: {
+                followers: true,
+                following: true,
+                posts: {
+                    where: {
+                        deletedAt: null,
+                    },
+                },
+            },
+        });
         if (!user) {
             throw new NotFoundException('User not found');
         }
@@ -73,6 +96,9 @@ export class UserPrismaRepository implements UserRepository {
                 role: user_roles.user,
                 password: hashedPassword,
                 activationLink: activationLink,
+                profile: {
+                    create: {}, // Создаем пустой профиль при регистрации
+                },
             }
         });
 

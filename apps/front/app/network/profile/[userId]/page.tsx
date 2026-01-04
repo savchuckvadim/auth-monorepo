@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import dynamic from 'next/dynamic';
+import { useParams } from 'next/navigation';
 
 const DynamicProfileInformation = dynamic(() => import('@/modules/widgetes/profile/information/ui/ProfileInformation').then(mod => mod.default), {
     ssr: false
@@ -13,32 +14,19 @@ const DynamicProfilePosts = dynamic(() => import('@/modules/widgetes/profile/pos
 
 
 
-export default async function NetworkProfilePage({ params }: { params: Promise<{ userId: string }> }) {
-    const p = await params;
-    const userId = p.userId;
+export default  function NetworkProfilePage() {
+    const params  = useParams();
+    const userId = params.userId as string;
 
 
     return (
-        <div className='w-full flex flex-col gap-4 pt-25'>
+        <div className='w-full flex flex-col gap-4'>
             <DynamicProfileInformation userId={userId} />
             <DynamicProfilePosts userId={userId} />
 
         </div>
 
-        // <div className='flex flex-row gap-4'>
-        //     <div className='w-1/3 flex flex-col gap-4 pt-15'>
-        //     навигация слева
-        //     </div>
-        //     <div className='w-full flex flex-col gap-4 pt-25'>
-        //         <ProfileInformation />
-        //         <div className='mt-10 '>
-        //             <Post />
-        //             <Post />
-        //             <Post />
-        //         </div>
-
-        //     </div>
-        // </div>
+   
 
     );
 }

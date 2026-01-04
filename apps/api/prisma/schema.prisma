@@ -34,6 +34,14 @@ model User {
     followers Follow[] @relation("UserFollowers")
     following Follow[] @relation("UserFollowing")
 
+    // Profile relation
+    profile Profile?
+
+    // Posts relations
+    posts     Post[]
+    postLikes PostLike[]
+    avatar    Avatar?
+
     @@unique([email])
     @@map("users")
 }
@@ -214,3 +222,64 @@ model Follow {
     @@index([followingId])
     @@map("follows")
 }
+
+// Profile model
+
+model Profile {
+    id        String   @id @default(uuid())
+    userId    String   @unique(map: "profiles_user_id_unique") @map("user_id") @db.VarChar(255)
+    name      String?  @db.VarChar(255)
+    about     String?  @db.VarChar(1000) // Ограничение 1000 символов
+    avatar    String?  @db.VarChar(500) // URL аватара
+    hero      String?  @db.VarChar(500) // URL hero изображения
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@map("profiles")
+}
+
+// Posts model
+
+model Post {
+    id             String    @id @default(uuid())
+    userId         String    @map("user_id") @db.VarChar(255)
+    text           String?   @db.VarChar(2000) // Ограничение 2000 символов
+    image          String?   @db.VarChar(500) // URL изображения
+    audio          String?   @db.VarChar(500) // URL аудио файла
+    video          String?   @db.VarChar(500) // URL видео файла
+    link           String?   @db.VarChar(500) // Ссылка
+    views          Int       @default(0)
+    originalPostId String?   @map("original_post_id") @db.VarChar(255) // Для репостов
+    createdAt      DateTime  @default(now())
+    updatedAt      DateTime  @updatedAt
+    deletedAt      DateTime? @map("deleted_at")
+
+    user         User       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    originalPost Post?      @relation("PostRepost", fields: [originalPostId], references: [id], onDelete: SetNull)
+    reposts      Post[]     @relation("PostRepost")
+    likes        PostLike[]
+
+    @@index([userId])
+    @@index([originalPostId])
+    @@index([createdAt])
+    @@map("posts")
+}
+
+model PostLike {
+    id        String   @id @default(uuid())
+    postId    String   @map("post_id") @db.VarChar(255)
+    userId    String   @map("user_id") @db.VarChar(255)
+    isLike    Boolean  @default(true) // true = like, false = dislike
+    createdAt DateTime @default(now())
+
+    post Post @relation(fields: [postId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+    @@unique([postId, userId])
+    @@index([postId])
+    @@index([userId])
+    @@map("post_likes")
+}
+

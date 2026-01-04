@@ -17,6 +17,25 @@ const nextConfig = {
         // Принудительно пересобираем transpiled пакеты при каждой сборке
         optimizePackageImports: ['@workspace/nest-api'],
     },
+    images: {
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: '*.s3.*.amazonaws.com',
+                pathname: '/**',
+            },
+            {
+                protocol: 'https',
+                hostname: 's3.*.amazonaws.com',
+                pathname: '/**',
+            },
+            {
+                protocol: 'https',
+                hostname: 'sociopath-network-bucket.s3.eu-north-1.amazonaws.com',
+                pathname: '/**',
+            },
+        ],
+    },
 }
 
 export default nextConfig

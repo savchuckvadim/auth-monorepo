@@ -18,6 +18,8 @@ import { MessagesModule } from "@/modules/messages";
 import { CallsModule } from "@/modules/calls/calls.module";
 import { FollowersModule } from "@/modules/followers";
 import { NotificationsModule } from "@/modules/notifications/notifications.module";
+import { ProfileModule } from "@/modules/profile";
+import { PostModule } from "@/modules/post";
 
 
 
@@ -50,6 +52,8 @@ import { NotificationsModule } from "@/modules/notifications/notifications.modul
         CallsModule,
         FollowersModule,
         NotificationsModule,
+        ProfileModule,
+        PostModule,
     ],
 
     providers: [GlobalExceptionFilter],

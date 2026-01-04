@@ -1,1 +1,1 @@
-export { useProfile } from './lib/hook/profile.hook';
+export { useProfile, useUploadAvatar, useUploadHero } from './lib/hook/profile.hook';

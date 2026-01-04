@@ -3,6 +3,7 @@ import { UserRepository } from "./user.repository";
 import { CreateUserDto, UserDto } from "./user.dto";
 import { User } from "generated/prisma";
 import { compare } from "bcrypt";
+import { UserWithFollowStatusType } from "./user.type";
 
 @Injectable()
 export class UserService {
@@ -11,7 +12,14 @@ export class UserService {
     ) { }
 
     public async getUser(id: string): Promise<UserDto> {
-        return new UserDto(await this.repo.findById(id));
+        const user = await this.repo.findById(id) as any;
+        const userWithStats: UserWithFollowStatusType = {
+            ...user,
+            followersCount: user.followers?.length || 0,
+            followingCount: user.following?.length || 0,
+            postsCount: user.posts?.length || 0,
+        };
+        return new UserDto(userWithStats);
     }
     public async getUserByEmail(email: string): Promise<User> {
         return await this.repo.findByEmail(email);

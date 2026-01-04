@@ -21,11 +21,18 @@ export const MessageList = ({ messages, currentUserId, messagesEndRef }: Message
     }
 
     return (
-        <div className="space-y-4 flex flex-col">
-            {messages.map((message: Message) => {
+        <div className="flex flex-col">
+            {messages.map((message: Message, index) => {
                 const isOwn = message.senderId === currentUserId;
+                const prevMessage = index > 0 ? messages[index - 1] : null;
+                const showAvatar = !prevMessage || prevMessage.senderId !== message.senderId;
                 return (
-                    <MessageItem key={message.id} message={message} isOwn={isOwn} />
+                    <MessageItem
+                        key={message.id}
+                        message={message}
+                        isOwn={isOwn}
+                        showAvatar={showAvatar}
+                    />
                 );
             })}
             <div ref={messagesEndRef} className="h-0" />

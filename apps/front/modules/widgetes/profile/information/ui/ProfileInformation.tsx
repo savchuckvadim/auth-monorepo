@@ -2,15 +2,18 @@
 import { useProfile } from '@/modules/entities/profile';
 import { useAuth } from '@/modules/processes';
 import { Button } from '@workspace/ui/components/button';
-import Image from 'next/image'
-
-
+import { ProfileHero } from './ProfileHero';
+import { ProfileAvatar } from './ProfileAvatar';
 
 export default function ProfileInformation({ userId }: { userId: string }) {
     const { currentUser } = useAuth()
+    if (!currentUser) {
+        return <div>Loading...</div>
+    }
     const { profile, isLoading, error, posts, followers, following, slogan } = useProfile(userId)
     const isOwnProfile = currentUser?.id === userId
-    if (isLoading) {
+
+    if (isLoading || !profile) {
         return <div>Loading...</div>
     }
     if (error) {
@@ -19,19 +22,11 @@ export default function ProfileInformation({ userId }: { userId: string }) {
     return (
         <div className="relative w-full  mx-auto border rounded-3xl overflow-hidden bg-card shadow-md">
             {/* Верхняя часть с фоном */}
-            <div className="relative h-[250px] sm:h-[300px]">
-                <Image
-                    src="/logo.svg"
-                    alt="profile hero"
-                    fill
-                    className="object-cover"
-                    priority
-                />
-            </div>
+            <ProfileHero profile={profile} isOwnProfile={isOwnProfile} />
 
             {/* Аватар */}
-            <div className="absolute top-[230px] sm:top-[300px] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100px] h-[100px] bg-primary rounded-full flex items-center justify-center border-4 border-white shadow-lg">
-                <span className="text-white font-bold text-xl">{profile?.name?.charAt(0)}</span>
+            <div className="absolute top-[230px] sm:top-[300px] left-1/2 -translate-x-1/2 -translate-y-1/2">
+                <ProfileAvatar userName={currentUser?.name || ''} profile={profile} isOwnProfile={isOwnProfile} />
             </div>
 
             {/* Основной контент */}

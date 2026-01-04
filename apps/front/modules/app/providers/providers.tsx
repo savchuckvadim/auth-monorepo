@@ -11,9 +11,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <NextThemesProvider
             attribute="class"
             defaultTheme="sociopath-dark"
-            enableSystem
+            themes={['sociopath-light', 'sociopath-dark']}
+            enableSystem={false}
             disableTransitionOnChange
             enableColorScheme
+            storageKey="theme"
         >      <AprilThemeProvider >
                 <ReactQueryProvider>
                     <AppProvider>{children}</AppProvider>

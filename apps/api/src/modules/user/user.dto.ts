@@ -1,6 +1,6 @@
 import { IsPassword } from "@/core/decorators/dto/password.decorator";
 import { ApiProperty } from "@nestjs/swagger";
-import { IsBoolean, IsDate, IsEmail, IsEnum, IsString } from "class-validator";
+import { IsBoolean, IsDate, IsEmail, IsEnum, IsString, IsNumber } from "class-validator";
 import { Token, User, user_roles } from "generated/prisma";
 import { UserWithFollowStatusType } from "./user.type";
 
@@ -36,6 +36,10 @@ export class UserDto implements Partial<User> {
         this.isFollowing = user.isFollowing || false;
         this.isFollower = user.isFollower || false;
         this.isFriend = user.isFriend || false;
+        this.followersCount = user.followersCount || 0;
+        this.followingCount = user.followingCount || 0;
+        this.postsCount = user.postsCount || 0;
+        this.avatarUrl = user.avatarUrl || '';
     }
 
     @ApiProperty({ description: 'ID', example: '1' })
@@ -76,6 +80,22 @@ export class UserDto implements Partial<User> {
     @ApiProperty({ description: 'Is Friend', example: true, type: Boolean })
     @IsBoolean({ message: 'IsFriend must be a boolean' })
     isFriend: boolean;
+
+    @ApiProperty({ description: 'Followers count', example: 100 })
+    @IsNumber()
+    followersCount: number;
+
+    @ApiProperty({ description: 'Following count', example: 50 })
+    @IsNumber()
+    followingCount: number;
+
+    @ApiProperty({ description: 'Posts count', example: 25 })
+    @IsNumber()
+    postsCount: number;
+
+    @ApiProperty({ description: 'Avatar URL', example: 'https://example.com/avatar.jpg' })
+    @IsString()
+    avatarUrl: string;
 
 }
 

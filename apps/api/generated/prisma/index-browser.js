@@ -206,6 +206,40 @@ exports.Prisma.FollowScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.ProfileScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  about: 'about',
+  avatar: 'avatar',
+  hero: 'hero',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PostScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  text: 'text',
+  image: 'image',
+  audio: 'audio',
+  video: 'video',
+  link: 'link',
+  views: 'views',
+  originalPostId: 'originalPostId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.PostLikeScalarFieldEnum = {
+  id: 'id',
+  postId: 'postId',
+  userId: 'userId',
+  isLike: 'isLike',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -273,6 +307,32 @@ exports.Prisma.FollowOrderByRelevanceFieldEnum = {
   followerId: 'followerId',
   followingId: 'followingId'
 };
+
+exports.Prisma.ProfileOrderByRelevanceFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  about: 'about',
+  avatar: 'avatar',
+  hero: 'hero'
+};
+
+exports.Prisma.PostOrderByRelevanceFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  text: 'text',
+  image: 'image',
+  audio: 'audio',
+  video: 'video',
+  link: 'link',
+  originalPostId: 'originalPostId'
+};
+
+exports.Prisma.PostLikeOrderByRelevanceFieldEnum = {
+  id: 'id',
+  postId: 'postId',
+  userId: 'userId'
+};
 exports.user_roles = exports.$Enums.user_roles = {
   owner: 'owner',
   admin: 'admin',
@@ -321,7 +381,10 @@ exports.Prisma.ModelName = {
   Message: 'Message',
   MessageReadStatus: 'MessageReadStatus',
   Call: 'Call',
-  Follow: 'Follow'
+  Follow: 'Follow',
+  Profile: 'Profile',
+  Post: 'Post',
+  PostLike: 'PostLike'
 };
 
 /**
