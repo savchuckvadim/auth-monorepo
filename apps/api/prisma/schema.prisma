@@ -38,9 +38,9 @@ model User {
     profile Profile?
 
     // Posts relations
-    posts     Post[]
-    postLikes PostLike[]
-
+    posts         Post[]     @relation("PostWall")
+    authoredPosts Post[]     @relation("PostAuthor")
+    postLikes     PostLike[]
 
     @@unique([email])
     @@map("users")
@@ -175,6 +175,7 @@ model Call {
 enum ChatType {
     PRIVATE
     GROUP
+    SECRET
 }
 
 enum ChatMemberRole {
@@ -244,7 +245,8 @@ model Profile {
 
 model Post {
     id             String    @id @default(uuid())
-    userId         String    @map("user_id") @db.VarChar(255)
+    userId         String    @map("user_id") @db.VarChar(255) // Владелец стены (на чьей стене пост)
+    authorId       String?   @map("author_id") @db.VarChar(255) // Автор поста (кто написал)
     text           String?   @db.VarChar(2000) // Ограничение 2000 символов
     image          String?   @db.VarChar(500) // URL изображения
     audio          String?   @db.VarChar(500) // URL аудио файла
@@ -256,12 +258,15 @@ model Post {
     updatedAt      DateTime  @updatedAt
     deletedAt      DateTime? @map("deleted_at")
 
-    user         User       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    user         User       @relation("PostWall", fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+    author       User?      @relation("PostAuthor", fields: [authorId], references: [id], onDelete: SetNull, onUpdate: Cascade)
     originalPost Post?      @relation("PostRepost", fields: [originalPostId], references: [id], onDelete: SetNull)
     reposts      Post[]     @relation("PostRepost")
     likes        PostLike[]
 
     @@index([userId])
+    @@index([authorId])
+    @@index([userId, createdAt])
     @@index([originalPostId])
     @@index([createdAt])
     @@map("posts")
@@ -282,4 +287,3 @@ model PostLike {
     @@index([userId])
     @@map("post_likes")
 }
-

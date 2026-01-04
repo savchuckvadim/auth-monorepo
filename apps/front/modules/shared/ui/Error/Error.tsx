@@ -1,26 +1,28 @@
 
 'use client';
-import Image from 'next/image';
 
-;
+import ErrorIcon from '../icons/ui/ErrorIcon';
+import { EIconColor } from '../icons';
+import { useTheme } from 'next-themes';
+
+export const ERROR_TEXT = 'Oh shit... Something went wrong';
+
 export const ErrorComponent = ({ text }: { text?: string }) => {
-
-
+    const { theme } = useTheme()
+    const isDarkMode = theme?.includes('dark')
+    const color = isDarkMode ? EIconColor.RED : EIconColor.GRAY
+    const errorText = text || ERROR_TEXT;
     return (
         <div className="bg-background h-[80vh] w-full flex justify-center items-center">
 
             <div  >
                 <div className=" flex-col justify-center items-center">
 
-                    <Image
-                        src="/404.svg"
-                        alt="Error"
-                        width={120}
-                        height={120}
-                        className="backgound:invert opacity-20"
-                        priority
-                    />
-                    {text && <p className='text-primary/30  text-center'>{text}</p>}
+                    <ErrorIcon />
+                    <p
+                        style={{ color }}
+                        className='text-center opacity-70'>{errorText}</p>
+
                 </div>
 
             </div>

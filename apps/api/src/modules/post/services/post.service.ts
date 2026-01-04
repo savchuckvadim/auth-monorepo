@@ -1,19 +1,34 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, ForbiddenException } from "@nestjs/common";
 import { PostRepository } from "../repositories/post.repository";
 import { CreatePostDto, UpdatePostDto, PostDto, PaginatedPostsDto, RepostDto, PostRepostUserDto } from "../dto/post.dto";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { PostCreatedEvent, PostDeletedEvent, PostLikedEvent, PostUpdatedEvent } from "../events/post.events";
 import { PostEvent } from "../type/post-event.type";
+import { FollowersService } from "../../followers/followers.service";
+import { S3Service } from "@/core/s3";
 
 @Injectable()
 export class PostService {
     constructor(
         private readonly repo: PostRepository,
         private readonly eventEmitter: EventEmitter2,
+        private readonly followersService: FollowersService,
+        private readonly s3Service: S3Service,
     ) { }
 
-    public async createPost(userId: string, data: CreatePostDto): Promise<PostDto> {
-        const post = new PostDto(await this.repo.create(userId, data));
+    public async createPost(authorId: string, data: CreatePostDto): Promise<PostDto> {
+        // Проверка подписки, если пост на чужой стене
+        const wallUserId = data.wallUserId || authorId;
+
+        if (wallUserId !== authorId) {
+            // Проверяем, что автор подписан на владельца стены
+            const isFollowing = await this.followersService.isFollowing(authorId, wallUserId);
+            if (!isFollowing) {
+                throw new ForbiddenException('You can only post on walls of users you follow');
+            }
+        }
+
+        const post = new PostDto(await this.repo.create(authorId, data));
         this.eventEmitter.emit(PostEvent.CREATED, new PostCreatedEvent(post));
         return post;
     }
@@ -23,12 +38,27 @@ export class PostService {
     }
 
     public async updatePost(id: string, userId: string, data: UpdatePostDto): Promise<PostDto> {
+        // Проверка выполняется в Repository
         const post = new PostDto(await this.repo.update(id, userId, data));
         this.eventEmitter.emit(PostEvent.UPDATED, new PostUpdatedEvent(post));
         return post;
     }
 
     public async deletePost(id: string, userId: string): Promise<void> {
+        // Получаем пост перед удалением, чтобы удалить медиа из S3
+        const post = await this.repo.findById(id, userId);
+
+        // Удаляем медиа файлы из S3
+        const mediaUrls: string[] = [];
+        if (post.image) mediaUrls.push(post.image);
+        if (post.audio) mediaUrls.push(post.audio);
+        if (post.video) mediaUrls.push(post.video);
+
+        if (mediaUrls.length > 0) {
+            await this.s3Service.deleteFiles(mediaUrls);
+        }
+
+        // Удаляем пост из БД
         await this.repo.delete(id, userId);
         this.eventEmitter.emit(PostEvent.DELETED, new PostDeletedEvent(id));
     }

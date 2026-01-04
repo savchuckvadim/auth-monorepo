@@ -6,9 +6,10 @@ import { PostPrismaRepository } from "./repositories/post.prisma.repository";
 import { PostGateway } from "./socket/post.gateway";
 import { TokenModule } from "../token";
 import { S3Module } from "@/core/s3";
+import { FollowersModule } from "../followers/followers.module";
 
 @Module({
-    imports: [TokenModule, S3Module],
+    imports: [TokenModule, S3Module, FollowersModule],
     controllers: [PostController],
     providers: [
         PostService,

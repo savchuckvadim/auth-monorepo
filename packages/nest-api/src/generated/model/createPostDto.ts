@@ -17,4 +17,6 @@ export interface CreatePostDto {
     video?: string;
     /** Link URL */
     link?: string;
+    /** Wall user ID (on whose wall to post). If not provided, post on own wall */
+    wallUserId?: string;
 }

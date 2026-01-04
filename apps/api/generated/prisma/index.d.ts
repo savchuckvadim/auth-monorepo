@@ -84,7 +84,8 @@ export type user_roles = (typeof user_roles)[keyof typeof user_roles]
 
 export const ChatType: {
   PRIVATE: 'PRIVATE',
-  GROUP: 'GROUP'
+  GROUP: 'GROUP',
+  SECRET: 'SECRET'
 };
 
 export type ChatType = (typeof ChatType)[keyof typeof ChatType]
@@ -1781,6 +1782,7 @@ export namespace Prisma {
     followers: number
     following: number
     posts: number
+    authoredPosts: number
     postLikes: number
   }
 
@@ -1796,6 +1798,7 @@ export namespace Prisma {
     followers?: boolean | UserCountOutputTypeCountFollowersArgs
     following?: boolean | UserCountOutputTypeCountFollowingArgs
     posts?: boolean | UserCountOutputTypeCountPostsArgs
+    authoredPosts?: boolean | UserCountOutputTypeCountAuthoredPostsArgs
     postLikes?: boolean | UserCountOutputTypeCountPostLikesArgs
   }
 
@@ -1884,6 +1887,13 @@ export namespace Prisma {
    * UserCountOutputType without action
    */
   export type UserCountOutputTypeCountPostsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PostWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountAuthoredPostsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: PostWhereInput
   }
 
@@ -2236,6 +2246,7 @@ export namespace Prisma {
     following?: boolean | User$followingArgs<ExtArgs>
     profile?: boolean | User$profileArgs<ExtArgs>
     posts?: boolean | User$postsArgs<ExtArgs>
+    authoredPosts?: boolean | User$authoredPostsArgs<ExtArgs>
     postLikes?: boolean | User$postLikesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
@@ -2268,6 +2279,7 @@ export namespace Prisma {
     following?: boolean | User$followingArgs<ExtArgs>
     profile?: boolean | User$profileArgs<ExtArgs>
     posts?: boolean | User$postsArgs<ExtArgs>
+    authoredPosts?: boolean | User$authoredPostsArgs<ExtArgs>
     postLikes?: boolean | User$postLikesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
@@ -2287,6 +2299,7 @@ export namespace Prisma {
       following: Prisma.$FollowPayload<ExtArgs>[]
       profile: Prisma.$ProfilePayload<ExtArgs> | null
       posts: Prisma.$PostPayload<ExtArgs>[]
+      authoredPosts: Prisma.$PostPayload<ExtArgs>[]
       postLikes: Prisma.$PostLikePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -2651,6 +2664,7 @@ export namespace Prisma {
     following<T extends User$followingArgs<ExtArgs> = {}>(args?: Subset<T, User$followingArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     profile<T extends User$profileArgs<ExtArgs> = {}>(args?: Subset<T, User$profileArgs<ExtArgs>>): Prisma__ProfileClient<$Result.GetResult<Prisma.$ProfilePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     posts<T extends User$postsArgs<ExtArgs> = {}>(args?: Subset<T, User$postsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PostPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    authoredPosts<T extends User$authoredPostsArgs<ExtArgs> = {}>(args?: Subset<T, User$authoredPostsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PostPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     postLikes<T extends User$postLikesArgs<ExtArgs> = {}>(args?: Subset<T, User$postLikesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PostLikePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -3295,6 +3309,30 @@ export namespace Prisma {
    * User.posts
    */
   export type User$postsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Post
+     */
+    select?: PostSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Post
+     */
+    omit?: PostOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PostInclude<ExtArgs> | null
+    where?: PostWhereInput
+    orderBy?: PostOrderByWithRelationInput | PostOrderByWithRelationInput[]
+    cursor?: PostWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PostScalarFieldEnum | PostScalarFieldEnum[]
+  }
+
+  /**
+   * User.authoredPosts
+   */
+  export type User$authoredPostsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the Post
      */
@@ -11334,6 +11372,7 @@ export namespace Prisma {
   export type PostMinAggregateOutputType = {
     id: string | null
     userId: string | null
+    authorId: string | null
     text: string | null
     image: string | null
     audio: string | null
@@ -11349,6 +11388,7 @@ export namespace Prisma {
   export type PostMaxAggregateOutputType = {
     id: string | null
     userId: string | null
+    authorId: string | null
     text: string | null
     image: string | null
     audio: string | null
@@ -11364,6 +11404,7 @@ export namespace Prisma {
   export type PostCountAggregateOutputType = {
     id: number
     userId: number
+    authorId: number
     text: number
     image: number
     audio: number
@@ -11389,6 +11430,7 @@ export namespace Prisma {
   export type PostMinAggregateInputType = {
     id?: true
     userId?: true
+    authorId?: true
     text?: true
     image?: true
     audio?: true
@@ -11404,6 +11446,7 @@ export namespace Prisma {
   export type PostMaxAggregateInputType = {
     id?: true
     userId?: true
+    authorId?: true
     text?: true
     image?: true
     audio?: true
@@ -11419,6 +11462,7 @@ export namespace Prisma {
   export type PostCountAggregateInputType = {
     id?: true
     userId?: true
+    authorId?: true
     text?: true
     image?: true
     audio?: true
@@ -11521,6 +11565,7 @@ export namespace Prisma {
   export type PostGroupByOutputType = {
     id: string
     userId: string
+    authorId: string | null
     text: string | null
     image: string | null
     audio: string | null
@@ -11555,6 +11600,7 @@ export namespace Prisma {
   export type PostSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
+    authorId?: boolean
     text?: boolean
     image?: boolean
     audio?: boolean
@@ -11566,6 +11612,7 @@ export namespace Prisma {
     updatedAt?: boolean
     deletedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    author?: boolean | Post$authorArgs<ExtArgs>
     originalPost?: boolean | Post$originalPostArgs<ExtArgs>
     reposts?: boolean | Post$repostsArgs<ExtArgs>
     likes?: boolean | Post$likesArgs<ExtArgs>
@@ -11577,6 +11624,7 @@ export namespace Prisma {
   export type PostSelectScalar = {
     id?: boolean
     userId?: boolean
+    authorId?: boolean
     text?: boolean
     image?: boolean
     audio?: boolean
@@ -11589,9 +11637,10 @@ export namespace Prisma {
     deletedAt?: boolean
   }
 
-  export type PostOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "text" | "image" | "audio" | "video" | "link" | "views" | "originalPostId" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["post"]>
+  export type PostOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "authorId" | "text" | "image" | "audio" | "video" | "link" | "views" | "originalPostId" | "createdAt" | "updatedAt" | "deletedAt", ExtArgs["result"]["post"]>
   export type PostInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    author?: boolean | Post$authorArgs<ExtArgs>
     originalPost?: boolean | Post$originalPostArgs<ExtArgs>
     reposts?: boolean | Post$repostsArgs<ExtArgs>
     likes?: boolean | Post$likesArgs<ExtArgs>
@@ -11602,6 +11651,7 @@ export namespace Prisma {
     name: "Post"
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
+      author: Prisma.$UserPayload<ExtArgs> | null
       originalPost: Prisma.$PostPayload<ExtArgs> | null
       reposts: Prisma.$PostPayload<ExtArgs>[]
       likes: Prisma.$PostLikePayload<ExtArgs>[]
@@ -11609,6 +11659,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       userId: string
+      authorId: string | null
       text: string | null
       image: string | null
       audio: string | null
@@ -11960,6 +12011,7 @@ export namespace Prisma {
   export interface Prisma__PostClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    author<T extends Post$authorArgs<ExtArgs> = {}>(args?: Subset<T, Post$authorArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     originalPost<T extends Post$originalPostArgs<ExtArgs> = {}>(args?: Subset<T, Post$originalPostArgs<ExtArgs>>): Prisma__PostClient<$Result.GetResult<Prisma.$PostPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     reposts<T extends Post$repostsArgs<ExtArgs> = {}>(args?: Subset<T, Post$repostsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PostPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     likes<T extends Post$likesArgs<ExtArgs> = {}>(args?: Subset<T, Post$likesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PostLikePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -11994,6 +12046,7 @@ export namespace Prisma {
   interface PostFieldRefs {
     readonly id: FieldRef<"Post", 'String'>
     readonly userId: FieldRef<"Post", 'String'>
+    readonly authorId: FieldRef<"Post", 'String'>
     readonly text: FieldRef<"Post", 'String'>
     readonly image: FieldRef<"Post", 'String'>
     readonly audio: FieldRef<"Post", 'String'>
@@ -12344,6 +12397,25 @@ export namespace Prisma {
      * Limit how many Posts to delete.
      */
     limit?: number
+  }
+
+  /**
+   * Post.author
+   */
+  export type Post$authorArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
   }
 
   /**
@@ -13505,6 +13577,7 @@ export namespace Prisma {
   export const PostScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
+    authorId: 'authorId',
     text: 'text',
     image: 'image',
     audio: 'audio',
@@ -13644,6 +13717,7 @@ export namespace Prisma {
   export const PostOrderByRelevanceFieldEnum: {
     id: 'id',
     userId: 'userId',
+    authorId: 'authorId',
     text: 'text',
     image: 'image',
     audio: 'audio',
@@ -13774,6 +13848,7 @@ export namespace Prisma {
     following?: FollowListRelationFilter
     profile?: XOR<ProfileNullableScalarRelationFilter, ProfileWhereInput> | null
     posts?: PostListRelationFilter
+    authoredPosts?: PostListRelationFilter
     postLikes?: PostLikeListRelationFilter
   }
 
@@ -13799,6 +13874,7 @@ export namespace Prisma {
     following?: FollowOrderByRelationAggregateInput
     profile?: ProfileOrderByWithRelationInput
     posts?: PostOrderByRelationAggregateInput
+    authoredPosts?: PostOrderByRelationAggregateInput
     postLikes?: PostLikeOrderByRelationAggregateInput
     _relevance?: UserOrderByRelevanceInput
   }
@@ -13828,6 +13904,7 @@ export namespace Prisma {
     following?: FollowListRelationFilter
     profile?: XOR<ProfileNullableScalarRelationFilter, ProfileWhereInput> | null
     posts?: PostListRelationFilter
+    authoredPosts?: PostListRelationFilter
     postLikes?: PostLikeListRelationFilter
   }, "id" | "email" | "activationLink" | "email">
 
@@ -14461,6 +14538,7 @@ export namespace Prisma {
     NOT?: PostWhereInput | PostWhereInput[]
     id?: StringFilter<"Post"> | string
     userId?: StringFilter<"Post"> | string
+    authorId?: StringNullableFilter<"Post"> | string | null
     text?: StringNullableFilter<"Post"> | string | null
     image?: StringNullableFilter<"Post"> | string | null
     audio?: StringNullableFilter<"Post"> | string | null
@@ -14472,6 +14550,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Post"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Post"> | Date | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    author?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     originalPost?: XOR<PostNullableScalarRelationFilter, PostWhereInput> | null
     reposts?: PostListRelationFilter
     likes?: PostLikeListRelationFilter
@@ -14480,6 +14559,7 @@ export namespace Prisma {
   export type PostOrderByWithRelationInput = {
     id?: SortOrder
     userId?: SortOrder
+    authorId?: SortOrderInput | SortOrder
     text?: SortOrderInput | SortOrder
     image?: SortOrderInput | SortOrder
     audio?: SortOrderInput | SortOrder
@@ -14491,6 +14571,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     deletedAt?: SortOrderInput | SortOrder
     user?: UserOrderByWithRelationInput
+    author?: UserOrderByWithRelationInput
     originalPost?: PostOrderByWithRelationInput
     reposts?: PostOrderByRelationAggregateInput
     likes?: PostLikeOrderByRelationAggregateInput
@@ -14503,6 +14584,7 @@ export namespace Prisma {
     OR?: PostWhereInput[]
     NOT?: PostWhereInput | PostWhereInput[]
     userId?: StringFilter<"Post"> | string
+    authorId?: StringNullableFilter<"Post"> | string | null
     text?: StringNullableFilter<"Post"> | string | null
     image?: StringNullableFilter<"Post"> | string | null
     audio?: StringNullableFilter<"Post"> | string | null
@@ -14514,6 +14596,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Post"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Post"> | Date | string | null
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    author?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
     originalPost?: XOR<PostNullableScalarRelationFilter, PostWhereInput> | null
     reposts?: PostListRelationFilter
     likes?: PostLikeListRelationFilter
@@ -14522,6 +14605,7 @@ export namespace Prisma {
   export type PostOrderByWithAggregationInput = {
     id?: SortOrder
     userId?: SortOrder
+    authorId?: SortOrderInput | SortOrder
     text?: SortOrderInput | SortOrder
     image?: SortOrderInput | SortOrder
     audio?: SortOrderInput | SortOrder
@@ -14545,6 +14629,7 @@ export namespace Prisma {
     NOT?: PostScalarWhereWithAggregatesInput | PostScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Post"> | string
     userId?: StringWithAggregatesFilter<"Post"> | string
+    authorId?: StringNullableWithAggregatesFilter<"Post"> | string | null
     text?: StringNullableWithAggregatesFilter<"Post"> | string | null
     image?: StringNullableWithAggregatesFilter<"Post"> | string | null
     audio?: StringNullableWithAggregatesFilter<"Post"> | string | null
@@ -14639,6 +14724,7 @@ export namespace Prisma {
     following?: FollowCreateNestedManyWithoutFollowingInput
     profile?: ProfileCreateNestedOneWithoutUserInput
     posts?: PostCreateNestedManyWithoutUserInput
+    authoredPosts?: PostCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeCreateNestedManyWithoutUserInput
   }
 
@@ -14664,6 +14750,7 @@ export namespace Prisma {
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
     posts?: PostUncheckedCreateNestedManyWithoutUserInput
+    authoredPosts?: PostUncheckedCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -14689,6 +14776,7 @@ export namespace Prisma {
     following?: FollowUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUpdateOneWithoutUserNestedInput
     posts?: PostUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUpdateManyWithoutUserNestedInput
   }
 
@@ -14714,6 +14802,7 @@ export namespace Prisma {
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
     posts?: PostUncheckedUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUncheckedUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -15357,6 +15446,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     user: UserCreateNestedOneWithoutPostsInput
+    author?: UserCreateNestedOneWithoutAuthoredPostsInput
     originalPost?: PostCreateNestedOneWithoutRepostsInput
     reposts?: PostCreateNestedManyWithoutOriginalPostInput
     likes?: PostLikeCreateNestedManyWithoutPostInput
@@ -15365,6 +15455,7 @@ export namespace Prisma {
   export type PostUncheckedCreateInput = {
     id?: string
     userId: string
+    authorId?: string | null
     text?: string | null
     image?: string | null
     audio?: string | null
@@ -15391,6 +15482,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     user?: UserUpdateOneRequiredWithoutPostsNestedInput
+    author?: UserUpdateOneWithoutAuthoredPostsNestedInput
     originalPost?: PostUpdateOneWithoutRepostsNestedInput
     reposts?: PostUpdateManyWithoutOriginalPostNestedInput
     likes?: PostLikeUpdateManyWithoutPostNestedInput
@@ -15399,6 +15491,7 @@ export namespace Prisma {
   export type PostUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    authorId?: NullableStringFieldUpdateOperationsInput | string | null
     text?: NullableStringFieldUpdateOperationsInput | string | null
     image?: NullableStringFieldUpdateOperationsInput | string | null
     audio?: NullableStringFieldUpdateOperationsInput | string | null
@@ -15416,6 +15509,7 @@ export namespace Prisma {
   export type PostCreateManyInput = {
     id?: string
     userId: string
+    authorId?: string | null
     text?: string | null
     image?: string | null
     audio?: string | null
@@ -15444,6 +15538,7 @@ export namespace Prisma {
   export type PostUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    authorId?: NullableStringFieldUpdateOperationsInput | string | null
     text?: NullableStringFieldUpdateOperationsInput | string | null
     image?: NullableStringFieldUpdateOperationsInput | string | null
     audio?: NullableStringFieldUpdateOperationsInput | string | null
@@ -16291,6 +16386,7 @@ export namespace Prisma {
   export type PostCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
+    authorId?: SortOrder
     text?: SortOrder
     image?: SortOrder
     audio?: SortOrder
@@ -16310,6 +16406,7 @@ export namespace Prisma {
   export type PostMaxOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
+    authorId?: SortOrder
     text?: SortOrder
     image?: SortOrder
     audio?: SortOrder
@@ -16325,6 +16422,7 @@ export namespace Prisma {
   export type PostMinOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
+    authorId?: SortOrder
     text?: SortOrder
     image?: SortOrder
     audio?: SortOrder
@@ -16480,6 +16578,13 @@ export namespace Prisma {
     connect?: PostWhereUniqueInput | PostWhereUniqueInput[]
   }
 
+  export type PostCreateNestedManyWithoutAuthorInput = {
+    create?: XOR<PostCreateWithoutAuthorInput, PostUncheckedCreateWithoutAuthorInput> | PostCreateWithoutAuthorInput[] | PostUncheckedCreateWithoutAuthorInput[]
+    connectOrCreate?: PostCreateOrConnectWithoutAuthorInput | PostCreateOrConnectWithoutAuthorInput[]
+    createMany?: PostCreateManyAuthorInputEnvelope
+    connect?: PostWhereUniqueInput | PostWhereUniqueInput[]
+  }
+
   export type PostLikeCreateNestedManyWithoutUserInput = {
     create?: XOR<PostLikeCreateWithoutUserInput, PostLikeUncheckedCreateWithoutUserInput> | PostLikeCreateWithoutUserInput[] | PostLikeUncheckedCreateWithoutUserInput[]
     connectOrCreate?: PostLikeCreateOrConnectWithoutUserInput | PostLikeCreateOrConnectWithoutUserInput[]
@@ -16567,6 +16672,13 @@ export namespace Prisma {
     create?: XOR<PostCreateWithoutUserInput, PostUncheckedCreateWithoutUserInput> | PostCreateWithoutUserInput[] | PostUncheckedCreateWithoutUserInput[]
     connectOrCreate?: PostCreateOrConnectWithoutUserInput | PostCreateOrConnectWithoutUserInput[]
     createMany?: PostCreateManyUserInputEnvelope
+    connect?: PostWhereUniqueInput | PostWhereUniqueInput[]
+  }
+
+  export type PostUncheckedCreateNestedManyWithoutAuthorInput = {
+    create?: XOR<PostCreateWithoutAuthorInput, PostUncheckedCreateWithoutAuthorInput> | PostCreateWithoutAuthorInput[] | PostUncheckedCreateWithoutAuthorInput[]
+    connectOrCreate?: PostCreateOrConnectWithoutAuthorInput | PostCreateOrConnectWithoutAuthorInput[]
+    createMany?: PostCreateManyAuthorInputEnvelope
     connect?: PostWhereUniqueInput | PostWhereUniqueInput[]
   }
 
@@ -16757,6 +16869,20 @@ export namespace Prisma {
     deleteMany?: PostScalarWhereInput | PostScalarWhereInput[]
   }
 
+  export type PostUpdateManyWithoutAuthorNestedInput = {
+    create?: XOR<PostCreateWithoutAuthorInput, PostUncheckedCreateWithoutAuthorInput> | PostCreateWithoutAuthorInput[] | PostUncheckedCreateWithoutAuthorInput[]
+    connectOrCreate?: PostCreateOrConnectWithoutAuthorInput | PostCreateOrConnectWithoutAuthorInput[]
+    upsert?: PostUpsertWithWhereUniqueWithoutAuthorInput | PostUpsertWithWhereUniqueWithoutAuthorInput[]
+    createMany?: PostCreateManyAuthorInputEnvelope
+    set?: PostWhereUniqueInput | PostWhereUniqueInput[]
+    disconnect?: PostWhereUniqueInput | PostWhereUniqueInput[]
+    delete?: PostWhereUniqueInput | PostWhereUniqueInput[]
+    connect?: PostWhereUniqueInput | PostWhereUniqueInput[]
+    update?: PostUpdateWithWhereUniqueWithoutAuthorInput | PostUpdateWithWhereUniqueWithoutAuthorInput[]
+    updateMany?: PostUpdateManyWithWhereWithoutAuthorInput | PostUpdateManyWithWhereWithoutAuthorInput[]
+    deleteMany?: PostScalarWhereInput | PostScalarWhereInput[]
+  }
+
   export type PostLikeUpdateManyWithoutUserNestedInput = {
     create?: XOR<PostLikeCreateWithoutUserInput, PostLikeUncheckedCreateWithoutUserInput> | PostLikeCreateWithoutUserInput[] | PostLikeUncheckedCreateWithoutUserInput[]
     connectOrCreate?: PostLikeCreateOrConnectWithoutUserInput | PostLikeCreateOrConnectWithoutUserInput[]
@@ -16932,6 +17058,20 @@ export namespace Prisma {
     connect?: PostWhereUniqueInput | PostWhereUniqueInput[]
     update?: PostUpdateWithWhereUniqueWithoutUserInput | PostUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: PostUpdateManyWithWhereWithoutUserInput | PostUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: PostScalarWhereInput | PostScalarWhereInput[]
+  }
+
+  export type PostUncheckedUpdateManyWithoutAuthorNestedInput = {
+    create?: XOR<PostCreateWithoutAuthorInput, PostUncheckedCreateWithoutAuthorInput> | PostCreateWithoutAuthorInput[] | PostUncheckedCreateWithoutAuthorInput[]
+    connectOrCreate?: PostCreateOrConnectWithoutAuthorInput | PostCreateOrConnectWithoutAuthorInput[]
+    upsert?: PostUpsertWithWhereUniqueWithoutAuthorInput | PostUpsertWithWhereUniqueWithoutAuthorInput[]
+    createMany?: PostCreateManyAuthorInputEnvelope
+    set?: PostWhereUniqueInput | PostWhereUniqueInput[]
+    disconnect?: PostWhereUniqueInput | PostWhereUniqueInput[]
+    delete?: PostWhereUniqueInput | PostWhereUniqueInput[]
+    connect?: PostWhereUniqueInput | PostWhereUniqueInput[]
+    update?: PostUpdateWithWhereUniqueWithoutAuthorInput | PostUpdateWithWhereUniqueWithoutAuthorInput[]
+    updateMany?: PostUpdateManyWithWhereWithoutAuthorInput | PostUpdateManyWithWhereWithoutAuthorInput[]
     deleteMany?: PostScalarWhereInput | PostScalarWhereInput[]
   }
 
@@ -17431,6 +17571,12 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type UserCreateNestedOneWithoutAuthoredPostsInput = {
+    create?: XOR<UserCreateWithoutAuthoredPostsInput, UserUncheckedCreateWithoutAuthoredPostsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAuthoredPostsInput
+    connect?: UserWhereUniqueInput
+  }
+
   export type PostCreateNestedOneWithoutRepostsInput = {
     create?: XOR<PostCreateWithoutRepostsInput, PostUncheckedCreateWithoutRepostsInput>
     connectOrCreate?: PostCreateOrConnectWithoutRepostsInput
@@ -17479,6 +17625,16 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutPostsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPostsInput, UserUpdateWithoutPostsInput>, UserUncheckedUpdateWithoutPostsInput>
+  }
+
+  export type UserUpdateOneWithoutAuthoredPostsNestedInput = {
+    create?: XOR<UserCreateWithoutAuthoredPostsInput, UserUncheckedCreateWithoutAuthoredPostsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAuthoredPostsInput
+    upsert?: UserUpsertWithoutAuthoredPostsInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAuthoredPostsInput, UserUpdateWithoutAuthoredPostsInput>, UserUncheckedUpdateWithoutAuthoredPostsInput>
   }
 
   export type PostUpdateOneWithoutRepostsNestedInput = {
@@ -18224,6 +18380,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     deletedAt?: Date | string | null
+    author?: UserCreateNestedOneWithoutAuthoredPostsInput
     originalPost?: PostCreateNestedOneWithoutRepostsInput
     reposts?: PostCreateNestedManyWithoutOriginalPostInput
     likes?: PostLikeCreateNestedManyWithoutPostInput
@@ -18231,6 +18388,7 @@ export namespace Prisma {
 
   export type PostUncheckedCreateWithoutUserInput = {
     id?: string
+    authorId?: string | null
     text?: string | null
     image?: string | null
     audio?: string | null
@@ -18252,6 +18410,50 @@ export namespace Prisma {
 
   export type PostCreateManyUserInputEnvelope = {
     data: PostCreateManyUserInput | PostCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PostCreateWithoutAuthorInput = {
+    id?: string
+    text?: string | null
+    image?: string | null
+    audio?: string | null
+    video?: string | null
+    link?: string | null
+    views?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    user: UserCreateNestedOneWithoutPostsInput
+    originalPost?: PostCreateNestedOneWithoutRepostsInput
+    reposts?: PostCreateNestedManyWithoutOriginalPostInput
+    likes?: PostLikeCreateNestedManyWithoutPostInput
+  }
+
+  export type PostUncheckedCreateWithoutAuthorInput = {
+    id?: string
+    userId: string
+    text?: string | null
+    image?: string | null
+    audio?: string | null
+    video?: string | null
+    link?: string | null
+    views?: number
+    originalPostId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    reposts?: PostUncheckedCreateNestedManyWithoutOriginalPostInput
+    likes?: PostLikeUncheckedCreateNestedManyWithoutPostInput
+  }
+
+  export type PostCreateOrConnectWithoutAuthorInput = {
+    where: PostWhereUniqueInput
+    create: XOR<PostCreateWithoutAuthorInput, PostUncheckedCreateWithoutAuthorInput>
+  }
+
+  export type PostCreateManyAuthorInputEnvelope = {
+    data: PostCreateManyAuthorInput | PostCreateManyAuthorInput[]
     skipDuplicates?: boolean
   }
 
@@ -18586,6 +18788,7 @@ export namespace Prisma {
     NOT?: PostScalarWhereInput | PostScalarWhereInput[]
     id?: StringFilter<"Post"> | string
     userId?: StringFilter<"Post"> | string
+    authorId?: StringNullableFilter<"Post"> | string | null
     text?: StringNullableFilter<"Post"> | string | null
     image?: StringNullableFilter<"Post"> | string | null
     audio?: StringNullableFilter<"Post"> | string | null
@@ -18596,6 +18799,22 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Post"> | Date | string
     updatedAt?: DateTimeFilter<"Post"> | Date | string
     deletedAt?: DateTimeNullableFilter<"Post"> | Date | string | null
+  }
+
+  export type PostUpsertWithWhereUniqueWithoutAuthorInput = {
+    where: PostWhereUniqueInput
+    update: XOR<PostUpdateWithoutAuthorInput, PostUncheckedUpdateWithoutAuthorInput>
+    create: XOR<PostCreateWithoutAuthorInput, PostUncheckedCreateWithoutAuthorInput>
+  }
+
+  export type PostUpdateWithWhereUniqueWithoutAuthorInput = {
+    where: PostWhereUniqueInput
+    data: XOR<PostUpdateWithoutAuthorInput, PostUncheckedUpdateWithoutAuthorInput>
+  }
+
+  export type PostUpdateManyWithWhereWithoutAuthorInput = {
+    where: PostScalarWhereInput
+    data: XOR<PostUpdateManyMutationInput, PostUncheckedUpdateManyWithoutAuthorInput>
   }
 
   export type PostLikeUpsertWithWhereUniqueWithoutUserInput = {
@@ -18646,6 +18865,7 @@ export namespace Prisma {
     following?: FollowCreateNestedManyWithoutFollowingInput
     profile?: ProfileCreateNestedOneWithoutUserInput
     posts?: PostCreateNestedManyWithoutUserInput
+    authoredPosts?: PostCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeCreateNestedManyWithoutUserInput
   }
 
@@ -18670,6 +18890,7 @@ export namespace Prisma {
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
     posts?: PostUncheckedCreateNestedManyWithoutUserInput
+    authoredPosts?: PostUncheckedCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -18710,6 +18931,7 @@ export namespace Prisma {
     following?: FollowUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUpdateOneWithoutUserNestedInput
     posts?: PostUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUpdateManyWithoutUserNestedInput
   }
 
@@ -18734,6 +18956,7 @@ export namespace Prisma {
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
     posts?: PostUncheckedUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUncheckedUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -18864,6 +19087,7 @@ export namespace Prisma {
     following?: FollowCreateNestedManyWithoutFollowingInput
     profile?: ProfileCreateNestedOneWithoutUserInput
     posts?: PostCreateNestedManyWithoutUserInput
+    authoredPosts?: PostCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeCreateNestedManyWithoutUserInput
   }
 
@@ -18888,6 +19112,7 @@ export namespace Prisma {
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
     posts?: PostUncheckedCreateNestedManyWithoutUserInput
+    authoredPosts?: PostUncheckedCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -18917,6 +19142,7 @@ export namespace Prisma {
     following?: FollowCreateNestedManyWithoutFollowingInput
     profile?: ProfileCreateNestedOneWithoutUserInput
     posts?: PostCreateNestedManyWithoutUserInput
+    authoredPosts?: PostCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeCreateNestedManyWithoutUserInput
   }
 
@@ -18941,6 +19167,7 @@ export namespace Prisma {
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
     posts?: PostUncheckedCreateNestedManyWithoutUserInput
+    authoredPosts?: PostUncheckedCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -19029,6 +19256,7 @@ export namespace Prisma {
     following?: FollowUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUpdateOneWithoutUserNestedInput
     posts?: PostUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUpdateManyWithoutUserNestedInput
   }
 
@@ -19053,6 +19281,7 @@ export namespace Prisma {
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
     posts?: PostUncheckedUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUncheckedUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -19088,6 +19317,7 @@ export namespace Prisma {
     following?: FollowUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUpdateOneWithoutUserNestedInput
     posts?: PostUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUpdateManyWithoutUserNestedInput
   }
 
@@ -19112,6 +19342,7 @@ export namespace Prisma {
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
     posts?: PostUncheckedUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUncheckedUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -19169,6 +19400,7 @@ export namespace Prisma {
     following?: FollowCreateNestedManyWithoutFollowingInput
     profile?: ProfileCreateNestedOneWithoutUserInput
     posts?: PostCreateNestedManyWithoutUserInput
+    authoredPosts?: PostCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeCreateNestedManyWithoutUserInput
   }
 
@@ -19193,6 +19425,7 @@ export namespace Prisma {
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
     posts?: PostUncheckedCreateNestedManyWithoutUserInput
+    authoredPosts?: PostUncheckedCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -19272,6 +19505,7 @@ export namespace Prisma {
     following?: FollowUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUpdateOneWithoutUserNestedInput
     posts?: PostUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUpdateManyWithoutUserNestedInput
   }
 
@@ -19296,6 +19530,7 @@ export namespace Prisma {
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
     posts?: PostUncheckedUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUncheckedUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -19353,6 +19588,7 @@ export namespace Prisma {
     following?: FollowCreateNestedManyWithoutFollowingInput
     profile?: ProfileCreateNestedOneWithoutUserInput
     posts?: PostCreateNestedManyWithoutUserInput
+    authoredPosts?: PostCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeCreateNestedManyWithoutUserInput
   }
 
@@ -19377,6 +19613,7 @@ export namespace Prisma {
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
     posts?: PostUncheckedCreateNestedManyWithoutUserInput
+    authoredPosts?: PostUncheckedCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -19561,6 +19798,7 @@ export namespace Prisma {
     following?: FollowUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUpdateOneWithoutUserNestedInput
     posts?: PostUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUpdateManyWithoutUserNestedInput
   }
 
@@ -19585,6 +19823,7 @@ export namespace Prisma {
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
     posts?: PostUncheckedUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUncheckedUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -19725,6 +19964,7 @@ export namespace Prisma {
     following?: FollowCreateNestedManyWithoutFollowingInput
     profile?: ProfileCreateNestedOneWithoutUserInput
     posts?: PostCreateNestedManyWithoutUserInput
+    authoredPosts?: PostCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeCreateNestedManyWithoutUserInput
   }
 
@@ -19749,6 +19989,7 @@ export namespace Prisma {
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
     posts?: PostUncheckedCreateNestedManyWithoutUserInput
+    authoredPosts?: PostUncheckedCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -19834,6 +20075,7 @@ export namespace Prisma {
     following?: FollowUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUpdateOneWithoutUserNestedInput
     posts?: PostUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUpdateManyWithoutUserNestedInput
   }
 
@@ -19858,6 +20100,7 @@ export namespace Prisma {
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
     posts?: PostUncheckedUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUncheckedUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -19915,6 +20158,7 @@ export namespace Prisma {
     following?: FollowCreateNestedManyWithoutFollowingInput
     profile?: ProfileCreateNestedOneWithoutUserInput
     posts?: PostCreateNestedManyWithoutUserInput
+    authoredPosts?: PostCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeCreateNestedManyWithoutUserInput
   }
 
@@ -19939,6 +20183,7 @@ export namespace Prisma {
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
     posts?: PostUncheckedCreateNestedManyWithoutUserInput
+    authoredPosts?: PostUncheckedCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -19968,6 +20213,7 @@ export namespace Prisma {
     following?: FollowCreateNestedManyWithoutFollowingInput
     profile?: ProfileCreateNestedOneWithoutUserInput
     posts?: PostCreateNestedManyWithoutUserInput
+    authoredPosts?: PostCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeCreateNestedManyWithoutUserInput
   }
 
@@ -19992,6 +20238,7 @@ export namespace Prisma {
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
     posts?: PostUncheckedCreateNestedManyWithoutUserInput
+    authoredPosts?: PostUncheckedCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -20071,6 +20318,7 @@ export namespace Prisma {
     following?: FollowUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUpdateOneWithoutUserNestedInput
     posts?: PostUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUpdateManyWithoutUserNestedInput
   }
 
@@ -20095,6 +20343,7 @@ export namespace Prisma {
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
     posts?: PostUncheckedUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUncheckedUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -20130,6 +20379,7 @@ export namespace Prisma {
     following?: FollowUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUpdateOneWithoutUserNestedInput
     posts?: PostUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUpdateManyWithoutUserNestedInput
   }
 
@@ -20154,6 +20404,7 @@ export namespace Prisma {
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
     posts?: PostUncheckedUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUncheckedUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -20178,6 +20429,7 @@ export namespace Prisma {
     following?: FollowCreateNestedManyWithoutFollowingInput
     profile?: ProfileCreateNestedOneWithoutUserInput
     posts?: PostCreateNestedManyWithoutUserInput
+    authoredPosts?: PostCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeCreateNestedManyWithoutUserInput
   }
 
@@ -20202,6 +20454,7 @@ export namespace Prisma {
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
     posts?: PostUncheckedCreateNestedManyWithoutUserInput
+    authoredPosts?: PostUncheckedCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -20231,6 +20484,7 @@ export namespace Prisma {
     followers?: FollowCreateNestedManyWithoutFollowerInput
     profile?: ProfileCreateNestedOneWithoutUserInput
     posts?: PostCreateNestedManyWithoutUserInput
+    authoredPosts?: PostCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeCreateNestedManyWithoutUserInput
   }
 
@@ -20255,6 +20509,7 @@ export namespace Prisma {
     followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
     posts?: PostUncheckedCreateNestedManyWithoutUserInput
+    authoredPosts?: PostUncheckedCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -20295,6 +20550,7 @@ export namespace Prisma {
     following?: FollowUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUpdateOneWithoutUserNestedInput
     posts?: PostUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUpdateManyWithoutUserNestedInput
   }
 
@@ -20319,6 +20575,7 @@ export namespace Prisma {
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
     posts?: PostUncheckedUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUncheckedUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -20354,6 +20611,7 @@ export namespace Prisma {
     followers?: FollowUpdateManyWithoutFollowerNestedInput
     profile?: ProfileUpdateOneWithoutUserNestedInput
     posts?: PostUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUpdateManyWithoutUserNestedInput
   }
 
@@ -20378,6 +20636,7 @@ export namespace Prisma {
     followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
     posts?: PostUncheckedUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUncheckedUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -20402,6 +20661,7 @@ export namespace Prisma {
     followers?: FollowCreateNestedManyWithoutFollowerInput
     following?: FollowCreateNestedManyWithoutFollowingInput
     posts?: PostCreateNestedManyWithoutUserInput
+    authoredPosts?: PostCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeCreateNestedManyWithoutUserInput
   }
 
@@ -20426,6 +20686,7 @@ export namespace Prisma {
     followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
     posts?: PostUncheckedCreateNestedManyWithoutUserInput
+    authoredPosts?: PostUncheckedCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -20466,6 +20727,7 @@ export namespace Prisma {
     followers?: FollowUpdateManyWithoutFollowerNestedInput
     following?: FollowUpdateManyWithoutFollowingNestedInput
     posts?: PostUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUpdateManyWithoutUserNestedInput
   }
 
@@ -20490,6 +20752,7 @@ export namespace Prisma {
     followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
     posts?: PostUncheckedUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUncheckedUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -20514,6 +20777,7 @@ export namespace Prisma {
     followers?: FollowCreateNestedManyWithoutFollowerInput
     following?: FollowCreateNestedManyWithoutFollowingInput
     profile?: ProfileCreateNestedOneWithoutUserInput
+    authoredPosts?: PostCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeCreateNestedManyWithoutUserInput
   }
 
@@ -20538,12 +20802,68 @@ export namespace Prisma {
     followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
+    authoredPosts?: PostUncheckedCreateNestedManyWithoutAuthorInput
     postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutPostsInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutPostsInput, UserUncheckedCreateWithoutPostsInput>
+  }
+
+  export type UserCreateWithoutAuthoredPostsInput = {
+    id?: string
+    name: string
+    email: string
+    isAcivated?: boolean
+    activationLink: string
+    role: $Enums.user_roles
+    password: string
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+    tokens?: TokenCreateNestedManyWithoutUserInput
+    createdChats?: ChatCreateNestedManyWithoutCreatorInput
+    chatMembers?: ChatMemberCreateNestedManyWithoutUserInput
+    messages?: MessageCreateNestedManyWithoutSenderInput
+    sentCalls?: CallCreateNestedManyWithoutInitiatorInput
+    receivedCalls?: CallCreateNestedManyWithoutReceiverInput
+    messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
+    chats?: ChatCreateNestedManyWithoutUserInput
+    followers?: FollowCreateNestedManyWithoutFollowerInput
+    following?: FollowCreateNestedManyWithoutFollowingInput
+    profile?: ProfileCreateNestedOneWithoutUserInput
+    posts?: PostCreateNestedManyWithoutUserInput
+    postLikes?: PostLikeCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutAuthoredPostsInput = {
+    id?: string
+    name: string
+    email: string
+    isAcivated?: boolean
+    activationLink: string
+    role: $Enums.user_roles
+    password: string
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+    tokens?: TokenUncheckedCreateNestedManyWithoutUserInput
+    createdChats?: ChatUncheckedCreateNestedManyWithoutCreatorInput
+    chatMembers?: ChatMemberUncheckedCreateNestedManyWithoutUserInput
+    messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
+    receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
+    messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    chats?: ChatUncheckedCreateNestedManyWithoutUserInput
+    followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
+    following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
+    profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
+    posts?: PostUncheckedCreateNestedManyWithoutUserInput
+    postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutAuthoredPostsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutAuthoredPostsInput, UserUncheckedCreateWithoutAuthoredPostsInput>
   }
 
   export type PostCreateWithoutRepostsInput = {
@@ -20558,6 +20878,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     user: UserCreateNestedOneWithoutPostsInput
+    author?: UserCreateNestedOneWithoutAuthoredPostsInput
     originalPost?: PostCreateNestedOneWithoutRepostsInput
     likes?: PostLikeCreateNestedManyWithoutPostInput
   }
@@ -20565,6 +20886,7 @@ export namespace Prisma {
   export type PostUncheckedCreateWithoutRepostsInput = {
     id?: string
     userId: string
+    authorId?: string | null
     text?: string | null
     image?: string | null
     audio?: string | null
@@ -20595,6 +20917,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     user: UserCreateNestedOneWithoutPostsInput
+    author?: UserCreateNestedOneWithoutAuthoredPostsInput
     reposts?: PostCreateNestedManyWithoutOriginalPostInput
     likes?: PostLikeCreateNestedManyWithoutPostInput
   }
@@ -20602,6 +20925,7 @@ export namespace Prisma {
   export type PostUncheckedCreateWithoutOriginalPostInput = {
     id?: string
     userId: string
+    authorId?: string | null
     text?: string | null
     image?: string | null
     audio?: string | null
@@ -20681,6 +21005,7 @@ export namespace Prisma {
     followers?: FollowUpdateManyWithoutFollowerNestedInput
     following?: FollowUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUpdateOneWithoutUserNestedInput
+    authoredPosts?: PostUpdateManyWithoutAuthorNestedInput
     postLikes?: PostLikeUpdateManyWithoutUserNestedInput
   }
 
@@ -20705,6 +21030,68 @@ export namespace Prisma {
     followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
+    authoredPosts?: PostUncheckedUpdateManyWithoutAuthorNestedInput
+    postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUpsertWithoutAuthoredPostsInput = {
+    update: XOR<UserUpdateWithoutAuthoredPostsInput, UserUncheckedUpdateWithoutAuthoredPostsInput>
+    create: XOR<UserCreateWithoutAuthoredPostsInput, UserUncheckedCreateWithoutAuthoredPostsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutAuthoredPostsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutAuthoredPostsInput, UserUncheckedUpdateWithoutAuthoredPostsInput>
+  }
+
+  export type UserUpdateWithoutAuthoredPostsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    isAcivated?: BoolFieldUpdateOperationsInput | boolean
+    activationLink?: StringFieldUpdateOperationsInput | string
+    role?: Enumuser_rolesFieldUpdateOperationsInput | $Enums.user_roles
+    password?: StringFieldUpdateOperationsInput | string
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tokens?: TokenUpdateManyWithoutUserNestedInput
+    createdChats?: ChatUpdateManyWithoutCreatorNestedInput
+    chatMembers?: ChatMemberUpdateManyWithoutUserNestedInput
+    messages?: MessageUpdateManyWithoutSenderNestedInput
+    sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
+    receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
+    messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    chats?: ChatUpdateManyWithoutUserNestedInput
+    followers?: FollowUpdateManyWithoutFollowerNestedInput
+    following?: FollowUpdateManyWithoutFollowingNestedInput
+    profile?: ProfileUpdateOneWithoutUserNestedInput
+    posts?: PostUpdateManyWithoutUserNestedInput
+    postLikes?: PostLikeUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutAuthoredPostsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    isAcivated?: BoolFieldUpdateOperationsInput | boolean
+    activationLink?: StringFieldUpdateOperationsInput | string
+    role?: Enumuser_rolesFieldUpdateOperationsInput | $Enums.user_roles
+    password?: StringFieldUpdateOperationsInput | string
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tokens?: TokenUncheckedUpdateManyWithoutUserNestedInput
+    createdChats?: ChatUncheckedUpdateManyWithoutCreatorNestedInput
+    chatMembers?: ChatMemberUncheckedUpdateManyWithoutUserNestedInput
+    messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
+    receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
+    messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
+    followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
+    following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
+    profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
+    posts?: PostUncheckedUpdateManyWithoutUserNestedInput
     postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -20731,6 +21118,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     user?: UserUpdateOneRequiredWithoutPostsNestedInput
+    author?: UserUpdateOneWithoutAuthoredPostsNestedInput
     originalPost?: PostUpdateOneWithoutRepostsNestedInput
     likes?: PostLikeUpdateManyWithoutPostNestedInput
   }
@@ -20738,6 +21126,7 @@ export namespace Prisma {
   export type PostUncheckedUpdateWithoutRepostsInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    authorId?: NullableStringFieldUpdateOperationsInput | string | null
     text?: NullableStringFieldUpdateOperationsInput | string | null
     image?: NullableStringFieldUpdateOperationsInput | string | null
     audio?: NullableStringFieldUpdateOperationsInput | string | null
@@ -20795,6 +21184,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     deletedAt?: Date | string | null
     user: UserCreateNestedOneWithoutPostsInput
+    author?: UserCreateNestedOneWithoutAuthoredPostsInput
     originalPost?: PostCreateNestedOneWithoutRepostsInput
     reposts?: PostCreateNestedManyWithoutOriginalPostInput
   }
@@ -20802,6 +21192,7 @@ export namespace Prisma {
   export type PostUncheckedCreateWithoutLikesInput = {
     id?: string
     userId: string
+    authorId?: string | null
     text?: string | null
     image?: string | null
     audio?: string | null
@@ -20842,6 +21233,7 @@ export namespace Prisma {
     following?: FollowCreateNestedManyWithoutFollowingInput
     profile?: ProfileCreateNestedOneWithoutUserInput
     posts?: PostCreateNestedManyWithoutUserInput
+    authoredPosts?: PostCreateNestedManyWithoutAuthorInput
   }
 
   export type UserUncheckedCreateWithoutPostLikesInput = {
@@ -20866,6 +21258,7 @@ export namespace Prisma {
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
     posts?: PostUncheckedCreateNestedManyWithoutUserInput
+    authoredPosts?: PostUncheckedCreateNestedManyWithoutAuthorInput
   }
 
   export type UserCreateOrConnectWithoutPostLikesInput = {
@@ -20896,6 +21289,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     user?: UserUpdateOneRequiredWithoutPostsNestedInput
+    author?: UserUpdateOneWithoutAuthoredPostsNestedInput
     originalPost?: PostUpdateOneWithoutRepostsNestedInput
     reposts?: PostUpdateManyWithoutOriginalPostNestedInput
   }
@@ -20903,6 +21297,7 @@ export namespace Prisma {
   export type PostUncheckedUpdateWithoutLikesInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    authorId?: NullableStringFieldUpdateOperationsInput | string | null
     text?: NullableStringFieldUpdateOperationsInput | string | null
     image?: NullableStringFieldUpdateOperationsInput | string | null
     audio?: NullableStringFieldUpdateOperationsInput | string | null
@@ -20949,6 +21344,7 @@ export namespace Prisma {
     following?: FollowUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUpdateOneWithoutUserNestedInput
     posts?: PostUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUpdateManyWithoutAuthorNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPostLikesInput = {
@@ -20973,6 +21369,7 @@ export namespace Prisma {
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
     posts?: PostUncheckedUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUncheckedUpdateManyWithoutAuthorNestedInput
   }
 
   export type TokenCreateManyUserInput = {
@@ -21072,6 +21469,22 @@ export namespace Prisma {
 
   export type PostCreateManyUserInput = {
     id?: string
+    authorId?: string | null
+    text?: string | null
+    image?: string | null
+    audio?: string | null
+    video?: string | null
+    link?: string | null
+    views?: number
+    originalPostId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+  }
+
+  export type PostCreateManyAuthorInput = {
+    id?: string
+    userId: string
     text?: string | null
     image?: string | null
     audio?: string | null
@@ -21403,6 +21816,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    author?: UserUpdateOneWithoutAuthoredPostsNestedInput
     originalPost?: PostUpdateOneWithoutRepostsNestedInput
     reposts?: PostUpdateManyWithoutOriginalPostNestedInput
     likes?: PostLikeUpdateManyWithoutPostNestedInput
@@ -21410,6 +21824,7 @@ export namespace Prisma {
 
   export type PostUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
+    authorId?: NullableStringFieldUpdateOperationsInput | string | null
     text?: NullableStringFieldUpdateOperationsInput | string | null
     image?: NullableStringFieldUpdateOperationsInput | string | null
     audio?: NullableStringFieldUpdateOperationsInput | string | null
@@ -21426,6 +21841,56 @@ export namespace Prisma {
 
   export type PostUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
+    authorId?: NullableStringFieldUpdateOperationsInput | string | null
+    text?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    audio?: NullableStringFieldUpdateOperationsInput | string | null
+    video?: NullableStringFieldUpdateOperationsInput | string | null
+    link?: NullableStringFieldUpdateOperationsInput | string | null
+    views?: IntFieldUpdateOperationsInput | number
+    originalPostId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type PostUpdateWithoutAuthorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    text?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    audio?: NullableStringFieldUpdateOperationsInput | string | null
+    video?: NullableStringFieldUpdateOperationsInput | string | null
+    link?: NullableStringFieldUpdateOperationsInput | string | null
+    views?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneRequiredWithoutPostsNestedInput
+    originalPost?: PostUpdateOneWithoutRepostsNestedInput
+    reposts?: PostUpdateManyWithoutOriginalPostNestedInput
+    likes?: PostLikeUpdateManyWithoutPostNestedInput
+  }
+
+  export type PostUncheckedUpdateWithoutAuthorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    text?: NullableStringFieldUpdateOperationsInput | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    audio?: NullableStringFieldUpdateOperationsInput | string | null
+    video?: NullableStringFieldUpdateOperationsInput | string | null
+    link?: NullableStringFieldUpdateOperationsInput | string | null
+    views?: IntFieldUpdateOperationsInput | number
+    originalPostId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    reposts?: PostUncheckedUpdateManyWithoutOriginalPostNestedInput
+    likes?: PostLikeUncheckedUpdateManyWithoutPostNestedInput
+  }
+
+  export type PostUncheckedUpdateManyWithoutAuthorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
     text?: NullableStringFieldUpdateOperationsInput | string | null
     image?: NullableStringFieldUpdateOperationsInput | string | null
     audio?: NullableStringFieldUpdateOperationsInput | string | null
@@ -21698,6 +22163,7 @@ export namespace Prisma {
   export type PostCreateManyOriginalPostInput = {
     id?: string
     userId: string
+    authorId?: string | null
     text?: string | null
     image?: string | null
     audio?: string | null
@@ -21728,6 +22194,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     user?: UserUpdateOneRequiredWithoutPostsNestedInput
+    author?: UserUpdateOneWithoutAuthoredPostsNestedInput
     reposts?: PostUpdateManyWithoutOriginalPostNestedInput
     likes?: PostLikeUpdateManyWithoutPostNestedInput
   }
@@ -21735,6 +22202,7 @@ export namespace Prisma {
   export type PostUncheckedUpdateWithoutOriginalPostInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    authorId?: NullableStringFieldUpdateOperationsInput | string | null
     text?: NullableStringFieldUpdateOperationsInput | string | null
     image?: NullableStringFieldUpdateOperationsInput | string | null
     audio?: NullableStringFieldUpdateOperationsInput | string | null
@@ -21751,6 +22219,7 @@ export namespace Prisma {
   export type PostUncheckedUpdateManyWithoutOriginalPostInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    authorId?: NullableStringFieldUpdateOperationsInput | string | null
     text?: NullableStringFieldUpdateOperationsInput | string | null
     image?: NullableStringFieldUpdateOperationsInput | string | null
     audio?: NullableStringFieldUpdateOperationsInput | string | null

@@ -5,13 +5,15 @@
  * API for auth backend for monorepo
  * OpenAPI spec version: 1.0
  */
-import type { PostDtoAuthor } from './postDtoAuthor';
+import type { PostAuthorDto } from './postAuthorDto';
 
 export interface PostDto {
     /** ID */
     id: string;
-    /** User ID */
+    /** User ID (wall owner) */
     userId: string;
+    /** Author ID (who wrote the post) */
+    authorId?: string;
     /** Text content */
     text?: string;
     /** Image URL */
@@ -45,5 +47,5 @@ export interface PostDto {
     /** Original post if this is a repost */
     originalPost?: PostDto;
     /** Author information */
-    author?: PostDtoAuthor;
+    author?: PostAuthorDto;
 }

@@ -8,11 +8,10 @@ import Link from 'next/link'
 import { LikeIcon, EyeIcon, RepostIcon } from '@/modules/shared'
 
 import Image from 'next/image'
-import { PostDto } from '@workspace/nest-api'
-import { useUser } from '@/modules/entities/user/lib/hook/user.hook'
-import { VideoPlayer } from '@/modules/features/video-call'
+
 import { getPostDate } from '../lib/util/post-date.util'
 import { useDeletePost } from '../lib/hook/post.hook'
+import { PostDto } from '@workspace/nest-api'
 
 
 export interface IPostProps {
@@ -20,8 +19,12 @@ export interface IPostProps {
     currentUserId: string
 }
 export const Post: FC<IPostProps> = ({ post, currentUserId }) => {
-    const { user } = useUser(post.userId);
-    const isOwner = currentUserId === post.userId;
+    // const { user } = useUser(post.userId);
+    // Используем author, если он указан, иначе используем владельца стены
+    const authorName = post.author?.name || '';
+    const authorAvatarUrl = post.author?.avatar || '';
+    const isOnWall = post.authorId && post.authorId !== post.userId; // Пост на чужой стене
+    const isOwner = currentUserId === post.userId || currentUserId === post.authorId; // Владелец стены или автор
     const isRepost = post.originalPostId !== null;
     const repost = post.originalPost;
     const repostUser = repost?.author;
@@ -38,14 +41,17 @@ export const Post: FC<IPostProps> = ({ post, currentUserId }) => {
             <div>
                 <div className='flex w-full items-start justify-between'>
                     <div className='flex items-center gap-2'>
-                        <Link href={'/profile'}>
+                        <Link href={`/people/${post.author?.id}`}>
                             <Avatar>
-                                <AvatarImage src={user?.avatarUrl || ''} />
-                                <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
+                                <AvatarImage src={authorAvatarUrl as string || ''} />
+                                <AvatarFallback>{authorName?.charAt(0)}</AvatarFallback>
                             </Avatar>
                         </Link>
                         <div>
-                            <p className='font-bold'>{user?.name}</p>
+                            <p className='font-bold'>{authorName}</p>
+                            {isOnWall && (
+                                <p className='text-xs text-gray-400'>posted on {post?.author?.name || ''}'s wall</p>
+                            )}
                             <p className='text-sm text-gray-500'>{getPostDate(post?.createdAt)}</p>
                         </div>
                     </div>

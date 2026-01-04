@@ -1,0 +1,237 @@
+'use client';
+
+export const dynamic = 'force-dynamic';
+
+import { useEffect, useRef } from "react";
+import { Textarea } from "@workspace/ui/components/textarea";
+import { useAuth } from "@/modules/processes";
+import { Button } from "@workspace/ui/components/button";
+import { Camera, Send } from "lucide-react";
+import { useMediaUpload } from "./lib/useMediaUpload";
+import { useCamera } from "./lib/useCamera";
+import { useCreatePostForm } from "./lib/useCreatePostForm";
+import { MediaPreview } from "./ui/MediaPreview";
+import { CameraView } from "./ui/CameraView";
+import { postService } from "@/modules/entities";
+import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components/avatar";
+
+interface CreatePostProps {
+    wallUserId?: string;  // На чьей стене создаем пост (если не указано - на своей)
+}
+
+export const CreatePost = ({ wallUserId }: CreatePostProps = {}) => {
+    const { currentUser } = useAuth();
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const {
+        mediaUrl,
+        mediaType,
+        isUploadingMedia,
+        handleFileChange,
+        removeMedia,
+        setMedia,
+    } = useMediaUpload();
+
+    const {
+        videoRef,
+        mediaStreamRef,
+        isCameraActive,
+        isRecording,
+        startCamera,
+        stopCamera,
+        startRecording,
+        stopRecording,
+        cleanup,
+    } = useCamera();
+
+    const {
+        register,
+        handleSubmit,
+        errors,
+        isFocused,
+        isLoading,
+        error,
+        handleFocus,
+        handleBlur,
+        onSubmit: handleFormSubmit,
+    } = useCreatePostForm({
+        wallUserId,
+        mediaUrl,
+        mediaType,
+        onSuccess: () => {
+            removeMedia();
+            stopCamera();
+        },
+    });
+
+    const handleFileInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        await handleFileChange(file);
+
+        // Сбрасываем input
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
+    const handleCameraButtonClick = async () => {
+        console.log('📷 Camera button clicked, isCameraActive:', isCameraActive, 'isRecording:', isRecording);
+
+        // Если камера уже открыта, управляем записью
+        if (isCameraActive) {
+            if (isRecording) {
+                console.log('⏹️ Stopping recording...');
+                stopRecording();
+            } else {
+                console.log('▶️ Starting recording...');
+                startRecording(async (blob) => {
+                    // Загружаем записанное видео
+                    const file = new File([blob], 'video.webm', { type: 'video/webm' });
+                    try {
+                        const { url } = await postService.uploadPostMedia(file);
+                        setMedia(url, 'video');
+                    } catch (error) {
+                        console.error('Failed to upload video:', error);
+                    } finally {
+                        stopCamera();
+                    }
+                });
+            }
+            return;
+        }
+
+        // Иначе предлагаем выбор: камера или файл
+        const useCamera = window.confirm('Использовать камеру? (OK - камера, Отмена - выбрать файл)');
+        if (useCamera) {
+            console.log('🎥 User chose camera, starting...');
+            await startCamera();
+        } else {
+            // Открываем выбор файла
+            if (fileInputRef.current) {
+                fileInputRef.current.click();
+            }
+        }
+        handleFocus();
+    };
+
+    const handleRemoveMedia = () => {
+        removeMedia();
+        stopCamera();
+    };
+
+    // Очищаем при размонтировании
+    useEffect(() => {
+        return () => {
+            cleanup();
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    return (
+        <div className='bg-card flex flex-row items-start justify-center min-w-full p-4 border rounded-xl mb-4'>
+
+            <form
+                onSubmit={handleSubmit(handleFormSubmit)}
+                className="flex flex-col items-start justify-start w-full"
+            >
+                <div className="flex flex-col gap-2 w-full">
+                    <div className="flex flex-row items-start justify-start gap-2 w-full">
+                        {/* <Avatar
+                            src={currentUser?.avatarUrl || ''}
+                            alt={currentUser?.name || ''}
+                            name={currentUser?.name || ''}
+                            size="md"
+                            className="mr-2"
+                        /> */}
+                        <Avatar>
+                            <AvatarImage src={currentUser?.avatarUrl as string || ''} />
+                            <AvatarFallback>{currentUser?.name?.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <Textarea
+                            {...register("content")}
+                            onFocus={handleFocus}
+                            onBlur={handleBlur}
+                            placeholder="Content"
+                            disabled={isLoading || isUploadingMedia}
+                            className={`w-full transition-all ${isFocused ? 'min-h-[120px]' : 'min-h-[60px]'}`}
+                        />
+                        <div className="flex flex-col gap-2">
+                            {isFocused && (
+                                <Button
+                                    type="submit"
+                                    disabled={isLoading || isUploadingMedia}
+                                    size="sm"
+                                >
+                                    <Send className="w-4 h-4" />
+                                </Button>
+                            )}
+                            <Button
+                                type="button"
+                                disabled={isLoading || isUploadingMedia}
+                                variant="outline"
+                                onClick={handleCameraButtonClick}
+                                size="sm"
+                            >
+                                <Camera className="w-4 h-4" />
+                            </Button>
+                        </div>
+                    </div>
+
+
+
+                    {error && <div className="text-red-500">{error.message}</div>}
+                </div>
+
+                <div className="flex flex-col gap-2 w-full mt-4">
+
+                    {/* Превью медиа */}
+                    {mediaUrl && mediaType && (
+                        <MediaPreview
+                            mediaUrl={mediaUrl}
+                            mediaType={mediaType}
+                            onRemove={handleRemoveMedia}
+                        />
+                    )}
+
+                    {/* Видео с камеры */}
+                    {isCameraActive && !mediaUrl && (
+                        <CameraView
+                            videoRef={videoRef}
+                            isRecording={isRecording}
+                            onStartRecording={() => {
+                                if (!mediaStreamRef.current) {
+                                    console.error('Cannot start recording: media stream is not available');
+                                    return;
+                                }
+                                startRecording(async (blob) => {
+                                    const file = new File([blob], 'video.webm', { type: 'video/webm' });
+                                    try {
+                                        const { url } = await postService.uploadPostMedia(file);
+                                        setMedia(url, 'video');
+                                    } catch (error) {
+                                        console.error('Failed to upload video:', error);
+                                    } finally {
+                                        stopCamera();
+                                    }
+                                });
+                            }}
+                            onStopRecording={stopRecording}
+                            onCancel={stopCamera}
+                        />
+                    )}
+                </div>
+                {/* Скрытый input для выбора файлов */}
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*,video/*,audio/*"
+                    onChange={handleFileInputChange}
+                    className="hidden"
+                    capture="environment"
+                />
+            </form>
+        </div>
+    );
+};

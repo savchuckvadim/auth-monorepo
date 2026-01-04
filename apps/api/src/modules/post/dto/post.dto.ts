@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsString, IsOptional, MaxLength, IsNumber, IsBoolean, IsEnum } from "class-validator";
 import { Post, PostLike } from "generated/prisma";
+import { FullPost, PostAuthor } from "../type/post.type";
 
 export class CreatePostDto {
     @ApiProperty({ description: 'Text content', example: 'My post text', required: false })
@@ -32,6 +33,11 @@ export class CreatePostDto {
     @IsString()
     @MaxLength(500, { message: 'Link URL must not exceed 500 characters' })
     link?: string;
+
+    @ApiProperty({ description: 'Wall user ID (on whose wall to post). If not provided, post on own wall', example: 'user-id', required: false })
+    @IsOptional()
+    @IsString()
+    wallUserId?: string;
 }
 
 export class UpdatePostDto {
@@ -73,20 +79,35 @@ export class RepostDto {
     @MaxLength(2000, { message: 'Text must not exceed 2000 characters' })
     text?: string;
 }
+export class PostAuthorDto implements Partial<PostAuthor> {
+    @ApiProperty({ description: 'ID', example: '1' })
+    @IsString()
+    id: string;
+    @ApiProperty({ description: 'Name', example: 'John Doe' })
+    @IsString()
+    name: string;
+    @ApiProperty({ description: 'Email', example: 'john@example.com' })
+    @IsString()
+    email: string;
+    @ApiProperty({ description: 'Avatar URL', example: 'https://example.com/avatar.jpg', required: false })
+    @IsOptional()
+    @IsString()
+    avatar?: string | null;
 
-export class PostDto implements Partial<Post> {
+    constructor(author: PostAuthor) {
+        this.id = author.id;
+        this.name = author.name;
+        this.email = author.email;
+        this.avatar = author.avatar || null;
+    }
+}
+export class PostDto {
     constructor(
-        post: Post & {
-            likesCount?: number;
-            dislikesCount?: number;
-            repostsCount?: number;
-            userLike?: { isLike: boolean } | null;
-            originalPost?: Post | null;
-            author?: { id: string; name: string; email: string; profile?: { avatar?: string } | null };
-        }
+        post: FullPost
     ) {
         this.id = post.id;
         this.userId = post.userId;
+        this.authorId = post.authorId || undefined;
         this.text = post.text || undefined;
         this.image = post.image || undefined;
         this.audio = post.audio || undefined;
@@ -103,21 +124,30 @@ export class PostDto implements Partial<Post> {
         this.isLiked = post.userLike?.isLike === true;
         this.isDisliked = post.userLike?.isLike === false;
         this.originalPost = post.originalPost ? new PostDto(post.originalPost as any) : null;
-        this.author = post.author ? {
-            id: post.author.id,
-            name: post.author.name,
-            email: post.author.email,
-            avatar: post.author.profile?.avatar || null,
-        } : null;
+
+
+
+        this.author = new PostAuthorDto(post.author);
+
+
     }
 
     @ApiProperty({ description: 'ID', example: '1' })
     @IsString()
     id: string;
 
-    @ApiProperty({ description: 'User ID', example: '1' })
+    @ApiProperty({ description: 'User ID (wall owner)', example: '1' })
     @IsString()
     userId: string;
+
+    @ApiProperty({ description: 'Author ID (who wrote the post)', example: '1', required: false })
+    @IsOptional()
+    @IsString()
+    authorId?: string;
+
+
+
+
 
     @ApiProperty({ description: 'Text content', example: 'My post text', required: false })
     @IsOptional()
@@ -189,12 +219,7 @@ export class PostDto implements Partial<Post> {
 
     @ApiProperty({ description: 'Author information', required: false })
     @IsOptional()
-    author?: {
-        id: string;
-        name: string;
-        email: string;
-        avatar?: string | null;
-    } | null;
+    author?: PostAuthorDto;
 }
 
 export class PaginatedPostsDto {

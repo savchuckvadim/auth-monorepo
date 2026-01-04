@@ -24,9 +24,11 @@ export const useCreatePost = () => {
 
             // Создаем временный пост для оптимистичного обновления
             const now = new Date().toISOString();
+            const wallUserId = newPost.wallUserId || currentUser?.id || '';
             const tempPost: PostDto = {
                 id: `temp-${Date.now()}`,
-                userId: currentUser?.id || '',
+                userId: wallUserId,  // Владелец стены
+                authorId: currentUser?.id || undefined,  // Автор поста
                 text: newPost.text,
                 image: newPost.image,
                 video: newPost.video,
@@ -44,7 +46,7 @@ export const useCreatePost = () => {
                     id: currentUser.id,
                     name: currentUser.name || '',
                     email: currentUser.email || '',
-                    avatar: currentUser.avatarUrl || undefined,
+                    avatar: currentUser.avatarUrl ? { url: currentUser.avatarUrl } : undefined,
                 } : undefined,
             };
 
@@ -54,9 +56,9 @@ export const useCreatePost = () => {
                 return [tempPost, ...old];
             });
 
-            // 2. Посты пользователя (если создаем от своего имени)
-            if (currentUser?.id) {
-                queryClient.setQueryData<PostDto[]>(['posts', currentUser.id], (old = []) => {
+            // 2. Посты пользователя (на чьей стене создан пост)
+            if (wallUserId) {
+                queryClient.setQueryData<PostDto[]>(['posts', wallUserId], (old = []) => {
                     return [tempPost, ...old];
                 });
             }
@@ -81,28 +83,45 @@ export const useCreatePost = () => {
         onSuccess: (data, variables, context) => {
             // Заменяем временный пост на реальный
             const replaceTempPost = (old: PostDto[] = []) => {
-                if (!context?.tempPostId) return old;
-                const index = old.findIndex(p => p.id === context.tempPostId);
-                if (index !== -1) {
+                // Сначала проверяем, нет ли уже реального поста (может прийти через WebSocket)
+                const existingIndex = old.findIndex(p => p.id === data.id);
+                if (existingIndex !== -1) {
+                    // Если пост уже есть, обновляем его
                     const newPosts = [...old];
-                    newPosts[index] = data;
+                    newPosts[existingIndex] = data;
                     return newPosts;
                 }
-                // Если временный пост не найден, добавляем в начало
+
+                // Если есть временный пост, заменяем его
+                if (context?.tempPostId) {
+                    const tempIndex = old.findIndex(p => p.id === context.tempPostId);
+                    if (tempIndex !== -1) {
+                        const newPosts = [...old];
+                        newPosts[tempIndex] = data;
+                        return newPosts;
+                    }
+                }
+
+                // Если ни временного, ни реального поста нет, добавляем в начало
                 return [data, ...old];
             };
 
             // Обновляем feed
             queryClient.setQueryData<PostDto[]>(['posts', 'feed'], replaceTempPost);
 
-            // Обновляем посты пользователя
-            if (currentUser?.id) {
-                queryClient.setQueryData<PostDto[]>(['posts', currentUser.id], replaceTempPost);
+            // Обновляем посты пользователя (на чьей стене создан пост)
+            const wallUserId = variables.wallUserId || currentUser?.id;
+            if (wallUserId) {
+                queryClient.setQueryData<PostDto[]>(['posts', wallUserId], replaceTempPost);
             }
 
-            // Инвалидируем для получения актуальных данных
-            queryClient.invalidateQueries({ queryKey: ['posts'] });
-            queryClient.invalidateQueries({ queryKey: ['post', data.id] });
+            // Обновляем посты автора (если автор отличается от владельца стены)
+            if (data.authorId && data.authorId !== wallUserId) {
+                queryClient.setQueryData<PostDto[]>(['posts', data.authorId], replaceTempPost);
+            }
+
+            // Обновляем конкретный пост в кэше
+            queryClient.setQueryData<PostDto>(['post', data.id], data);
         },
         onSettled: () => {
             // Финальная синхронизация
@@ -169,3 +188,4 @@ export const useDeletePost = () => {
         },
     });
 }
+

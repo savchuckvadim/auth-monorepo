@@ -1,5 +1,5 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
 
 @Injectable()
@@ -146,5 +146,38 @@ export class S3Service {
         // Формируем URL с правильным регионом
         const url = `https://${this.bucket}.s3.${this.region}.amazonaws.com/${key}`;
         return { url };
+    }
+
+    /**
+     * Удаляет файл из S3 по URL
+     * @param url - URL файла в формате https://bucket.s3.region.amazonaws.com/key
+     */
+    async deleteFile(url: string): Promise<void> {
+        this.validateS3Config();
+
+        try {
+            // Парсим URL для получения ключа
+            // Формат: https://bucket.s3.region.amazonaws.com/key
+            const urlObj = new URL(url);
+            const key = urlObj.pathname.substring(1); // Убираем первый слеш
+
+            const command = new DeleteObjectCommand({
+                Bucket: this.bucket,
+                Key: key,
+            });
+
+            await this.s3!.send(command);
+        } catch (error) {
+            console.error('Error deleting file from S3:', error);
+            // Не бросаем ошибку, чтобы не блокировать удаление поста
+            // Файл может быть уже удален или URL может быть некорректным
+        }
+    }
+
+    /**
+     * Удаляет несколько файлов из S3
+     */
+    async deleteFiles(urls: string[]): Promise<void> {
+        await Promise.allSettled(urls.map(url => this.deleteFile(url)));
     }
 }

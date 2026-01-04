@@ -22,30 +22,49 @@ export const usePostsSocket = () => {
         // Событие: новый пост создан
         const handlePostCreated = (post: PostDto) => {
             console.log('📝 Post created event received:', post);
-            debugger; // BREAKPOINT ЗДЕСЬ для отладки
 
-
-            // Обновляем feed
+            // Обновляем feed - используем функцию для предотвращения дубликатов
             queryClient.setQueryData<PostDto[]>(['posts', 'feed'], (old = []) => {
                 // Проверяем, нет ли уже этого поста
-                if (old.find(p => p.id === post.id)) {
-                    return old;
+                const existingIndex = old.findIndex(p => p.id === post.id);
+                if (existingIndex !== -1) {
+                    // Если пост уже есть, обновляем его вместо добавления дубликата
+                    const newPosts = [...old];
+                    newPosts[existingIndex] = post;
+                    return newPosts;
                 }
                 return [post, ...old];
             });
 
-            // Обновляем посты пользователя, если это его пост
+            // Обновляем посты пользователя (на чьей стене пост)
             if (post.userId) {
                 queryClient.setQueryData<PostDto[]>(['posts', post.userId], (old = []) => {
-                    if (old.find(p => p.id === post.id)) {
-                        return old;
+                    const existingIndex = old.findIndex(p => p.id === post.id);
+                    if (existingIndex !== -1) {
+                        // Если пост уже есть, обновляем его вместо добавления дубликата
+                        const newPosts = [...old];
+                        newPosts[existingIndex] = post;
+                        return newPosts;
                     }
                     return [post, ...old];
                 });
             }
 
-            // Инвалидируем для получения полных данных
-            queryClient.invalidateQueries({ queryKey: ['post', post.id] });
+            // Обновляем посты автора (если автор отличается от владельца стены)
+            if (post.authorId && post.authorId !== post.userId) {
+                queryClient.setQueryData<PostDto[]>(['posts', post.authorId], (old = []) => {
+                    const existingIndex = old.findIndex(p => p.id === post.id);
+                    if (existingIndex !== -1) {
+                        const newPosts = [...old];
+                        newPosts[existingIndex] = post;
+                        return newPosts;
+                    }
+                    return [post, ...old];
+                });
+            }
+
+            // Обновляем конкретный пост в кэше
+            queryClient.setQueryData<PostDto>(['post', post.id], post);
         };
 
         // Событие: пост обновлен

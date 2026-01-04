@@ -13,6 +13,7 @@ import type {
     PostGetMyRepostsParams,
     PostGetPostsByUserIdParams,
     PostRepostUserDto,
+    PostUploadMedia200,
     RepostDto,
     UpdatePostDto,
 } from '.././model';
@@ -134,6 +135,15 @@ export const getPosts = () => {
             method: 'GET',
         });
     };
+    /**
+     * @summary Upload media file for post (image or video)
+     */
+    const postUploadMedia = () => {
+        return customAxios<PostUploadMedia200>({
+            url: `/api/posts/media`,
+            method: 'POST',
+        });
+    };
     return {
         postCreatePost,
         postGetFeed,
@@ -147,6 +157,7 @@ export const getPosts = () => {
         postDislikePost,
         postRepost,
         postGetRepostUsers,
+        postUploadMedia,
     };
 };
 export type PostCreatePostResult = NonNullable<
@@ -184,4 +195,7 @@ export type PostRepostResult = NonNullable<
 >;
 export type PostGetRepostUsersResult = NonNullable<
     Awaited<ReturnType<ReturnType<typeof getPosts>['postGetRepostUsers']>>
+>;
+export type PostUploadMediaResult = NonNullable<
+    Awaited<ReturnType<ReturnType<typeof getPosts>['postUploadMedia']>>
 >;

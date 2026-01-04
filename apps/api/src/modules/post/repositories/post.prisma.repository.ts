@@ -2,13 +2,14 @@ import { PrismaService } from "@/core";
 import { Injectable, NotFoundException, ForbiddenException } from "@nestjs/common";
 import { Post } from "generated/prisma";
 import { CreatePostDto, UpdatePostDto, RepostDto } from "../dto/post.dto";
-import { PostRepository, PostWithStats } from "./post.repository";
+import { PostRepository, } from "./post.repository";
+import { FullPost } from "../type/post.type";
 
 @Injectable()
 export class PostPrismaRepository implements PostRepository {
     constructor(private readonly prisma: PrismaService) { }
 
-    private async enrichPost(post: any, currentUserId?: string): Promise<PostWithStats> {
+    private async enrichPost(post: any, currentUserId?: string): Promise<FullPost> {
         // Параллельно получаем все необходимые данные
         const [likesCount, dislikesCount, repostsCount, userLike, originalPost] = await Promise.all([
             this.prisma.postLike.count({
@@ -39,10 +40,25 @@ export class PostPrismaRepository implements PostRepository {
                                 profile: true,
                             },
                         },
+                        author: {
+                            include: {
+                                profile: true,
+                            },
+                        },
                     },
                 }).catch(() => null)
                 : Promise.resolve(null),
         ]);
+
+        // Определяем автора поста
+
+        const author = {
+            id: post.author.id,
+            name: post.author.name,
+            email: post.author.email,
+            avatar: post.author.avatar,
+        };
+
 
         return {
             ...post,
@@ -51,23 +67,30 @@ export class PostPrismaRepository implements PostRepository {
             repostsCount,
             userLike: userLike ? { isLike: userLike.isLike } : null,
             originalPost: originalPost as any,
-            author: post.user ? {
-                id: post.user.id,
-                name: post.user.name,
-                email: post.user.email,
-                profile: post.user.profile,
-            } : undefined,
+            author,
         };
     }
 
-    public async create(userId: string, data: CreatePostDto): Promise<PostWithStats> {
+    public async create(authorId: string, data: CreatePostDto): Promise<FullPost> {
+        // wallUserId - на чьей стене (если не указано - на своей)
+        const wallUserId = data.wallUserId || authorId;
+
+        // Удаляем wallUserId из data, так как это не поле в БД
+        const { wallUserId: _, ...postData } = data;
+
         const post = await this.prisma.post.create({
             data: {
-                ...data,
-                userId,
+                ...postData,
+                userId: wallUserId,  // Владелец стены
+                authorId: authorId,  // Автор поста
             },
             include: {
-                user: {
+                user: {  // Владелец стены
+                    include: {
+                        profile: true,
+                    },
+                },
+                author: {  // Автор поста
                     include: {
                         profile: true,
                     },
@@ -75,14 +98,19 @@ export class PostPrismaRepository implements PostRepository {
             },
         });
 
-        return this.enrichPost(post, userId);
+        return this.enrichPost(post, authorId);
     }
 
-    public async findById(id: string, currentUserId?: string): Promise<PostWithStats> {
+    public async findById(id: string, currentUserId?: string): Promise<FullPost> {
         const post = await this.prisma.post.findUnique({
             where: { id, deletedAt: null },
             include: {
-                user: {
+                user: {  // Владелец стены
+                    include: {
+                        profile: true,
+                    },
+                },
+                author: {  // Автор поста
                     include: {
                         profile: true,
                     },
@@ -97,7 +125,7 @@ export class PostPrismaRepository implements PostRepository {
         return this.enrichPost(post, currentUserId);
     }
 
-    public async update(id: string, userId: string, data: UpdatePostDto): Promise<PostWithStats> {
+    public async update(id: string, userId: string, data: UpdatePostDto): Promise<FullPost> {
         const post = await this.prisma.post.findUnique({
             where: { id, deletedAt: null },
         });
@@ -106,7 +134,9 @@ export class PostPrismaRepository implements PostRepository {
             throw new NotFoundException('Post not found');
         }
 
-        if (post.userId !== userId) {
+        // Проверяем, что текущий пользователь - автор поста
+        const authorId = post.authorId || post.userId; // Обратная совместимость
+        if (authorId !== userId) {
             throw new ForbiddenException('You can only update your own posts');
         }
 
@@ -116,7 +146,12 @@ export class PostPrismaRepository implements PostRepository {
                 ...data,
             },
             include: {
-                user: {
+                user: {  // Владелец стены
+                    include: {
+                        profile: true,
+                    },
+                },
+                author: {  // Автор поста
                     include: {
                         profile: true,
                     },
@@ -136,8 +171,13 @@ export class PostPrismaRepository implements PostRepository {
             throw new NotFoundException('Post not found');
         }
 
-        if (post.userId !== userId) {
-            throw new ForbiddenException('You can only delete your own posts');
+        // Проверяем, что текущий пользователь - автор или владелец стены
+        const authorId = post.authorId || post.userId; // Обратная совместимость
+        const isAuthor = authorId === userId;
+        const isWallOwner = post.userId === userId;
+
+        if (!isAuthor && !isWallOwner) {
+            throw new ForbiddenException('You can only delete your own posts or posts on your wall');
         }
 
         await this.prisma.post.update({
@@ -148,7 +188,7 @@ export class PostPrismaRepository implements PostRepository {
         });
     }
 
-    public async getFeed(currentUserId: string, cursor?: string, limit: number = 20): Promise<{ posts: PostWithStats[]; nextCursor?: string; hasNext: boolean }> {
+    public async getFeed(currentUserId: string, cursor?: string, limit: number = 20): Promise<{ posts: FullPost[]; nextCursor?: string; hasNext: boolean }> {
         const take = limit + 1; // Берем на 1 больше, чтобы проверить есть ли следующая страница
 
         const where: any = {
@@ -180,7 +220,12 @@ export class PostPrismaRepository implements PostRepository {
                 createdAt: 'desc',
             },
             include: {
-                user: {
+                user: {  // Владелец стены
+                    include: {
+                        profile: true,
+                    },
+                },
+                author: {  // Автор поста
                     include: {
                         profile: true,
                     },
@@ -206,7 +251,7 @@ export class PostPrismaRepository implements PostRepository {
         };
     }
 
-    public async getByUserId(userId: string, currentUserId?: string, cursor?: string, limit: number = 20): Promise<{ posts: PostWithStats[]; nextCursor?: string; hasNext: boolean }> {
+    public async getByUserId(userId: string, currentUserId?: string, cursor?: string, limit: number = 20): Promise<{ posts: FullPost[]; nextCursor?: string; hasNext: boolean }> {
         const take = limit + 1;
 
         const where: any = {
@@ -227,7 +272,12 @@ export class PostPrismaRepository implements PostRepository {
                 createdAt: 'desc',
             },
             include: {
-                user: {
+                user: {  // Владелец стены
+                    include: {
+                        profile: true,
+                    },
+                },
+                author: {  // Автор поста
                     include: {
                         profile: true,
                     },
@@ -253,7 +303,7 @@ export class PostPrismaRepository implements PostRepository {
         };
     }
 
-    public async getMyReposts(userId: string, cursor?: string, limit: number = 20): Promise<{ posts: PostWithStats[]; nextCursor?: string; hasNext: boolean }> {
+    public async getMyReposts(userId: string, cursor?: string, limit: number = 20): Promise<{ posts: FullPost[]; nextCursor?: string; hasNext: boolean }> {
         const take = limit + 1;
 
         const where: any = {
@@ -275,7 +325,12 @@ export class PostPrismaRepository implements PostRepository {
                 createdAt: 'desc',
             },
             include: {
-                user: {
+                user: {  // Владелец стены
+                    include: {
+                        profile: true,
+                    },
+                },
+                author: {  // Автор поста
                     include: {
                         profile: true,
                     },
@@ -348,7 +403,7 @@ export class PostPrismaRepository implements PostRepository {
         });
     }
 
-    public async repost(postId: string, userId: string, data?: RepostDto): Promise<PostWithStats> {
+    public async repost(postId: string, userId: string, data?: RepostDto): Promise<FullPost> {
         const originalPost = await this.prisma.post.findUnique({
             where: { id: postId, deletedAt: null },
         });
@@ -373,11 +428,17 @@ export class PostPrismaRepository implements PostRepository {
         const repost = await this.prisma.post.create({
             data: {
                 userId,
+                authorId: userId,  // При репосте автор = владелец стены
                 originalPostId: postId,
                 text: data?.text,
             },
             include: {
-                user: {
+                user: {  // Владелец стены
+                    include: {
+                        profile: true,
+                    },
+                },
+                author: {  // Автор поста
                     include: {
                         profile: true,
                     },

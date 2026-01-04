@@ -220,6 +220,7 @@ exports.Prisma.ProfileScalarFieldEnum = {
 exports.Prisma.PostScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
+  authorId: 'authorId',
   text: 'text',
   image: 'image',
   audio: 'audio',
@@ -320,6 +321,7 @@ exports.Prisma.ProfileOrderByRelevanceFieldEnum = {
 exports.Prisma.PostOrderByRelevanceFieldEnum = {
   id: 'id',
   userId: 'userId',
+  authorId: 'authorId',
   text: 'text',
   image: 'image',
   audio: 'audio',
@@ -341,7 +343,8 @@ exports.user_roles = exports.$Enums.user_roles = {
 
 exports.ChatType = exports.$Enums.ChatType = {
   PRIVATE: 'PRIVATE',
-  GROUP: 'GROUP'
+  GROUP: 'GROUP',
+  SECRET: 'SECRET'
 };
 
 exports.ChatMemberRole = exports.$Enums.ChatMemberRole = {

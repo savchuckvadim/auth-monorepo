@@ -25,7 +25,7 @@ export class PostGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     handleConnection(client: Socket) {
         const userId = client.handshake.query.userId as string;
-      
+
 
         // Добавляем пользователя в его персональную комнату
         if (userId) {
@@ -39,7 +39,7 @@ export class PostGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     handleDisconnect(client: Socket) {
         const userId = client.handshake.query.userId as string;
-        console.log(`🔌 Posts WebSocket: User ${userId} disconnected (socket: ${client.id})`);
+        // console.log(`🔌 Posts WebSocket: User ${userId} disconnected (socket: ${client.id})`);
 
         this.feedSubscribers.delete(client.id);
     }

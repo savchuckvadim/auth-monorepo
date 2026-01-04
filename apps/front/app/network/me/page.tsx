@@ -11,7 +11,8 @@ const DynamicProfileInformation = dynamic(() => import('@/modules/widgetes/profi
 });
 
 const DynamicProfilePosts = dynamic(() => import('@/modules/widgetes/profile/posts/ProfilePosts').then(mod => mod.default), {
-    ssr: false
+    ssr: false,
+    loading: () => <LoadingComponent />
 });
 
 
