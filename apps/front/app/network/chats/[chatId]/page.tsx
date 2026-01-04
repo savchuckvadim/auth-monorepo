@@ -89,7 +89,7 @@ export default function ChatPage() {
     };
 
     return (
-        <div className="h-[82vh] bg-background flex overflow-hidden border-2 rounded-3xl">
+        <div className="md:h-[82vh] h-[75vh] bg-background flex overflow-hidden border-2 rounded-3xl">
 
 
             <CallWrapperWidget chatId={chatId || ''} otherUserId={otherUserId}>
