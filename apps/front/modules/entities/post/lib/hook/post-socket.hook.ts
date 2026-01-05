@@ -1,13 +1,22 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { connectPostsSocket, } from '@/modules/entities/post/socket/posts-socket';
 import { PostDto } from '@workspace/nest-api';
 import { useAuth } from '@/modules/processes';
+import { socketManager } from '@/modules/shared';
 
 /**
  * Хук для подписки на WebSocket события постов
  * Автоматически обновляет кэш React Query при получении событий
  */
+enum EnumPostSocketEvent {
+    CREATED = 'post:created',
+    UPDATED = 'post:updated',
+    DELETED = 'post:deleted',
+    LIKED = 'post:liked',
+}
+
+
+
 export const usePostsSocket = () => {
     const queryClient = useQueryClient();
     const { currentUser } = useAuth();
@@ -17,8 +26,9 @@ export const usePostsSocket = () => {
             return;
         }
 
-        const socket = connectPostsSocket(currentUser.id);
-
+        const socket = socketManager.getSocket();
+        console.log('🔌 Posts WebSocket connected');
+        console.log('🔌 ', socket);
         // Событие: новый пост создан
         const handlePostCreated = (post: PostDto) => {
             console.log('📝 Post created event received:', post);
@@ -133,25 +143,27 @@ export const usePostsSocket = () => {
         };
 
         // Подписываемся на события
-        socket.on('post:created', handlePostCreated);
-        socket.on('post:updated', handlePostUpdated);
-        socket.on('post:deleted', handlePostDeleted);
-        socket.on('post:liked', handlePostLiked);
+        socket.off(EnumPostSocketEvent.CREATED, handlePostCreated);
+        socket.on(EnumPostSocketEvent.CREATED, handlePostCreated);
+
+        socket.off(EnumPostSocketEvent.UPDATED, handlePostUpdated);
+        socket.on(EnumPostSocketEvent.UPDATED, handlePostUpdated);
+
+        socket.off(EnumPostSocketEvent.DELETED, handlePostDeleted);
+        socket.on(EnumPostSocketEvent.DELETED, handlePostDeleted);
+
+        socket.off(EnumPostSocketEvent.LIKED, handlePostLiked);
+        socket.on(EnumPostSocketEvent.LIKED, handlePostLiked);
+
 
         return () => {
-            socket.off('post:created', handlePostCreated);
-            socket.off('post:updated', handlePostUpdated);
-            socket.off('post:deleted', handlePostDeleted);
-            socket.off('post:liked', handlePostLiked);
+            socket.off(EnumPostSocketEvent.CREATED, handlePostCreated);
+            socket.off(EnumPostSocketEvent.UPDATED, handlePostUpdated);
+            socket.off(EnumPostSocketEvent.DELETED, handlePostDeleted);
+            socket.off(EnumPostSocketEvent.LIKED, handlePostLiked);
         };
     }, [currentUser?.id, queryClient]);
 
-    // Отключаемся при размонтировании (если больше нет подписчиков)
-    useEffect(() => {
-        return () => {
-            // Не отключаем сразу, так как могут быть другие компоненты, использующие сокет
-            // disconnectPostsSocket();
-        };
-    }, []);
+
 };
 

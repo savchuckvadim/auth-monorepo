@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from './redux';
 import { initializeApp } from '../../model/thunk/AppThunk';
-import { usePostsSocket } from '@/modules/entities/post/lib/hook/post-socket.hook';
+import { useAppSocket } from './app-socket';
+import { usePostsSocket } from '@/modules/entities';
 
 
 
@@ -11,9 +12,9 @@ export const useApp = () => {
     const app = useAppSelector(state => state.app);
     const [isClient, setIsClient] = useState(false);
 
-
-    // подписываемся на события постов
+    useAppSocket();
     usePostsSocket();
+
 
     useEffect(() => {
         setIsClient(true);

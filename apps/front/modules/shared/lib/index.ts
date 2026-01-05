@@ -4,3 +4,4 @@ export * from './socket/calls-socket';
 export * from './utils/getToken';
 export * from './webrtc/peer-service';
 export * from './webrtc/webrtc.config';
+export * from './socket/web-socket-manager';

@@ -10,7 +10,6 @@ import { PostCreatedEvent, PostDeletedEvent, PostLikedEvent, PostUpdatedEvent } 
 import { PostEvent } from '../type/post-event.type';
 
 @WebSocketGateway({
-    namespace: '/posts',
     cors: {
         origin: process.env.FRONTEND_URL || '*',
         credentials: true,
