@@ -21,13 +21,20 @@ export const PostContent = ({ post }: { post: PostDto }) => {
                 />
             </div>}
             {/* Video Container */}
-            {post.video && <div className='w-full mt-4 relative' style={{ aspectRatio: '4/3' }}>
-                <video
-                    src={post.video}
-                    controls
-                    className='object-cover rounded-2xl w-full h-full'
-                />
-            </div>}
+            {post.video && (
+                <div className='w-full mt-4 relative'>
+                    <video
+                        src={post.video}
+                        controls
+                        className='rounded-2xl w-full h-auto max-h-[80vh] object-contain'
+                        style={{
+                            // Используем более универсальный формат
+                            // На мобильных будет 4:5, на десктопе адаптируется под видео
+                            aspectRatio: 'auto'
+                        }}
+                    />
+                </div>
+            )}
         </div>
     )
 }

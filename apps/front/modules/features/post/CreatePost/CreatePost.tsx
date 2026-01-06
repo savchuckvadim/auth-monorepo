@@ -37,8 +37,10 @@ export const CreatePost = ({ wallUserId }: CreatePostProps = {}) => {
         mediaStreamRef,
         isCameraActive,
         isRecording,
+        facingMode,
         startCamera,
         stopCamera,
+        switchCamera,
         startRecording,
         stopRecording,
         cleanup,
@@ -203,6 +205,7 @@ export const CreatePost = ({ wallUserId }: CreatePostProps = {}) => {
                         <CameraView
                             videoRef={videoRef}
                             isRecording={isRecording}
+                            facingMode={facingMode}
                             onStartRecording={() => {
                                 if (!mediaStreamRef.current) {
                                     console.error('Cannot start recording: media stream is not available');
@@ -224,6 +227,7 @@ export const CreatePost = ({ wallUserId }: CreatePostProps = {}) => {
                                 });
                             }}
                             onStopRecording={stopRecording}
+                            onSwitchCamera={switchCamera}
                             onCancel={stopCamera}
                         />
                     )}

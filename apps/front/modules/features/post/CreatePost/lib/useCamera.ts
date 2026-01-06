@@ -6,23 +6,37 @@ export const useCamera = () => {
     const mediaStreamRef = useRef<MediaStream | null>(null);
     const [isCameraActive, setIsCameraActive] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
+    const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
     const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-    const startCamera = async (): Promise<void> => {
+    const startCamera = async (initialFacingMode?: 'user' | 'environment'): Promise<void> => {
         try {
             console.log('🎥 Starting camera...');
 
-            // Определяем, какая камера нужна (на мобильных лучше задняя)
+            // Определяем, какая камера нужна
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            const facingMode = isMobile ? 'environment' : 'user';
+            const currentFacingMode = initialFacingMode || (isMobile ? 'environment' : 'user');
+            setFacingMode(currentFacingMode);
 
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    facingMode,
+            // Для мобильных используем более квадратный формат (4:5 как в Instagram)
+            // Для десктопа - стандартный 16:9
+            const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            const videoConstraints = isMobileDevice
+                ? {
+                    facingMode: currentFacingMode,
+                    width: { ideal: 1080 },
+                    height: { ideal: 1350 }, // 4:5 формат (1080x1350)
+                    aspectRatio: { ideal: 0.8 } // 4/5 = 0.8
+                }
+                : {
+                    facingMode: currentFacingMode,
                     width: { ideal: 1280 },
                     height: { ideal: 720 }
-                },
+                };
+
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: videoConstraints,
                 audio: true
             });
             console.log('✅ Camera stream obtained:', stream);
@@ -67,6 +81,24 @@ export const useCamera = () => {
             setIsCameraActive(false);
             throw error;
         }
+    };
+
+    const switchCamera = async (): Promise<void> => {
+        if (!isCameraActive) return;
+
+        console.log('🔄 Switching camera...');
+        const newFacingMode = facingMode === 'user' ? 'environment' : 'user';
+
+        // Останавливаем текущий stream
+        if (mediaStreamRef.current) {
+            mediaStreamRef.current.getTracks().forEach(track => {
+                track.stop();
+            });
+            mediaStreamRef.current = null;
+        }
+
+        // Запускаем новую камеру
+        await startCamera(newFacingMode);
     };
 
     const stopCamera = (): void => {
@@ -188,8 +220,10 @@ export const useCamera = () => {
         mediaStreamRef,
         isCameraActive,
         isRecording,
+        facingMode,
         startCamera,
         stopCamera,
+        switchCamera,
         startRecording,
         stopRecording,
         cleanup,

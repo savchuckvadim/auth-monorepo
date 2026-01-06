@@ -2,20 +2,25 @@
 
 import { RefObject, useEffect, useState } from 'react';
 import { Button } from '@workspace/ui/components/button';
+import { RotateCcw } from 'lucide-react';
 
 interface CameraViewProps {
     videoRef: RefObject<HTMLVideoElement | null>;
     isRecording: boolean;
+    facingMode: 'user' | 'environment';
     onStartRecording: () => void;
     onStopRecording: () => void;
+    onSwitchCamera: () => void;
     onCancel: () => void;
 }
 
 export const CameraView = ({
     videoRef,
     isRecording,
+    facingMode,
     onStartRecording,
     onStopRecording,
+    onSwitchCamera,
     onCancel,
 }: CameraViewProps) => {
     const [videoTransform, setVideoTransform] = useState<string>('');
@@ -64,6 +69,8 @@ export const CameraView = ({
         checkVideoOrientation();
     }, [videoRef]);
 
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
     return (
         <div className="relative min-w-full">
             <video
@@ -73,13 +80,25 @@ export const CameraView = ({
                 playsInline
                 webkit-playsinline="true"
                 x5-playsinline="true"
-                className="w-full max-h-screen rounded-md"
+                className={`w-full rounded-md ${isMobile ? 'aspect-[4/5]' : 'max-h-screen'}`}
                 style={{
                     transform: videoTransform,
                     transformOrigin: 'center center',
                     objectFit: 'cover',
                 }}
             />
+            {/* Кнопка переключения камеры - только на мобильных и когда не записываем */}
+            {isMobile && !isRecording && (
+                <Button
+                    type="button"
+                    onClick={onSwitchCamera}
+                    variant="outline"
+                    size="icon"
+                    className="absolute top-4 right-4 z-20 bg-black/50 hover:bg-black/70 text-white border-white/30"
+                >
+                    <RotateCcw className="w-5 h-5" />
+                </Button>
+            )}
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-10">
                 {!isRecording ? (
                     <Button
