@@ -12,7 +12,7 @@ export const Header = () => {
 
 
     return (
-        <nav className="absolute top-0 left-0 right-0 z-50 bg-card ">
+        <div className="absolute top-0 left-0 right-0 z-50 bg-card ">
             <div className="container mx-auto px-4 sm:px-6 lg:px-4 py-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center  gap-8">
@@ -45,7 +45,7 @@ export const Header = () => {
                     </div>
                 </div>
             </div>
-        </nav>
+        </div>
 
     )
 }

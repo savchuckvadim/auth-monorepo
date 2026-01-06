@@ -13,7 +13,7 @@ export default function PeopleIcon({ size, color }: PeopleIconProps) {
         <svg
             // onMouseEnter={() => setIsHovered(true)}
             // onMouseLeave={() => setIsHovered(false)}
-            width={size} height={size}
+            width={`${size}px`} height={`${size}px`}
             className={`h-[${size}px] w-[${size}px]`}
             viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path

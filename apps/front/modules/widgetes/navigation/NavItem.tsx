@@ -11,7 +11,7 @@ export enum ENavigationType {
     ME = 'me',
     MESSAGE = 'chats',
     PEOPLE = 'people',
- 
+
 }
 interface NavItemProps {
     label: string;
@@ -53,7 +53,7 @@ export const NavItem = ({ label, href, type, isActive }: NavItemProps) => {
                 <span className="flex items-center gap-2">
                     {
                         type === ENavigationType.PEOPLE
-                            ? <PeopleIcon color={iconColor} size={25} />
+                            ? <PeopleIcon color={iconColor}/>
                             : type === ENavigationType.MESSAGE
                                 ? <MessageIcon color={iconColor} size={25} />
                                 : <ProfileIcon color={iconColor} size={25} />
