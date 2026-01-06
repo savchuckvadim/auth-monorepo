@@ -12,17 +12,8 @@ export const useCamera = () => {
     const startCamera = async (): Promise<void> => {
         try {
             console.log('🎥 Starting camera...');
-
-            // Определяем, какая камера нужна (на мобильных лучше задняя)
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            const facingMode = isMobile ? 'environment' : 'user';
-
             const stream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    facingMode,
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 }
-                },
+                video: { facingMode: 'user' },
                 audio: true
             });
             console.log('✅ Camera stream obtained:', stream);
@@ -34,26 +25,7 @@ export const useCamera = () => {
             await new Promise(resolve => setTimeout(resolve, 100));
 
             if (videoRef.current) {
-                // Важно для iOS - предотвращает полноэкранный режим
-                videoRef.current.setAttribute('playsinline', 'true');
-                videoRef.current.setAttribute('webkit-playsinline', 'true');
-                videoRef.current.setAttribute('x5-playsinline', 'true');
-
                 videoRef.current.srcObject = stream;
-
-                // Ждем загрузки метаданных для правильной ориентации
-                await new Promise<void>((resolve) => {
-                    if (videoRef.current) {
-                        const handleLoadedMetadata = () => {
-                            videoRef.current?.removeEventListener('loadedmetadata', handleLoadedMetadata);
-                            resolve();
-                        };
-                        videoRef.current.addEventListener('loadedmetadata', handleLoadedMetadata);
-                    } else {
-                        resolve();
-                    }
-                });
-
                 await videoRef.current.play().catch(error => {
                     console.error('Error playing video:', error);
                 });
@@ -98,21 +70,8 @@ export const useCamera = () => {
             return;
         }
 
-        // Определяем поддерживаемый MIME type (iOS требует mp4)
-        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-        let mimeType = 'video/webm;codecs=vp8,opus';
-
-        if (isIOS) {
-            // iOS поддерживает только mp4
-            if (MediaRecorder.isTypeSupported('video/mp4')) {
-                mimeType = 'video/mp4';
-            } else if (MediaRecorder.isTypeSupported('video/quicktime')) {
-                mimeType = 'video/quicktime';
-            }
-        }
-
         const mediaRecorder = new MediaRecorder(mediaStreamRef.current, {
-            mimeType
+            mimeType: 'video/webm;codecs=vp8,opus'
         });
         mediaRecorderRef.current = mediaRecorder;
         const chunks: Blob[] = [];
@@ -124,8 +83,7 @@ export const useCamera = () => {
         };
 
         mediaRecorder.onstop = () => {
-            const blobType = isIOS ? 'video/mp4' : 'video/webm';
-            const blob = new Blob(chunks, { type: blobType });
+            const blob = new Blob(chunks, { type: 'video/webm' });
             setIsRecording(false);
 
             // Проверяем длительность

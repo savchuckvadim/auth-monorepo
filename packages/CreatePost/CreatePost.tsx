@@ -88,10 +88,7 @@ export const CreatePost = ({ wallUserId }: CreatePostProps = {}) => {
                 console.log('▶️ Starting recording...');
                 startRecording(async (blob) => {
                     // Загружаем записанное видео
-                    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-                    const fileName = isIOS ? 'video.mp4' : 'video.webm';
-                    const fileType = isIOS ? 'video/mp4' : 'video/webm';
-                    const file = new File([blob], fileName, { type: fileType });
+                    const file = new File([blob], 'video.webm', { type: 'video/webm' });
                     try {
                         const { url } = await postService.uploadPostMedia(file);
                         setMedia(url, 'video');
@@ -209,10 +206,7 @@ export const CreatePost = ({ wallUserId }: CreatePostProps = {}) => {
                                     return;
                                 }
                                 startRecording(async (blob) => {
-                                    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-                                    const fileName = isIOS ? 'video.mp4' : 'video.webm';
-                                    const fileType = isIOS ? 'video/mp4' : 'video/webm';
-                                    const file = new File([blob], fileName, { type: fileType });
+                                    const file = new File([blob], 'video.webm', { type: 'video/webm' });
                                     try {
                                         const { url } = await postService.uploadPostMedia(file);
                                         setMedia(url, 'video');
