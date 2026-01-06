@@ -29,7 +29,7 @@ export const CreateChatDialogWidget = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center ">
             <Card className="w-full max-w-md">
                 <CardHeader>
                     <CardTitle>Создать диалог</CardTitle>

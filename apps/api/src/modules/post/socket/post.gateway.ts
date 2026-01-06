@@ -53,7 +53,7 @@ export class PostGateway implements OnGatewayConnection, OnGatewayDisconnect {
             event.post
         );
 
-        // Также отправляем автору поста (если он онлайн)
+        // Также отправляем держателю поста (если он онлайн)
         this.server.to(`user:${event.post.userId}`).emit(
             'post:created',
             event.post

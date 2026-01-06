@@ -21,11 +21,14 @@ import { NotificationsModule } from "@/modules/notifications/notifications.modul
 import { ProfileModule } from "@/modules/profile";
 import { PostModule } from "@/modules/post";
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { PresenceModule } from './modules/presence';
+import { ScheduleModule } from '@nestjs/schedule';
 
 
 
 @Module({
     imports: [
+        ScheduleModule.forRoot(),
         ConfigModule.forRoot({
             isGlobal: true,
             envFilePath: '.env',
@@ -56,6 +59,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
         NotificationsModule,
         ProfileModule,
         PostModule,
+        PresenceModule,
     ],
 
     providers: [GlobalExceptionFilter],

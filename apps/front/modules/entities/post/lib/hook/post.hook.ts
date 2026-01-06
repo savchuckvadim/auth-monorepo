@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { postService } from "../api/post.service";
-import { CreatePostDto, PostDto } from "@workspace/nest-api";
+import { CreatePostDto, PostDto, RepostDto } from "@workspace/nest-api";
 import { useAuth } from "@/modules/processes";
 
 export const usePost = (id: string) => {
@@ -46,7 +46,7 @@ export const useCreatePost = () => {
                     id: currentUser.id,
                     name: currentUser.name || '',
                     email: currentUser.email || '',
-                    avatar: currentUser.avatarUrl ? { url: currentUser.avatarUrl } : undefined,
+                    avatar: currentUser.avatarUrl ? currentUser.avatarUrl : undefined,
                 } : undefined,
             };
 
@@ -189,3 +189,47 @@ export const useDeletePost = () => {
     });
 }
 
+
+
+export const useLikePost = (postId: string) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (postId: string) => postService.likePost(postId),
+        onMutate: async (postId) => {
+            await queryClient.cancelQueries({ queryKey: ['posts'] });
+            await queryClient.cancelQueries({ queryKey: ['post', postId] });
+
+            return { postId };
+        },
+        onError: (err, postId, context) => {
+            queryClient.setQueryData<PostDto>(['post', postId], undefined);
+        },
+        onSuccess: (data, variables, context) => {
+            queryClient.setQueryData<PostDto>(['post', postId], undefined);
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ['posts'] });
+        },
+    });
+
+}
+
+export const useUnlikePost = () => {
+    return useMutation({
+        mutationFn: (postId: string) => postService.unlikePost(postId),
+    });
+}
+
+export const useRepostPost = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ postId, data }: { postId: string, data: RepostDto }) => postService.repostPost(postId, data),
+        onMutate: async (postId, data) => {
+            await queryClient.cancelQueries({ queryKey: ['posts'] });
+            await queryClient.cancelQueries({ queryKey: ['post', postId] });
+
+            return { postId, data };
+        },
+  
+    });
+}

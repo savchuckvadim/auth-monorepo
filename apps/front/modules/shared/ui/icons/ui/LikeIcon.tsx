@@ -6,8 +6,14 @@ import { useTheme } from 'next-themes';
 
 export default function LikeIcon({ isLiked }: { isLiked: boolean }) {
     const [isHovered, setIsHovered] = useState(false);
-    const {theme} = useTheme()
-    const iconColor = isHovered ? EIconColor.RED : isLiked ? EIconColor.RED : theme === 'dark' ? EIconColor.DARK : EIconColor.LIGHT;
+    const { theme } = useTheme()
+    const iconColor = isHovered && !isLiked
+        ? EIconColor.RED
+        : isLiked
+            ? EIconColor.LIGHT
+            : !isLiked && theme?.includes('dark')
+                ? EIconColor.RED
+                : EIconColor.RED;
 
     return (
 

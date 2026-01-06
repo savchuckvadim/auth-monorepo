@@ -28,7 +28,9 @@ export default function ChatListPage() {
     const { data: chats, isLoading: chatsLoading } = useUserChats();
 
 
-
+    if (!currentUser || !currentUser?.id) {
+        return <LoadingScreen />
+    }
 
 
 
@@ -45,9 +47,7 @@ export default function ChatListPage() {
         );
     }) || [];
 
-    if (!currentUser) {
-        return <LoadingScreen />;
-    }
+
 
     // const handleChatSelect = (chatId: string) => {
     //     router.push(`/network/chats/${chatId}`);

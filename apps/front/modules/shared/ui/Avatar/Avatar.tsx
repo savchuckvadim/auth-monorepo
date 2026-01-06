@@ -2,6 +2,8 @@
 
 import Image from 'next/image';
 import { cn } from '@workspace/ui/lib/utils';
+import { AvatarFallback, AvatarImage, Avatar as AvatarRoot } from '@workspace/ui/components/avatar';
+import { usePresence } from '@/modules/entities';
 
 interface AvatarProps {
     src?: string | null;
@@ -28,7 +30,7 @@ export const Avatar = ({ src, alt, name, size = 'md', isOnline, className }: Ava
     const sizeClass = sizeMap[size];
     const indicatorClass = indicatorSizeMap[size];
     const initials = name?.charAt(0)?.toUpperCase() || '?';
-
+    const { getIsUserOnline } = usePresence();
     return (
         <div className={cn('relative', sizeClass, className)}>
             {src ? (
@@ -54,6 +56,19 @@ export const Avatar = ({ src, alt, name, size = 'md', isOnline, className }: Ava
                 />
             )}
         </div>
+        // <div className={cn('relative', sizeClass, className)}>
+        //     <AvatarRoot>
+        //         <AvatarImage src={src as string || ''} />
+        //         <AvatarFallback>{name?.charAt(0)}</AvatarFallback>
+        //     </AvatarRoot>
+        //     {isOnline !== undefined && (
+        //         <div className={cn(
+        //             'absolute bottom-0 right-0 rounded-full border-2 border-background',
+        //             indicatorClass,
+        //             isOnline ? 'bg-[#F44848]' : 'bg-gray-400'
+        //         )} />
+        //     )}
+        // </div>
     );
 };
 

@@ -1,14 +1,14 @@
 import { io, Socket } from 'socket.io-client';
 
 let socket: Socket | null = null;
-
+const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.sociopath-network.ru' // 'http://localhost:3000';
 export const connectNotificationsSocket = (userId: string): Socket => {
     if (socket?.connected) {
         return socket;
     }
 
-    // socket = io(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/notifications`, {
-    socket = io(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.sociopath-network.ru'}/notifications`, {
+    socket = io(`${SOCKET_URL}/notifications`, {
+        // socket = io(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.sociopath-network.ru'}/notifications`, {
         query: {
             userId,
         },

@@ -3,7 +3,10 @@ import { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from './redux';
 import { initializeApp } from '../../model/thunk/AppThunk';
 import { useAppSocket } from './app-socket';
-import { usePostsSocket } from '@/modules/entities';
+import { useNotificationsSocket } from '@/modules/features/notifiactions';
+import { usePresenceSocket } from '@/modules/entities/presence';
+
+
 
 
 
@@ -13,8 +16,8 @@ export const useApp = () => {
     const [isClient, setIsClient] = useState(false);
 
     useAppSocket();
-    usePostsSocket();
-
+    useNotificationsSocket();
+    usePresenceSocket();
 
     useEffect(() => {
         setIsClient(true);

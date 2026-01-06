@@ -3,17 +3,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import { PostDto } from '@workspace/nest-api';
 import { useAuth } from '@/modules/processes';
 import { socketManager } from '@/modules/shared';
+import { EnumPostSocketEvent } from '../../type/consts';
 
 /**
  * Хук для подписки на WebSocket события постов
  * Автоматически обновляет кэш React Query при получении событий
  */
-enum EnumPostSocketEvent {
-    CREATED = 'post:created',
-    UPDATED = 'post:updated',
-    DELETED = 'post:deleted',
-    LIKED = 'post:liked',
-}
 
 
 
@@ -33,6 +28,11 @@ export const usePostsSocket = () => {
         const handlePostCreated = (post: PostDto) => {
             console.log('📝 Post created event received:', post);
 
+            // Если пост создан автором, то не обновляем кэш так как
+            // кеш обновится через useCreatePost
+            if (currentUser?.id === post.authorId) {
+                return;
+            }
             // Обновляем feed - используем функцию для предотвращения дубликатов
             queryClient.setQueryData<PostDto[]>(['posts', 'feed'], (old = []) => {
                 // Проверяем, нет ли уже этого поста

@@ -79,17 +79,20 @@ export class RepostDto {
     @MaxLength(2000, { message: 'Text must not exceed 2000 characters' })
     text?: string;
 }
-export class PostAuthorDto implements Partial<PostAuthor> {
-    @ApiProperty({ description: 'ID', example: '1' })
+export class PostAuthorDto {
+
+    @ApiProperty({ description: 'ID', example: '1', type: String })
     @IsString()
     id: string;
-    @ApiProperty({ description: 'Name', example: 'John Doe' })
+    @ApiProperty({ description: 'Name', example: 'John Doe', type: String })
     @IsString()
     name: string;
-    @ApiProperty({ description: 'Email', example: 'john@example.com' })
+    @ApiProperty({ description: 'Email', example: 'john@example.com', type: String })
     @IsString()
     email: string;
-    @ApiProperty({ description: 'Avatar URL', example: 'https://example.com/avatar.jpg', required: false })
+
+
+    @ApiProperty({ description: 'Avatar URL', example: 'https://example.com/avatar.jpg', required: false, type: String })
     @IsOptional()
     @IsString()
     avatar?: string | null;
@@ -217,7 +220,7 @@ export class PostDto {
     @IsOptional()
     originalPost?: PostDto | null;
 
-    @ApiProperty({ description: 'Author information', required: false })
+    @ApiProperty({ description: 'Author information', required: false, type: PostAuthorDto })
     @IsOptional()
     author?: PostAuthorDto;
 }

@@ -10,6 +10,8 @@ import {
 import { appReducer } from './slice/AppSlice';
 import { errorHandler } from '../lib/error-handler';
 import { authReducer } from '@/modules/processes/auth';
+import { notificationReducer } from '@/modules/features/notifiactions';
+import { presenceReducer } from '@/modules/entities/presence';
 
 
 const listenerMiddleware = createListenerMiddleware();
@@ -32,6 +34,15 @@ const errorMiddleware: Middleware = storeAPI => next => action => {
 const rootReducer = combineReducers({
     app: appReducer,
     auth: authReducer,
+
+
+    // Entities
+    presence: presenceReducer,
+
+
+
+    // Features
+    notification: notificationReducer,
 
 
 });

@@ -1,6 +1,6 @@
 'use client';
 import dynamic from 'next/dynamic';
-import { NO_POST_MESSAGE, Post, usePostsByUserId } from "@/modules/entities";
+import { NO_POST_MESSAGE, Post, RepostedPost, usePostsByUserId, usePostsSocket } from "@/modules/entities";
 import { useAuth } from "@/modules/processes";
 import { Empty, ErrorComponent, LoadingComponent } from "@/modules/shared";
 
@@ -11,7 +11,7 @@ const CreatePost = dynamic(() => import("@/modules/features/").then(mod => ({ de
 
 export default function ProfilePosts({ userId }: { userId: string }) {
     const { currentUser } = useAuth()
-
+    usePostsSocket();
     // Подписываемся на WebSocket события постов
 
 
@@ -33,7 +33,9 @@ export default function ProfilePosts({ userId }: { userId: string }) {
             {posts?.length === 0
                 ? <Empty text={NO_POST_MESSAGE} />
                 : posts?.map((post) => (
-                    <Post key={post.id} post={post} currentUserId={currentUser?.id!} />
+                    post.originalPostId
+                        ? <RepostedPost key={post.id} post={post} currentUserId={currentUser?.id!} />
+                        : <Post key={post.id} post={post} currentUserId={currentUser?.id!} />
                 ))}
         </div>
     )

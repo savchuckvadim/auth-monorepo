@@ -5,7 +5,7 @@ import { CreateUserDto } from "./user.dto";
 import { hash } from "bcrypt";
 import { randomUUID } from "crypto";
 import { UserRepository } from "./user.repository";
-import { UserWithFollowStatusType } from "./user.type";
+import { UserWithFollowStatusType, UserWithProfileType } from "./user.type";
 
 
 
@@ -38,7 +38,7 @@ export class UserPrismaRepository implements UserRepository {
             const isFollower = user.followers.some(following => following.followingId === currentUserId);
             const isFriend = isFollowing && isFollower;
             const avatarUrl = user.profile?.avatar || '';
-         
+
             return {
                 ...user,
                 avatarUrl,
@@ -52,19 +52,36 @@ export class UserPrismaRepository implements UserRepository {
         });
     }
 
-    public async getByIds(ids: string[]): Promise<User[]> {
-        return this.prisma.user.findMany({ where: { id: { in: ids } } });
+    public async getByIds(ids: string[]): Promise<UserWithFollowStatusType[]> {
+        const user = await this.prisma.user.findMany({
+            where: { id: { in: ids } },
+            include: {
+                profile: true,
+            }
+
+        }) as UserWithProfileType[];
+
+        return user.map(user => {
+            return {
+                ...user,
+                avatarUrl: user.profile?.avatar || '',
+            };
+        });
+
     }
 
-    public async findByEmail(email: string): Promise<User> {
-        const user = await this.prisma.user.findUnique({ where: { email } });
+    public async findByEmail(email: string): Promise<UserWithFollowStatusType> {
+        const user = await this.prisma.user.findUnique({ where: { email }, include: { profile: true } });
         if (!user) {
             throw new NotFoundException('User not found');
         }
-        return user;
+        return {
+            ...user,
+            avatarUrl: user.profile?.avatar || '',
+        };
     }
 
-    public async findById(id: string): Promise<User> {
+    public async findById(id: string): Promise<UserWithFollowStatusType> {
         const user = await this.prisma.user.findUnique({
             where: { id },
             include: {
@@ -75,12 +92,16 @@ export class UserPrismaRepository implements UserRepository {
                         deletedAt: null,
                     },
                 },
+                profile: true,
             },
         });
         if (!user) {
             throw new NotFoundException('User not found');
         }
-        return user;
+        return {
+            ...user,
+            avatarUrl: user.profile?.avatar || '',
+        };
     }
 
     public async create(user: CreateUserDto): Promise<User> {

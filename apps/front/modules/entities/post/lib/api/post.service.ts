@@ -1,4 +1,4 @@
-import { CreatePostDto, getPosts, PaginatedPostsDto, PostDto } from "@workspace/nest-api";
+import { CreatePostDto, getPosts, PaginatedPostsDto, PostDto, RepostDto } from "@workspace/nest-api";
 import { customAxios } from "@workspace/nest-api/src/lib/back-api";
 
 class PostService {
@@ -25,6 +25,20 @@ class PostService {
     public async createPost(post: CreatePostDto): Promise<PostDto> {
         return await this.api.postCreatePost(post) as PostDto;
     }
+
+    public async likePost(postId: string): Promise<void> {
+        return await this.api.postLikePost(postId);
+    }
+    public async unlikePost(postId: string): Promise<void> {
+        return await this.api.postUnlikePost(postId);
+    }
+
+
+
+    public async repostPost(postId: string, data: RepostDto): Promise<PostDto> {
+        return await this.api.postRepost(postId, data);
+    }
+
 
     public async uploadPostMedia(file: File): Promise<{ url: string }> {
         const formData = new FormData();

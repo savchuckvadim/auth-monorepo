@@ -1,13 +1,12 @@
 import { io, Socket } from 'socket.io-client';
 
 let socket: Socket | null = null;
-
+const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.sociopath-network.ru' // 'http://localhost:3000'; //|| 'https://api.sociopath-network.ru'}/messages`
 export const connectMessagesSocket = (userId: string): Socket => {
     if (socket?.connected) {
         return socket;
     }
-    // const socketUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/messages`;
-    const socketUrl = `${process.env.NEXT_PUBLIC_API_URL || 'https://api.sociopath-network.ru'}/messages`;
+    const socketUrl = `${SOCKET_URL}/messages`;
     socket = io(socketUrl, {
         query: {
             userId,

@@ -1,6 +1,6 @@
 import { PrismaService } from "@/core";
 import { Injectable, NotFoundException, ForbiddenException } from "@nestjs/common";
-import { Post } from "generated/prisma";
+import { Post, Prisma } from "generated/prisma";
 import { CreatePostDto, UpdatePostDto, RepostDto } from "../dto/post.dto";
 import { PostRepository, } from "./post.repository";
 import { FullPost } from "../type/post.type";
@@ -56,7 +56,7 @@ export class PostPrismaRepository implements PostRepository {
             id: post.author.id,
             name: post.author.name,
             email: post.author.email,
-            avatar: post.author.avatar,
+            avatar: post.author.profile?.avatar || null,
         };
 
 
@@ -285,6 +285,9 @@ export class PostPrismaRepository implements PostRepository {
             },
         });
 
+
+
+
         const hasNext = posts.length > limit;
         const postsToReturn = hasNext ? posts.slice(0, limit) : posts;
 
@@ -365,22 +368,42 @@ export class PostPrismaRepository implements PostRepository {
             throw new NotFoundException('Post not found');
         }
 
-        await this.prisma.postLike.upsert({
-            where: {
-                postId_userId: {
+        try {
+            await this.prisma.postLike.upsert({
+                where: {
+                    postId_userId: {
+                        postId,
+                        userId,
+                    },
+                },
+                update: {
+                    isLike,
+                },
+                create: {
                     postId,
                     userId,
+                    isLike,
                 },
-            },
-            update: {
-                isLike,
-            },
-            create: {
-                postId,
-                userId,
-                isLike,
-            },
-        });
+            });
+        } catch (error) {
+            // Обработка race condition: если запись уже существует (P2002 - unique constraint violation),
+            // просто обновляем её
+            if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+                await this.prisma.postLike.update({
+                    where: {
+                        postId_userId: {
+                            postId,
+                            userId,
+                        },
+                    },
+                    data: {
+                        isLike,
+                    },
+                });
+            } else {
+                throw error;
+            }
+        }
     }
 
     public async unlikePost(postId: string, userId: string): Promise<void> {

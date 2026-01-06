@@ -1,4 +1,4 @@
-import { User } from "generated/prisma";
+import { Profile, User } from "generated/prisma";
 
 export type UserWithFollowStatusType = User & {
     isFollowing?: boolean;
@@ -8,4 +8,9 @@ export type UserWithFollowStatusType = User & {
     followingCount?: number;
     postsCount?: number;
     avatarUrl?: string;
+}
+
+
+export type UserWithProfileType = User & {
+    profile?: Profile | null;
 }

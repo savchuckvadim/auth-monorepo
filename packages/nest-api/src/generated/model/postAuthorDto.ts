@@ -5,7 +5,6 @@
  * API for auth backend for monorepo
  * OpenAPI spec version: 1.0
  */
-import type { PostAuthorDtoAvatar } from './postAuthorDtoAvatar';
 
 export interface PostAuthorDto {
     /** ID */
@@ -15,5 +14,5 @@ export interface PostAuthorDto {
     /** Email */
     email: string;
     /** Avatar URL */
-    avatar?: PostAuthorDtoAvatar;
+    avatar?: string;
 }

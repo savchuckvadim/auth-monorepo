@@ -19,7 +19,7 @@ const DynamicProfilePosts = dynamic(() => import('@/modules/widgetes/profile/pos
 export default function NetworkProfilePage() {
 
     const { currentUser } = useAuth();
-    if (!currentUser || !currentUser.id) {
+    if (!currentUser || !currentUser?.id) {
         return <LoadingComponent />
     }
 
