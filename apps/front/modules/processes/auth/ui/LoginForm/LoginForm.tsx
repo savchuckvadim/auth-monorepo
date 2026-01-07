@@ -30,8 +30,12 @@ export const LoginForm = () => {
 
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-
+        <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-4"
+            method="post"
+            autoComplete="on"
+        >
             <div className="space-y-2">
                 <Label htmlFor="login-email">Email</Label>
                 <Input
@@ -39,6 +43,7 @@ export const LoginForm = () => {
                     type="email"
                     placeholder="your@email.com"
                     defaultValue={watch('email')}
+                    autoComplete="email"
                     {...register("email")}
                     required
                 />
@@ -51,6 +56,7 @@ export const LoginForm = () => {
                         type={showPassword ? 'text' : 'password'}
                         placeholder="Введите пароль"
                         defaultValue={watch('password')}
+                        autoComplete="current-password"
                         {...register("password")}
                         required
                     />

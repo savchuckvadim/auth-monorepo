@@ -1,15 +1,25 @@
-'use client';
-
 import { Card, CardHeader } from "@workspace/ui/components/card";
 import { CardTitle } from "@workspace/ui/components/card";
 import { CardDescription } from "@workspace/ui/components/card";
 import { CardContent } from "@workspace/ui/components/card";
 import dynamic from "next/dynamic";
+import { Metadata } from 'next';
 
 const DynamicRegistrationForm = dynamic(() => import('@/modules/processes/auth/ui/RegistredForm/RegistredForm')
     .then(mod => mod.RegistrationForm), {
     ssr: false,
 });
+
+export const metadata: Metadata = {
+    title: 'Регистрация — Sociopath Network',
+    description: 'Зарегистрируйтесь в приватном сообществе для общения и поиска единомышленников',
+    robots: {
+        index: false,
+        follow: false,
+        noarchive: true,
+        nosnippet: true,
+    },
+};
 
 export default function Page() {
     return (

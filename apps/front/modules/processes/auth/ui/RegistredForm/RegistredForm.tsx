@@ -24,7 +24,12 @@ export const RegistrationForm = () => {
     const onSubmit: SubmitHandler<IRegisterForm> = (data) => registerUser(data);
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-4"
+            method="post"
+            autoComplete="on"
+        >
             <div className="space-y-2">
                 <Label htmlFor="register-name">Имя</Label>
                 <Input
@@ -32,6 +37,7 @@ export const RegistrationForm = () => {
                     type="text"
                     placeholder="Имя"
                     defaultValue={watch('name')}
+                    autoComplete="name"
                     {...register("name")}
                     required
                 />
@@ -43,6 +49,7 @@ export const RegistrationForm = () => {
                     type="email"
                     placeholder="your@email.com"
                     defaultValue={watch('email')}
+                    autoComplete="email"
                     {...register("email")}
                     required
                 />
@@ -57,6 +64,7 @@ export const RegistrationForm = () => {
                         type={showPassword ? 'text' : 'password'}
                         placeholder="Введите пароль"
                         defaultValue={watch('password')}
+                        autoComplete="new-password"
                         {...register("password")}
                         required
                     />
@@ -76,6 +84,7 @@ export const RegistrationForm = () => {
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Подтвердите пароль"
                     defaultValue={watch('confirmPassword')}
+                    autoComplete="new-password"
                     {...register("confirmPassword")}
                     required
                 />

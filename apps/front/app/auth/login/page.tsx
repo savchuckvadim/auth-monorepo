@@ -1,15 +1,26 @@
-'use client';
 import { Card, CardHeader } from "@workspace/ui/components/card";
 import { CardTitle } from "@workspace/ui/components/card";
 import { CardDescription } from "@workspace/ui/components/card";
 import { CardContent } from "@workspace/ui/components/card";
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { Metadata } from 'next';
 
 const DynamicLoginForm = dynamic(() => import('@/modules/processes/auth/ui/LoginForm/LoginForm')
     .then(mod => mod.LoginForm), {
     ssr: false,
 });
+
+export const metadata: Metadata = {
+    title: 'Вход в систему — Sociopath Network',
+    description: 'Войдите в свой аккаунт для доступа к приватному сообществу',
+    robots: {
+        index: false,
+        follow: false,
+        noarchive: true,
+        nosnippet: true,
+    },
+};
 
 export default function Page() {
     return (
