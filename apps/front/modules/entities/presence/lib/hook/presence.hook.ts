@@ -23,7 +23,7 @@ export const usePresence = () => {
 
 
     const handleOnPresenceChange = useCallback((userId: string, status: EnumPresenceStatus) => {
-
+        console.log('🔵 handleOnPresenceChange', userId, status);
         // Форматируем дату сразу в строку для хранения в Redux
         const lastSeenAt = formatRelativeDate(new Date());
         const newPresenceItem: IPresence = { userId, status, lastSeenAt };

@@ -5,6 +5,7 @@ import { useAuth } from '@/modules/processes';
 import { LoadingScreen } from '@/modules/shared/ui';
 import { ChatMessagesWidget, ChatInputWidget, CreateChatDialogWidget } from '@/modules/widgetes/chat';
 import { useUserChats, useCreateChat, useMarkChatAsRead, useChatSocket, useSendMessage } from '@/modules/entities/chats';
+import { scrollToBottom } from '@/modules/entities/messages/lib/utils/scroll-to-bottom.util';
 import { Chat, ChatType, CreateChat } from '@/modules/entities/chats';
 import { useAllUsers } from '@/modules/entities/followers';
 import { ChatMemberDto, CreateChatDto } from '@workspace/nest-api';
@@ -50,9 +51,13 @@ export default function ChatsPage() {
     }, [selectedChatId]);
 
     // Auto-scroll to bottom when messages change
+    // На мобильных скроллим только контейнер сообщений, а не всю страницу
     useEffect(() => {
         if (messagesEndRef.current && selectedChatId) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+            // Небольшая задержка для рендера
+            setTimeout(() => {
+                scrollToBottom(messagesEndRef);
+            }, 100);
         }
     }, [selectedChatId]);
 
@@ -99,7 +104,7 @@ export default function ChatsPage() {
     };
     const otherUserId = selectedChat?.members?.find((m: ChatMemberDto) => m.userId !== currentUser?.id)?.userId || '';
     return (
-        <div className="h-[88vh] bg-background flex overflow-hidden border-2 rounded-3xl">
+        <div className="md:h-[88vh] h-[calc(100dvh-10rem)] bg-background flex overflow-hidden border-2 rounded-3xl">
 
             {/* <ChatListWidget
                 currentUserId={currentUser.id}

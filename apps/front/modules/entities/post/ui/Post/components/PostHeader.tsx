@@ -1,9 +1,9 @@
 'use client'
-import { Avatar } from "@/modules/shared"
+import { Avatar, formatRelativeDate } from "@/modules/shared"
 import { PostDto } from "@workspace/nest-api"
-import { getPostDate } from "../../../lib/util/post-date.util"
 import Link from "next/link"
 import { usePresence } from "@/modules/entities/presence"
+
 
 
 export const PostHeader = ({ post }: { post: PostDto }) => {
@@ -26,7 +26,7 @@ export const PostHeader = ({ post }: { post: PostDto }) => {
                     {isOnWall && (
                         <p className='text-xs text-gray-400'>posted on {post?.author?.name || ''}'s wall</p>
                     )}
-                    <p className='text-sm text-gray-500'>{getPostDate(createdAt)}</p>
+                    <p className='text-sm text-gray-500'>{formatRelativeDate(createdAt)}</p>
                 </div>
             </Link>
         </div>

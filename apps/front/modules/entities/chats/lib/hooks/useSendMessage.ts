@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useCreateMessage } from '@/modules/entities/messages';
 import { Message, MessageType } from '@/modules/entities/messages';
 import { UserDto } from '@workspace/nest-api';
+import { scrollToBottom } from '@/modules/entities/messages/lib/utils/scroll-to-bottom.util';
 
 interface UseSendMessageProps {
     chatId: string | null;
@@ -42,7 +43,7 @@ export const useSendMessage = ({ chatId, currentUser, messagesEndRef }: UseSendM
         );
 
         setTimeout(() => {
-            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+            scrollToBottom(messagesEndRef);
         }, 50);
 
         try {
@@ -80,7 +81,7 @@ export const useSendMessage = ({ chatId, currentUser, messagesEndRef }: UseSendM
             queryClient.invalidateQueries({ queryKey: ['chats', 'user'] });
 
             setTimeout(() => {
-                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                scrollToBottom(messagesEndRef);
             }, 100);
         } catch (error) {
             console.error('Failed to send message:', error);

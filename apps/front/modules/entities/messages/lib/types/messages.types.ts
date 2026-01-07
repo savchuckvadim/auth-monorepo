@@ -1,4 +1,5 @@
 import { MessageDto } from "@workspace/nest-api";
+export const NO_MESSAGES_MESSAGE = 'Thanks damn! No messages yet';
 
 export enum MessageType {
     TEXT = 'TEXT',

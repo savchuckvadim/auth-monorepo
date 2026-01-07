@@ -121,7 +121,7 @@ const CallWrapperWidgetContent: FC<{ children: React.ReactNode }> = ({
                     hasRejectCall: typeof rejectCall === 'function'
                 });
                 return isIncomingCall && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
                         <div className="flex flex-col gap-4 items-center">
                             <div className="text-white text-xl font-semibold">
                                 Входящий {callType === 'VIDEO' ? 'видео' : 'аудио'} звонок
@@ -167,41 +167,66 @@ const CallWrapperWidgetContent: FC<{ children: React.ReactNode }> = ({
                     myStreamActive: myStream?.active
                 });
                 return (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-                        <div className="flex flex-col gap-4">
-
-                            {callType === 'VIDEO' && (() => {
-                                console.log('🎥 [CALL WRAPPER] Rendering VIDEO in overlay', {
-                                    hasMyStream: !!myStream,
-                                    hasRemoteStream: !!remoteStream,
-                                    myStreamId: myStream?.id,
-                                    remoteStreamId: remoteStream?.id
-                                });
-                                return (
-                                    <>
+                    <div className="fixed inset-0 z-50 bg-black">
+                        {callType === 'VIDEO' && (() => {
+                            console.log('🎥 [CALL WRAPPER] Rendering VIDEO in overlay', {
+                                hasMyStream: !!myStream,
+                                hasRemoteStream: !!remoteStream,
+                                myStreamId: myStream?.id,
+                                remoteStreamId: remoteStream?.id
+                            });
+                            return (
+                                <div className="relative w-full h-full">
+                                    {/* Большой экран - удаленное видео (на весь экран) */}
+                                    <div className="absolute inset-0">
                                         <VideoPlayer
                                             stream={remoteStream}
-                                            name="Remote"
-                                            className="w-[600px] h-[400px]"
+                                            name=""
+                                            className="w-full h-full rounded-none"
                                         />
-                                        <VideoPlayer
-                                            stream={myStream}
-                                            name="You"
-                                            isAudioMute
-                                            className="w-[200px] h-[150px] absolute bottom-4 right-4"
-                                        />
-                                    </>
-                                );
-                            })()}
+                                    </div>
 
-                            <CallControls
-                                isAudioMute={isAudioMute}
-                                isVideoOnHold={isVideoOnHold}
-                                onToggleAudio={handleToggleAudio}
-                                onToggleVideo={handleToggleVideo}
-                                onEndCall={handleEndCall}
-                            />
-                        </div>
+                                    {/* Маленький экран - локальное видео (справа внизу) */}
+                                    {myStream && (
+                                        <div className="absolute bottom-24 right-4 md:bottom-28 md:right-6 z-10">
+                                            <VideoPlayer
+                                                stream={myStream}
+                                                name="You"
+                                                isAudioMute
+                                                className="w-28 h-36 sm:w-32 sm:h-44 md:w-56 md:h-72 rounded-lg border-2 border-white shadow-2xl"
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* Контролы внизу */}
+                                    <div className="absolute bottom-0 left-0 right-0 pb-4 md:pb-6 flex justify-center z-20 px-4">
+                                        <CallControls
+                                            isAudioMute={isAudioMute}
+                                            isVideoOnHold={isVideoOnHold}
+                                            onToggleAudio={handleToggleAudio}
+                                            onToggleVideo={handleToggleVideo}
+                                            onEndCall={handleEndCall}
+                                        />
+                                    </div>
+                                </div>
+                            );
+                        })()}
+
+                        {/* Для аудио звонков */}
+                        {callType === 'AUDIO' && (
+                            <div className="flex flex-col items-center justify-center h-full gap-8">
+                                <div className="text-white text-2xl font-semibold">
+                                    Аудио звонок
+                                </div>
+                                <CallControls
+                                    isAudioMute={isAudioMute}
+                                    isVideoOnHold={isVideoOnHold}
+                                    onToggleAudio={handleToggleAudio}
+                                    onToggleVideo={handleToggleVideo}
+                                    onEndCall={handleEndCall}
+                                />
+                            </div>
+                        )}
                     </div>
                 );
             })()}

@@ -1,6 +1,7 @@
 'use client';
 
-import { Message } from '../../lib/types/messages.types';
+import { Empty } from '@/modules/shared';
+import { Message, NO_MESSAGES_MESSAGE } from '../../lib/types/messages.types';
 import { MessageItem } from '../MessageItem';
 
 interface MessageListProps {
@@ -10,15 +11,6 @@ interface MessageListProps {
 }
 
 export const MessageList = ({ messages, currentUserId, messagesEndRef }: MessageListProps) => {
-    if (messages.length === 0) {
-        return (
-            <div className="h-full flex items-center justify-center">
-                <div className="text-center text-muted-foreground">
-                    Нет сообщений. Начните диалог!
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="flex flex-col">

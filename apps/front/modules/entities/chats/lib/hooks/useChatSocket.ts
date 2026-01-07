@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { connectMessagesSocket } from '@/modules/shared/lib/socket/messages-socket';
 import { Message } from '@/modules/entities/messages';
+import { scrollToBottom } from '@/modules/entities/messages/lib/utils/scroll-to-bottom.util';
 
 interface UseChatSocketProps {
     chatId: string | null;
@@ -48,7 +49,7 @@ export const useChatSocket = ({ chatId, userId, messagesEndRef }: UseChatSocketP
                 queryClient.invalidateQueries({ queryKey: ['chats', 'user'] });
 
                 setTimeout(() => {
-                    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                    scrollToBottom(messagesEndRef);
                 }, 100);
             } else {
                 console.log('ℹ️ Message is for different chat, updating chat list only');

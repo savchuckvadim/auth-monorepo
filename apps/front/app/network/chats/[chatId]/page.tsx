@@ -4,16 +4,17 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/modules/processes';
 import { LoadingScreen } from '@/modules/shared/ui';
-import { Chat,  useUserChats } from '@/modules/entities/chats';
+import { Chat, useUserChats } from '@/modules/entities/chats';
 import { ChatMemberDto, MessageDto } from '@workspace/nest-api';
 import { Button } from '@workspace/ui/components/button';
 
-import {  useChatMessages } from '@/modules/entities/messages';
+import { useChatMessages } from '@/modules/entities/messages';
 import { useChatSocket, useSendMessage } from '@/modules/entities/chats';
 
 import { CallWrapperWidget } from '@/modules/widgetes/call/CallWrapperWidget';
-import { ChatInputWidget, ChatMessagesWidget,  } from '@/modules/widgetes/chat';
+import { ChatInputWidget, ChatMessagesWidget, } from '@/modules/widgetes/chat';
 import { LoadingComponent } from '@/modules/shared/ui/Loading/ui/LoadingComponent';
+import { scrollToBottom } from '@/modules/entities/messages/lib/utils/scroll-to-bottom.util';
 
 export default function ChatPage() {
     const { currentUser } = useAuth();
@@ -44,9 +45,13 @@ export default function ChatPage() {
     });
 
     // Auto-scroll to bottom when messages change
+    // На мобильных скроллим только контейнер сообщений, а не всю страницу
     useEffect(() => {
         if (messagesEndRef.current && chatId) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+            // Небольшая задержка для рендера
+            setTimeout(() => {
+                scrollToBottom(messagesEndRef);
+            }, 100);
         }
     }, [chatId, sortedMessages.length]);
 
@@ -89,7 +94,7 @@ export default function ChatPage() {
     };
 
     return (
-        <div className="md:h-[82vh] h-[75vh] bg-background flex overflow-hidden border-2 rounded-3xl">
+        <div className="md:h-[82vh] h-[calc(100dvh-10rem)] bg-background flex overflow-hidden border-2 rounded-3xl">
 
 
             <CallWrapperWidget chatId={chatId || ''} otherUserId={otherUserId}>

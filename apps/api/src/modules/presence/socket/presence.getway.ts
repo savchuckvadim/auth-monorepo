@@ -28,6 +28,7 @@ export class PresenceGateway implements OnGatewayConnection, OnGatewayDisconnect
     @SubscribeMessage('presence:ping')
     async handlePing(client: Socket) {
         const userId = client.handshake.query.userId as string;
+        console.log('🔵 Presence PING event received from user: ', userId);
         if (!userId) return;
 
         // Продлеваем TTL при получении ping

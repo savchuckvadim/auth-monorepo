@@ -80,8 +80,12 @@ export const VideoPlayer: FC<VideoPlayerProps> = ({
         }
     }, [stream, isAudioMute, name, hasVideo, hasAudio]);
 
+    // Определяем, нужно ли использовать Card (для маленького видео) или просто div (для большого)
+    const useCard = !className.includes('rounded-none');
+    const Container = useCard ? Card : 'div';
+
     return (
-        <Card className={`relative overflow-hidden ${className}`}>
+        <Container className={`relative overflow-hidden ${className}`}>
             {hasVideo && (
                 <video
                     ref={videoRef}
@@ -98,10 +102,12 @@ export const VideoPlayer: FC<VideoPlayerProps> = ({
                     muted={isAudioMute}
                 />
             )}
-            <div className="absolute bottom-2 left-2 bg-black/50 text-white px-2 py-1 rounded text-sm">
-                {name}
-            </div>
-        </Card>
+            {name && (
+                <div className="absolute bottom-2 left-2 bg-black/50 text-white px-2 py-1 rounded text-sm backdrop-blur-sm">
+                    {name}
+                </div>
+            )}
+        </Container>
     );
 };
 
