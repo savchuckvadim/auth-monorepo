@@ -12,6 +12,8 @@ import { errorHandler } from '../lib/error-handler';
 import { authReducer } from '@/modules/processes/auth';
 import { notificationReducer } from '@/modules/features/notifiactions';
 import { presenceReducer } from '@/modules/entities/presence';
+import { callReducer } from '@/modules/features/call/model/slice/CallSlice';
+import { createPostReducer } from '@/modules/features/post/CreatePost/model/slice/CreatePostSlice';
 
 
 const listenerMiddleware = createListenerMiddleware();
@@ -43,6 +45,8 @@ const rootReducer = combineReducers({
 
     // Features
     notification: notificationReducer,
+    call: callReducer,
+    createPost: createPostReducer,
 
 
 });

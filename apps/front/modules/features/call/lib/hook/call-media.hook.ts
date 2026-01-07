@@ -53,7 +53,7 @@ export const useCallMedia = () => {
 
             return stream;
         } catch (error) {
-            console.error('❌ [GET MEDIA] Error getting media:', error);
+            // Ошибка будет обработана в Redux thunk
             throw error;
         }
     }, []);

@@ -14,6 +14,9 @@ import { MediaPreview } from "./ui/MediaPreview";
 import { CameraView } from "./ui/CameraView";
 import { postService } from "@/modules/entities";
 import { Avatar, AvatarFallback, AvatarImage } from "@workspace/ui/components/avatar";
+import { useAppDispatch, useAppSelector } from "@/modules/app";
+import { createPostActions } from "./model/slice/CreatePostSlice";
+import { MediaChoiceModal } from "@/modules/shared";
 
 interface CreatePostProps {
     wallUserId?: string;  // На чьей стене создаем пост (если не указано - на своей)
@@ -21,7 +24,10 @@ interface CreatePostProps {
 
 export const CreatePost = ({ wallUserId }: CreatePostProps = {}) => {
     const { currentUser } = useAuth();
+    const dispatch = useAppDispatch();
+    const isMediaChoiceModalOpen = useAppSelector((state) => state.createPost.isMediaChoiceModalOpen);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const cameraViewRef = useRef<HTMLDivElement>(null);
 
     const {
         mediaUrl,
@@ -107,17 +113,8 @@ export const CreatePost = ({ wallUserId }: CreatePostProps = {}) => {
             return;
         }
 
-        // Иначе предлагаем выбор: камера или файл
-        const useCamera = window.confirm('Использовать камеру? (OK - камера, Отмена - выбрать файл)');
-        if (useCamera) {
-            console.log('🎥 User chose camera, starting...');
-            await startCamera();
-        } else {
-            // Открываем выбор файла
-            if (fileInputRef.current) {
-                fileInputRef.current.click();
-            }
-        }
+        // Открываем модальное окно выбора
+        dispatch(createPostActions.openMediaChoiceModal());
         handleFocus();
     };
 
@@ -125,6 +122,38 @@ export const CreatePost = ({ wallUserId }: CreatePostProps = {}) => {
         removeMedia();
         stopCamera();
     };
+
+    const handleChooseCamera = async () => {
+        console.log('🎥 User chose camera, starting...');
+        await startCamera();
+        // Скролл произойдет автоматически через useEffect при изменении isCameraActive
+    };
+
+    const handleChooseFile = () => {
+        // Открываем выбор файла
+        if (fileInputRef.current) {
+            fileInputRef.current.click();
+        }
+    };
+
+    const handleCloseModal = () => {
+        dispatch(createPostActions.closeMediaChoiceModal());
+    };
+
+    // Автоматический скролл к предпросмотру видео при активации камеры
+    useEffect(() => {
+        if (isCameraActive && !mediaUrl && cameraViewRef.current) {
+            // Небольшая задержка для рендера компонента
+            const timer = setTimeout(() => {
+                cameraViewRef.current?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'nearest'
+                });
+            }, 300);
+
+            return () => clearTimeout(timer);
+        }
+    }, [isCameraActive, mediaUrl]);
 
     // Очищаем при размонтировании
     useEffect(() => {
@@ -202,34 +231,36 @@ export const CreatePost = ({ wallUserId }: CreatePostProps = {}) => {
 
                     {/* Видео с камеры */}
                     {isCameraActive && !mediaUrl && (
-                        <CameraView
-                            videoRef={videoRef}
-                            isRecording={isRecording}
-                            facingMode={facingMode}
-                            onStartRecording={() => {
-                                if (!mediaStreamRef.current) {
-                                    console.error('Cannot start recording: media stream is not available');
-                                    return;
-                                }
-                                startRecording(async (blob) => {
-                                    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-                                    const fileName = isIOS ? 'video.mp4' : 'video.webm';
-                                    const fileType = isIOS ? 'video/mp4' : 'video/webm';
-                                    const file = new File([blob], fileName, { type: fileType });
-                                    try {
-                                        const { url } = await postService.uploadPostMedia(file);
-                                        setMedia(url, 'video');
-                                    } catch (error) {
-                                        console.error('Failed to upload video:', error);
-                                    } finally {
-                                        stopCamera();
+                        <div ref={cameraViewRef}>
+                            <CameraView
+                                videoRef={videoRef}
+                                isRecording={isRecording}
+                                facingMode={facingMode}
+                                onStartRecording={() => {
+                                    if (!mediaStreamRef.current) {
+                                        console.error('Cannot start recording: media stream is not available');
+                                        return;
                                     }
-                                });
-                            }}
-                            onStopRecording={stopRecording}
-                            onSwitchCamera={switchCamera}
-                            onCancel={stopCamera}
-                        />
+                                    startRecording(async (blob) => {
+                                        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+                                        const fileName = isIOS ? 'video.mp4' : 'video.webm';
+                                        const fileType = isIOS ? 'video/mp4' : 'video/webm';
+                                        const file = new File([blob], fileName, { type: fileType });
+                                        try {
+                                            const { url } = await postService.uploadPostMedia(file);
+                                            setMedia(url, 'video');
+                                        } catch (error) {
+                                            console.error('Failed to upload video:', error);
+                                        } finally {
+                                            stopCamera();
+                                        }
+                                    });
+                                }}
+                                onStopRecording={stopRecording}
+                                onSwitchCamera={switchCamera}
+                                onCancel={stopCamera}
+                            />
+                        </div>
                     )}
                 </div>
                 {/* Скрытый input для выбора файлов */}
@@ -242,6 +273,14 @@ export const CreatePost = ({ wallUserId }: CreatePostProps = {}) => {
                     capture="environment"
                 />
             </form>
+
+            {/* Модальное окно выбора источника медиа */}
+            <MediaChoiceModal
+                open={isMediaChoiceModalOpen}
+                onClose={handleCloseModal}
+                onChooseCamera={handleChooseCamera}
+                onChooseFile={handleChooseFile}
+            />
         </div>
     );
 };

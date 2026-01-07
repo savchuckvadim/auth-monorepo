@@ -1,15 +1,14 @@
 'use client';
 
-import { useAuth } from '@/modules/processes';
 import { useApp } from '../lib/hooks/app';
 import { LoadingScreen } from '@/modules/shared';
 
 export const App = ({ children }: { children: React.ReactNode }) => {
     const { isLoading, isClient } = useApp();
-    const { currentUser } = useAuth();
 
 
-    
+
+
     if (!isClient) {
         return <LoadingScreen />
     }

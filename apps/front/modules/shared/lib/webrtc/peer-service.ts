@@ -24,7 +24,45 @@ export class PeerService {
         if (!this.peer) {
             throw new Error('Peer connection not initialized');
         }
-        await this.peer.setRemoteDescription(new RTCSessionDescription(description));
+
+        // Проверяем состояние signaling перед установкой
+        const signalingState = this.peer.signalingState;
+        const hasRemoteDesc = !!this.peer.remoteDescription;
+
+        // Если уже в stable и есть remote description, нельзя устанавливать снова
+        if (signalingState === 'stable' && hasRemoteDesc) {
+            console.warn('⚠️ [PEER SERVICE] Cannot set remote description: already in stable state with remote description', {
+                signalingState,
+                remoteDescriptionType: this.peer.remoteDescription?.type,
+                newDescriptionType: description.type
+            });
+            return; // Просто возвращаемся без ошибки
+        }
+
+        // Если состояние stable, но нет remote description, это тоже проблема
+        // (для answer нужно состояние "have-local-offer")
+        if (signalingState === 'stable' && !hasRemoteDesc && description.type === 'answer') {
+            console.warn('⚠️ [PEER SERVICE] Cannot set answer in stable state without remote description', {
+                signalingState,
+                descriptionType: description.type
+            });
+            return;
+        }
+
+        try {
+            await this.peer.setRemoteDescription(new RTCSessionDescription(description));
+        } catch (error: any) {
+            // Если ошибка связана с неправильным состоянием, логируем и пробрасываем
+            if (error.name === 'InvalidStateError') {
+                console.error('❌ [PEER SERVICE] InvalidStateError setting remote description', {
+                    signalingState,
+                    hasRemoteDesc,
+                    descriptionType: description.type,
+                    error: error.message
+                });
+            }
+            throw error;
+        }
     }
 
     /**

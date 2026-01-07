@@ -1,7 +1,7 @@
 import { io, Socket } from 'socket.io-client';
 
 let socket: Socket | null = null;
-const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.sociopath-network.ru' // 'http://localhost:3000';
+const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL ||  'https://api.sociopath-network.ru' // ;
 export const connectNotificationsSocket = (userId: string): Socket => {
     if (socket?.connected) {
         return socket;

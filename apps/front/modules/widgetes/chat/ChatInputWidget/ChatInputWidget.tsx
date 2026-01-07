@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@workspace/ui/components/button';
 import { Input } from '@workspace/ui/components/input';
 import { Send } from 'lucide-react';
+import { useIsMobile } from '@/modules/shared/lib/hooks/is-mobile.hook';
 
 interface ChatInputWidgetProps {
     messageText: string;
@@ -18,6 +19,8 @@ export const ChatInputWidget = ({
     onSendMessage,
     isPending,
 }: ChatInputWidgetProps) => {
+    const isMobile = useIsMobile();
+
     return (
         <div className="border-t p-4 bg-card flex-shrink-0">
             <div className="flex gap-2">
@@ -27,7 +30,7 @@ export const ChatInputWidget = ({
                     value={messageText}
                     onChange={(e) => onMessageTextChange(e.target.value)}
                     onKeyPress={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
+                        if (e.key === 'Enter' && !e.shiftKey && !isMobile) {
                             e.preventDefault();
                             onSendMessage();
                         }

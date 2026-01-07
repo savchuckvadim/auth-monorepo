@@ -2,6 +2,9 @@
 
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useCall } from '../hook/call.hook';
+import { CallErrorModal } from '../../ui/CallErrorModal';
+import { useAppDispatch, useAppSelector } from '@/modules/app';
+import { callActions } from '../../model/slice/CallSlice';
 
 interface CallContextValue {
     isInCall: boolean;
@@ -35,10 +38,17 @@ export const CallProvider: React.FC<CallProviderProps> = ({
     children,
 }) => {
     const call = useCall(chatId, otherUserId, defaultType);
+    const dispatch = useAppDispatch();
+    const callState = useAppSelector((state) => state.call);
+
+    const handleCloseError = () => {
+        dispatch(callActions.clearError());
+    };
 
     return (
         <CallContext.Provider value={call}>
             {children}
+            <CallErrorModal error={callState.error} onClose={handleCloseError} />
         </CallContext.Provider>
     );
 };

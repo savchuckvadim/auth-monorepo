@@ -556,7 +556,7 @@ export const useCallEngine = (
     }, [peerService.connection, media.setRemoteStream, socket, remoteSocketId]);
 
     // ---------- call accepted handler ----------
-    const handleCallAccepted = useCallback(({ ans }: CallAcceptedData) => {
+    const handleCallAccepted = useCallback(async ({ ans }: CallAcceptedData) => {
         // Создаем уникальный идентификатор для этого answer (используем первые 50 символов SDP)
         const answerId = ans.sdp?.substring(0, 50) || '';
 
@@ -571,12 +571,6 @@ export const useCallEngine = (
             alreadyProcessed: processedAnswerRef.current === answerId
         });
 
-        // Защита от повторной обработки того же answer
-        if (processedAnswerRef.current === answerId) {
-            console.log('⚠️ [CALL ACCEPTED] Answer already processed, skipping');
-            return;
-        }
-
         if (!peerService.connection) {
             console.error('❌ [CALL ACCEPTED] Peer connection not initialized');
             return;
@@ -584,22 +578,39 @@ export const useCallEngine = (
 
         const peer = peerService.connection;
 
-        // Проверяем состояние peer connection перед установкой remote description
+        // ВАЖНО: Сначала проверяем состояние signaling state
+        // Это критично, чтобы избежать ошибки "Called in wrong state: stable"
         const currentState = peer.signalingState;
         const hasRemoteDesc = !!peer.remoteDescription;
 
         console.log('🔍 [CALL ACCEPTED] Checking peer connection state', {
             signalingState: currentState,
             hasRemoteDescription: hasRemoteDesc,
-            remoteDescriptionType: peer.remoteDescription?.type
+            remoteDescriptionType: peer.remoteDescription?.type,
+            answerId,
+            alreadyProcessed: processedAnswerRef.current === answerId
         });
 
         // Если уже в stable и есть remote description, пропускаем
+        // Это самая важная проверка - нельзя устанавливать remote description в stable
         if (currentState === 'stable' && hasRemoteDesc) {
             console.log('⚠️ [CALL ACCEPTED] Peer already in stable state with remote description, skipping setRemoteDescription');
             // Помечаем как обработанный, но не устанавливаем remote description
             processedAnswerRef.current = answerId;
             setIsInCall(true);
+            return;
+        }
+
+        // Если состояние stable, но нет remote description - это тоже проблема для answer
+        if (currentState === 'stable' && !hasRemoteDesc) {
+            console.warn('⚠️ [CALL ACCEPTED] Cannot set answer in stable state without remote description, skipping');
+            processedAnswerRef.current = answerId;
+            return;
+        }
+
+        // Защита от повторной обработки того же answer (после проверки состояния)
+        if (processedAnswerRef.current === answerId) {
+            console.log('⚠️ [CALL ACCEPTED] Answer already processed, skipping');
             return;
         }
 
@@ -612,129 +623,143 @@ export const useCallEngine = (
             // Помечаем как обработанный ДО установки, чтобы избежать повторных вызовов
             processedAnswerRef.current = answerId;
 
-            peerService.setRemoteDescription(ans);
+            // Устанавливаем remote description с обработкой ошибок
+            await peerService.setRemoteDescription(ans);
             console.log('✅ [CALL ACCEPTED] Remote description set', {
-                afterSignalingState: peerService.connection.signalingState,
-                connectionState: peerService.connection.connectionState,
-                iceConnectionState: peerService.connection.iceConnectionState,
-                iceGatheringState: peerService.connection.iceGatheringState
+                afterSignalingState: peerService.connection?.signalingState,
+                connectionState: peerService.connection?.connectionState,
+                iceConnectionState: peerService.connection?.iceConnectionState,
+                iceGatheringState: peerService.connection?.iceGatheringState
             });
-
-            // ВАЖНО: После установки remote description добавляем все буферизованные ICE candidates
-            if (iceCandidateBufferRef.current.length > 0) {
-                console.log('📦 [CALL ACCEPTED] Processing buffered ICE candidates', {
-                    count: iceCandidateBufferRef.current.length
+        } catch (error: any) {
+            // Если ошибка связана с неправильным состоянием, просто логируем
+            if (error.name === 'InvalidStateError' || error.message?.includes('wrong state')) {
+                console.warn('⚠️ [CALL ACCEPTED] Cannot set remote description due to invalid state', {
+                    error: error.message,
+                    signalingState: peer.signalingState,
+                    hasRemoteDesc: !!peer.remoteDescription
                 });
-                const bufferedCandidates = [...iceCandidateBufferRef.current];
-                iceCandidateBufferRef.current = []; // Очищаем буфер
-
-                for (const candidate of bufferedCandidates) {
-                    try {
-                        peerService.connection!.addIceCandidate(candidate);
-                        console.log('✅ [CALL ACCEPTED] Buffered ICE candidate added', {
-                            candidate: candidate.candidate?.substring(0, 50)
-                        });
-                    } catch (error: any) {
-                        console.error('❌ [CALL ACCEPTED] Error adding buffered ICE candidate:', error);
-                    }
-                }
+                // Не пробрасываем ошибку дальше, так как это может быть нормальная ситуация
+                // (например, если answer уже был установлен)
+                return;
             }
-
-            // Проверяем, есть ли уже треки в соединении
-            const receivers = peerService.connection.getReceivers();
-            console.log('📊 [CALL ACCEPTED] Current receivers', {
-                count: receivers.length,
-                receivers: receivers.map(r => ({
-                    trackId: r.track?.id,
-                    trackKind: r.track?.kind,
-                    trackEnabled: r.track?.enabled,
-                    trackReadyState: r.track?.readyState
-                }))
-            });
-
-            // ВАЖНО: Проверяем, есть ли уже треки в соединении
-            // Треки должны быть добавлены ДО отправки offer в callUser
-            // Но если их нет, добавляем их сейчас
-            const existingSenders = peerService.connection.getSenders();
-            console.log('📊 [CALL ACCEPTED] Existing senders in peer', {
-                count: existingSenders.length,
-                senders: existingSenders.map(s => ({
-                    trackId: s.track?.id,
-                    trackKind: s.track?.kind,
-                    trackEnabled: s.track?.enabled
-                }))
-            });
-
-            if (media.myStream) {
-                const existingTracks = existingSenders.map(s => s.track).filter(Boolean);
-                const tracksToAdd = media.myStream.getTracks().filter(
-                    track => !existingTracks.includes(track)
-                );
-
-                if (tracksToAdd.length > 0) {
-                    console.log('🎵 [CALL ACCEPTED] Adding missing tracks to peer connection', {
-                        streamId: media.myStream.id,
-                        tracksToAdd: tracksToAdd.length,
-                        totalTracks: media.myStream.getTracks().length,
-                        videoTracks: media.myStream.getVideoTracks().length,
-                        audioTracks: media.myStream.getAudioTracks().length
-                    });
-
-                    tracksToAdd.forEach(track => {
-                        console.log('➕ [CALL ACCEPTED] Adding track', {
-                            trackId: track.id,
-                            trackKind: track.kind,
-                            trackEnabled: track.enabled
-                        });
-                        peerService.addTrack(track, media.myStream!);
-                    });
-
-                    console.log('✅ [CALL ACCEPTED] Missing tracks added', {
-                        totalSenders: peerService.connection.getSenders().length
-                    });
-                } else {
-                    console.log('✅ [CALL ACCEPTED] All tracks already added', {
-                        totalSenders: existingSenders.length
-                    });
-                }
-            } else {
-                // Не предупреждаем, если треки уже есть в senders
-                if (existingSenders.length === 0) {
-                    console.warn('⚠️ [CALL ACCEPTED] No myStream available and no tracks in senders');
-                } else {
-                    console.log('✅ [CALL ACCEPTED] Tracks already present in senders, myStream not needed');
-                }
-            }
-
-            console.log('✅ [CALL ACCEPTED] Setting isInCall = true', {
-                previousIsInCall: isInCall,
-                callType,
-                hasMyStream: !!media.myStream
-            });
-            setIsInCall(true);
-            console.log('✅ [CALL ACCEPTED] isInCall updated to true', {
-                callType,
-                willShowVideo: callType === 'VIDEO'
-            });
-
-            // Проверяем состояние соединения после установки remote description
-            setTimeout(() => {
-                const peer = peerService.connection;
-                if (peer) {
-                    console.log('🔍 [CALL ACCEPTED] Peer connection state after 1s', {
-                        connectionState: peer.connectionState,
-                        iceConnectionState: peer.iceConnectionState,
-                        iceGatheringState: peer.iceGatheringState,
-                        signalingState: peer.signalingState,
-                        receivers: peer.getReceivers().length,
-                        senders: peer.getSenders().length,
-                        hasRemoteStream: false // Will be set via setRemoteStream
-                    });
-                }
-            }, 1000);
-        } catch (error) {
-            console.error('❌ [CALL ACCEPTED] Error accepting call:', error);
+            // Для других ошибок пробрасываем дальше
+            console.error('❌ [CALL ACCEPTED] Error setting remote description:', error);
+            throw error;
         }
+
+        // ВАЖНО: После установки remote description добавляем все буферизованные ICE candidates
+        if (iceCandidateBufferRef.current.length > 0) {
+            console.log('📦 [CALL ACCEPTED] Processing buffered ICE candidates', {
+                count: iceCandidateBufferRef.current.length
+            });
+            const bufferedCandidates = [...iceCandidateBufferRef.current];
+            iceCandidateBufferRef.current = []; // Очищаем буфер
+
+            for (const candidate of bufferedCandidates) {
+                try {
+                    peerService.connection!.addIceCandidate(candidate);
+                    console.log('✅ [CALL ACCEPTED] Buffered ICE candidate added', {
+                        candidate: candidate.candidate?.substring(0, 50)
+                    });
+                } catch (error: any) {
+                    console.error('❌ [CALL ACCEPTED] Error adding buffered ICE candidate:', error);
+                }
+            }
+        }
+
+        // Проверяем, есть ли уже треки в соединении
+        const receivers = peerService.connection.getReceivers();
+        console.log('📊 [CALL ACCEPTED] Current receivers', {
+            count: receivers.length,
+            receivers: receivers.map(r => ({
+                trackId: r.track?.id,
+                trackKind: r.track?.kind,
+                trackEnabled: r.track?.enabled,
+                trackReadyState: r.track?.readyState
+            }))
+        });
+
+        // ВАЖНО: Проверяем, есть ли уже треки в соединении
+        // Треки должны быть добавлены ДО отправки offer в callUser
+        // Но если их нет, добавляем их сейчас
+        const existingSenders = peerService.connection.getSenders();
+        console.log('📊 [CALL ACCEPTED] Existing senders in peer', {
+            count: existingSenders.length,
+            senders: existingSenders.map(s => ({
+                trackId: s.track?.id,
+                trackKind: s.track?.kind,
+                trackEnabled: s.track?.enabled
+            }))
+        });
+
+        if (media.myStream) {
+            const existingTracks = existingSenders.map(s => s.track).filter(Boolean);
+            const tracksToAdd = media.myStream.getTracks().filter(
+                track => !existingTracks.includes(track)
+            );
+
+            if (tracksToAdd.length > 0) {
+                console.log('🎵 [CALL ACCEPTED] Adding missing tracks to peer connection', {
+                    streamId: media.myStream.id,
+                    tracksToAdd: tracksToAdd.length,
+                    totalTracks: media.myStream.getTracks().length,
+                    videoTracks: media.myStream.getVideoTracks().length,
+                    audioTracks: media.myStream.getAudioTracks().length
+                });
+
+                tracksToAdd.forEach(track => {
+                    console.log('➕ [CALL ACCEPTED] Adding track', {
+                        trackId: track.id,
+                        trackKind: track.kind,
+                        trackEnabled: track.enabled
+                    });
+                    peerService.addTrack(track, media.myStream!);
+                });
+
+                console.log('✅ [CALL ACCEPTED] Missing tracks added', {
+                    totalSenders: peerService.connection.getSenders().length
+                });
+            } else {
+                console.log('✅ [CALL ACCEPTED] All tracks already added', {
+                    totalSenders: existingSenders.length
+                });
+            }
+        } else {
+            // Не предупреждаем, если треки уже есть в senders
+            if (existingSenders.length === 0) {
+                console.warn('⚠️ [CALL ACCEPTED] No myStream available and no tracks in senders');
+            } else {
+                console.log('✅ [CALL ACCEPTED] Tracks already present in senders, myStream not needed');
+            }
+        }
+
+        console.log('✅ [CALL ACCEPTED] Setting isInCall = true', {
+            previousIsInCall: isInCall,
+            callType,
+            hasMyStream: !!media.myStream
+        });
+        setIsInCall(true);
+        console.log('✅ [CALL ACCEPTED] isInCall updated to true', {
+            callType,
+            willShowVideo: callType === 'VIDEO'
+        });
+
+        // Проверяем состояние соединения после установки remote description
+        setTimeout(() => {
+            const peer = peerService.connection;
+            if (peer) {
+                console.log('🔍 [CALL ACCEPTED] Peer connection state after 1s', {
+                    connectionState: peer.connectionState,
+                    iceConnectionState: peer.iceConnectionState,
+                    iceGatheringState: peer.iceGatheringState,
+                    signalingState: peer.signalingState,
+                    receivers: peer.getReceivers().length,
+                    senders: peer.getSenders().length,
+                    hasRemoteStream: false // Will be set via setRemoteStream
+                });
+            }
+        }, 1000);
     }, [peerService, media, isInCall, callType]);
 
     // ---------- socket events ----------

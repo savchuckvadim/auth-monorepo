@@ -6,10 +6,17 @@ import { ThemeToggle } from "@/modules/shared";
 
 import Image from "next/image";
 import Link from "next/link";
+// import { usePathname } from "next/navigation";
 
 
 export const Header = () => {
 
+    // const pathname = usePathname();
+    // const isChatsPage = pathname.includes('chats') && !pathname.includes('list');
+
+    // if(isChatsPage) {
+    //     return null;
+    // }
 
     return (
         <div className="absolute top-0 left-0 right-0 z-50 bg-card ">

@@ -6,3 +6,4 @@ export * from './Avatar';
 export * from './ThemeToggle';
 export * from './Empty/Empty';
 export * from './Error/Error';
+export * from './MediaChoiceModal';

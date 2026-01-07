@@ -17,16 +17,18 @@ export const PostHeader = ({ post }: { post: PostDto }) => {
     const isOnline = getIsUserOnline(authorId);
     return (
         <div className='flex items-center gap-2'>
-            <Link href={`/people/${authorId}`}>
+            <Link href={`/network/people/${authorId}`}>
                 <Avatar src={authorAvatarUrl} name={authorName} isOnline={isOnline} size="md" />
             </Link>
-            <div>
-                <p className='font-bold'>{authorName}</p>
-                {isOnWall && (
-                    <p className='text-xs text-gray-400'>posted on {post?.author?.name || ''}'s wall</p>
-                )}
-                <p className='text-sm text-gray-500'>{getPostDate(createdAt)}</p>
-            </div>
+            <Link href={`/network/people/${authorId}`}>
+                <div>
+                    <p className='font-bold'>{authorName}</p>
+                    {isOnWall && (
+                        <p className='text-xs text-gray-400'>posted on {post?.author?.name || ''}'s wall</p>
+                    )}
+                    <p className='text-sm text-gray-500'>{getPostDate(createdAt)}</p>
+                </div>
+            </Link>
         </div>
     )
 }

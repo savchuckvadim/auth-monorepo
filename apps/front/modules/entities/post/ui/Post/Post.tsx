@@ -1,16 +1,5 @@
 import React, { FC } from 'react'
-import { Avatar, AvatarFallback } from '@workspace/ui/components/avatar'
-import { BreadcrumbEllipsis, BreadcrumbItem } from '@workspace/ui/components/breadcrumb'
 
-import { DropdownMenuContent, DropdownMenu, DropdownMenuTrigger, DropdownMenuItem } from '@workspace/ui/components/dropdown-menu'
-import { AvatarImage } from '@workspace/ui/components/avatar'
-import Link from 'next/link'
-import { LikeIcon, EyeIcon, RepostIcon } from '@/modules/shared'
-
-import Image from 'next/image'
-
-import { getPostDate } from '../../lib/util/post-date.util'
-import { useDeletePost } from '../../lib/hook/post.hook'
 import { PostDto } from '@workspace/nest-api'
 import { PostManage } from './components/PostManage'
 import { PostHeader } from './components/PostHeader'

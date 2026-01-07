@@ -46,11 +46,11 @@ export const ChatMessagesWidget = ({
 
     const otherUser = selectedChat?.members?.find((m: ChatMemberDto) => m.userId !== currentUserId) || null;
     return (
-        <div className="flex flex-col h-full overflow-hidden">
+        <div className="flex flex-col h-full overflow-hidden ">
             {/* Заголовок чата */}
             <div className="border-b p-4 bg-card flex-shrink-0 flex items-center justify-between">
                 <div className="flex-shrink-0 flex items-center gap-2">
-                    <Link href="/network/chats">
+                    <Link href="/network/chats/list">
                         <ArrowLeft className="h-4 w-4 text-muted-foreground" />
                     </Link>
 
