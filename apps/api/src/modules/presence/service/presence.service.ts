@@ -110,4 +110,14 @@ export class PresenceService implements OnModuleInit {
             userIds.filter((_, i) => result?.[i]?.[1] === 1),
         );
     }
+
+    /**
+     * Получает список всех онлайн пользователей
+     */
+    async getAllOnlineUsers(): Promise<string[]> {
+        // Получаем все ключи presence:user:*
+        const keys = await this.redis.keys('presence:user:*');
+        // Извлекаем userId из ключей
+        return keys.map(key => key.replace('presence:user:', ''));
+    }
 }

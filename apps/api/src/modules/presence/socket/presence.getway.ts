@@ -32,7 +32,16 @@ export class PresenceGateway implements OnGatewayConnection, OnGatewayDisconnect
         if (!userId) return;
 
         // Продлеваем TTL при получении ping
+        const wasOnline = await this.service.isOnline(userId);
         await this.service.refresh(userId);
+
+        // Если пользователь стал online (ключ был создан), отправляем событие
+        // Это важно для случаев, когда ключ истек, но пользователь все еще подключен
+        const isOnlineNow = await this.service.isOnline(userId);
+        if (isOnlineNow && !wasOnline) {
+            console.log(`🟢 User ${userId} became online after ping (key was expired)`);
+            this.server.emit('presence:online', { userId });
+        }
     }
 
     async handleConnection(client: Socket) {
@@ -45,9 +54,23 @@ export class PresenceGateway implements OnGatewayConnection, OnGatewayDisconnect
         // Помечаем пользователя как онлайн
         const becameOnline = await this.service.markOnline(userId);
 
+        // Всегда отправляем событие online при подключении
+        // Это гарантирует, что все клиенты получат актуальное состояние
+        console.log(`📤 Sending presence:online event for user: ${userId} to all clients`);
+        this.server.emit('presence:online', { userId });
+
+        // Отправляем новому клиенту список всех онлайн пользователей
+        // Это гарантирует, что новый клиент получит актуальное состояние всех пользователей
+        const allOnlineUsers = await this.service.getAllOnlineUsers();
+        if (allOnlineUsers.length > 0) {
+            console.log(`📤 Sending ${allOnlineUsers.length} online users to new client: ${userId}`);
+            client.emit('presence:bulk-online', { users: allOnlineUsers });
+        }
+
         if (becameOnline) {
-            // Отправляем событие только если пользователь стал онлайн (был offline)
-            this.server.emit('presence:online', { userId });
+            console.log(`🟢 User ${userId} became online (was offline)`);
+        } else {
+            console.log(`🟢 User ${userId} is already online, refreshing connection`);
         }
     }
 

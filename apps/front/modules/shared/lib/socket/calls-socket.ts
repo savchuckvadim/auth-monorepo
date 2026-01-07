@@ -6,7 +6,7 @@ let callsSocket: Socket | null = null;
  * Подключается к WebSocket namespace для звонков
  * Используется только для сигналинга (инициация звонков)
  */
-const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL ||  'https://api.sociopath-network.ru' //
+const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'; // 'https://api.sociopath-network.ru' //
 export const connectCallsSocket = (userId: string): Socket => {
     if (callsSocket?.connected) {
         return callsSocket;
