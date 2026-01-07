@@ -12,14 +12,11 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { ILoginForm } from "../../type/auth.type";
 import { useAuth } from "../../lib/hooks/auth.hook";
 
-
-
-
 export const LoginForm = () => {
 
 
     const [showPassword, setShowPassword] = useState(false);
-    const { login, isLoading, error, currentUser } = useAuth();
+    const { login, isLoading, error } = useAuth();
     const {
         register,
         handleSubmit,

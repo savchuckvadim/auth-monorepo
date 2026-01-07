@@ -2,13 +2,8 @@ import { Card, CardHeader } from "@workspace/ui/components/card";
 import { CardTitle } from "@workspace/ui/components/card";
 import { CardDescription } from "@workspace/ui/components/card";
 import { CardContent } from "@workspace/ui/components/card";
-import dynamic from "next/dynamic";
 import { Metadata } from 'next';
-
-const DynamicRegistrationForm = dynamic(() => import('@/modules/processes/auth/ui/RegistredForm/RegistredForm')
-    .then(mod => mod.RegistrationForm), {
-    ssr: false,
-});
+import RegistrationFormWrapper from './RegistrationFormWrapper';
 
 export const metadata: Metadata = {
     title: 'Регистрация — Sociopath Network',
@@ -32,7 +27,7 @@ export default function Page() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <DynamicRegistrationForm />
+                    <RegistrationFormWrapper />
                 </CardContent>
             </Card>
         </div>
