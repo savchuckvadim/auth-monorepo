@@ -41,6 +41,7 @@ export const useCallEngine = (
     const processedAnswerRef = useRef<string | null>(null); // Для защиты от повторной обработки answer
     const processedIncomingCallRef = useRef<string | null>(null); // Для защиты от повторной обработки incoming call
     const iceCandidateBufferRef = useRef<RTCIceCandidateInit[]>([]); // Буфер для ICE candidates, которые пришли до установки remote description
+    const remoteStreamRef = useRef<MediaStream | null>(null); // Для сбора всех remote треков в один стрим
 
     // ---------- socket init ----------
     useEffect(() => {
@@ -445,6 +446,9 @@ export const useCallEngine = (
             connectionState: peer.connectionState
         });
 
+        // Сбрасываем remote stream ref при создании нового peer connection
+        remoteStreamRef.current = null;
+
         const handleTrack = (e: RTCTrackEvent) => {
             console.log('📹 [NEGOTIATION] Track received', {
                 streamId: e.streams[0]?.id,
@@ -452,15 +456,41 @@ export const useCallEngine = (
                 trackKind: e.track.kind,
                 trackEnabled: e.track.enabled,
                 trackReadyState: e.track.readyState,
+                streamsCount: e.streams.length,
                 streamAudioTracks: e.streams[0]?.getAudioTracks().length || 0,
                 streamVideoTracks: e.streams[0]?.getVideoTracks().length || 0
             });
 
-            const stream = e.streams[0];
+            // ВАЖНО: На мобильных устройствах треки могут приходить в разных стримах
+            // или вообще без стрима. Нужно собрать все треки в один стрим
+            let stream = e.streams[0];
+
+            if (!stream && e.track) {
+                // Если трек пришел без стрима, создаем новый стрим или используем существующий
+                if (!remoteStreamRef.current) {
+                    remoteStreamRef.current = new MediaStream();
+                    console.log('🆕 [NEGOTIATION] Created new remote stream for track without stream');
+                }
+                stream = remoteStreamRef.current;
+                stream.addTrack(e.track);
+                console.log('➕ [NEGOTIATION] Added track to remote stream', {
+                    trackId: e.track.id,
+                    trackKind: e.track.kind,
+                    streamId: stream.id
+                });
+            } else if (stream) {
+                // Если трек пришел со стримом, используем его
+                remoteStreamRef.current = stream;
+                console.log('✅ [NEGOTIATION] Using stream from track event', {
+                    streamId: stream.id
+                });
+            }
+
             if (stream) {
                 // Логируем все треки в стриме
                 console.log('🎵 [NEGOTIATION] Stream tracks', {
                     streamId: stream.id,
+                    totalTracks: stream.getTracks().length,
                     audioTracks: stream.getAudioTracks().map(t => ({
                         id: t.id,
                         enabled: t.enabled,
@@ -476,11 +506,22 @@ export const useCallEngine = (
                 });
             }
 
-            console.log('✅ [NEGOTIATION] Setting remote stream', {
-                streamId: stream?.id,
-                hasStream: !!stream
-            });
-            media.setRemoteStream(stream || null);
+            // Устанавливаем remote stream только если есть треки
+            if (stream && stream.getTracks().length > 0) {
+                console.log('✅ [NEGOTIATION] Setting remote stream', {
+                    streamId: stream.id,
+                    hasStream: !!stream,
+                    tracksCount: stream.getTracks().length,
+                    audioTracks: stream.getAudioTracks().length,
+                    videoTracks: stream.getVideoTracks().length
+                });
+                media.setRemoteStream(stream);
+            } else {
+                console.warn('⚠️ [NEGOTIATION] Track received but no valid stream', {
+                    hasStream: !!stream,
+                    tracksInStream: stream?.getTracks().length || 0
+                });
+            }
         };
 
         // Используем addEventListener для более надежной обработки
@@ -552,6 +593,8 @@ export const useCallEngine = (
             peer.oniceconnectionstatechange = null;
             peer.onicegatheringstatechange = null;
             peer.onicecandidate = null;
+            // Сбрасываем remote stream ref при размонтировании
+            remoteStreamRef.current = null;
         };
     }, [peerService.connection, media.setRemoteStream, socket, remoteSocketId]);
 
@@ -972,26 +1015,43 @@ export const useCallEngine = (
             console.log('📞 [CALL END] Received call:end', {
                 from,
                 remoteSocketId,
-                matches: from === remoteSocketId,
+                incomingCallFrom: incomingCallData?.from,
+                matchesRemoteSocketId: from === remoteSocketId,
+                matchesIncomingCall: from === incomingCallData?.from,
                 isIncomingCall,
                 isInCall
             });
 
-            if (from !== remoteSocketId && from !== incomingCallData?.from) {
-                console.log('⚠️ [CALL END] Ignoring - from different socket');
+            // Проверяем, что событие от правильного пользователя
+            const isFromRemoteSocket = from === remoteSocketId;
+            const isFromIncomingCall = from === incomingCallData?.from;
+
+            if (!isFromRemoteSocket && !isFromIncomingCall) {
+                console.log('⚠️ [CALL END] Ignoring - from different socket', {
+                    from,
+                    remoteSocketId,
+                    incomingCallFrom: incomingCallData?.from
+                });
                 return;
             }
 
-            // Если это входящий звонок, который еще не принят - просто отменяем его
-            if (isIncomingCall && from === incomingCallData?.from) {
-                console.log('🛑 [CALL END] Cancelling incoming call');
+            // Если это входящий звонок, который еще не принят - отменяем его
+            if (isIncomingCall && isFromIncomingCall) {
+                console.log('🛑 [CALL END] Cancelling incoming call (not yet accepted)');
                 setIsIncomingCall(false);
                 setIncomingCallData(null);
                 isProcessingIncomingCallRef.current = false;
+                remoteStreamRef.current = null; // Сбрасываем remote stream ref
+                // Также сбрасываем remoteSocketId если он был установлен из incoming call
+                if (remoteSocketId === from) {
+                    setRemoteSocketId(null);
+                }
                 return;
             }
 
-            console.log('🛑 [CALL END] Ending call');
+            // Если звонок уже принят или это исходящий звонок - завершаем его полностью
+            console.log('🛑 [CALL END] Ending active call');
+            remoteStreamRef.current = null; // Сбрасываем remote stream ref
             peerService.close();
             media.stopMyStream();
             media.setRemoteStream(null);
@@ -999,6 +1059,7 @@ export const useCallEngine = (
             setIsIncomingCall(false);
             setIncomingCallData(null);
             setCallButton(true);
+            isProcessingIncomingCallRef.current = false;
             console.log('✅ [CALL END] Call ended');
         });
 
@@ -1038,8 +1099,16 @@ export const useCallEngine = (
     const endCall = useCallback(() => {
         console.log('🛑 [END CALL] Ending call manually', {
             hasRemoteSocketId: !!remoteSocketId,
-            hasSocket: !!socket
+            hasSocket: !!socket,
+            isIncomingCall,
+            isInCall
         });
+
+        // ВАЖНО: Сбрасываем все состояния звонка, включая входящий звонок
+        setIsIncomingCall(false);
+        setIncomingCallData(null);
+        isProcessingIncomingCallRef.current = false;
+        remoteStreamRef.current = null; // Сбрасываем remote stream ref
 
         peerService.close();
         media.stopMyStream();
@@ -1047,13 +1116,20 @@ export const useCallEngine = (
         setIsInCall(false);
         setCallButton(true);
 
-        if (remoteSocketId && socket) {
-            console.log('📤 [END CALL] Sending call:end event', { to: remoteSocketId });
-            socket.emit('call:end', { to: remoteSocketId });
+        // Отправляем call:end если есть кому отправить
+        // Используем remoteSocketId или incomingCallData?.from
+        const targetSocketId = remoteSocketId || incomingCallData?.from;
+        if (targetSocketId && socket) {
+            console.log('📤 [END CALL] Sending call:end event', { to: targetSocketId });
+            socket.emit('call:end', { to: targetSocketId });
+        } else if (socket && !targetSocketId) {
+            // Если нет targetSocketId, но есть socket, возможно нужно отправить по otherUserId
+            // Но для этого нужно проверить серверную логику
+            console.log('⚠️ [END CALL] No target socket ID available, but socket exists');
         }
 
         console.log('✅ [END CALL] Call ended');
-    }, [remoteSocketId, socket, peerService, media]);
+    }, [remoteSocketId, socket, peerService, media, isIncomingCall, incomingCallData]);
 
     // Отслеживание изменений критичных состояний
     useEffect(() => {
