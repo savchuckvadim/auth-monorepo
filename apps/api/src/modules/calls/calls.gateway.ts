@@ -216,8 +216,12 @@ export class CallsGateway
                 }
             }
 
-            if (data.toSocketId) {
-                this.server.to(data.toSocketId).emit('call:end', {
+            // Находим socketId получателя (если не передан, ищем через userId)
+            const receiverSocketId = data.toSocketId ||
+                (data.toUserId ? this.onlineUsersService.getSocketIdByUserId(data.toUserId) : undefined);
+
+            if (receiverSocketId) {
+                this.server.to(receiverSocketId).emit('call:end', {
                     from: client.id,
                     fromUserId: userId,
                     callId,

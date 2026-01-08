@@ -1120,12 +1120,14 @@ export const useCallEngine = (
         // Используем remoteSocketId или incomingCallData?.from
         const targetSocketId = remoteSocketId || incomingCallData?.from;
         if (targetSocketId && socket) {
-            console.log('📤 [END CALL] Sending call:end event', { to: targetSocketId });
-            socket.emit('call:end', { to: targetSocketId });
+            console.log('📤 [END CALL] Sending call:end event', { toSocketId: targetSocketId });
+            // ВАЖНО: Сервер ожидает toSocketId, а не to
+            socket.emit('call:end', { toSocketId: targetSocketId });
         } else if (socket && !targetSocketId) {
-            // Если нет targetSocketId, но есть socket, возможно нужно отправить по otherUserId
-            // Но для этого нужно проверить серверную логику
-            console.log('⚠️ [END CALL] No target socket ID available, but socket exists');
+            // Если нет targetSocketId, но есть socket, отправляем по otherUserId
+            // Сервер сам найдет socketId через OnlineUsersService
+            console.log('📤 [END CALL] Sending call:end without toSocketId, server will find by userId', { otherUserId });
+            socket.emit('call:end', { toUserId: otherUserId });
         }
 
         console.log('✅ [END CALL] Call ended');

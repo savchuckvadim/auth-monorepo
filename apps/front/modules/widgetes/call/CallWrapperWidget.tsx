@@ -155,8 +155,40 @@ const CallWrapperWidgetContent: FC<{ children: React.ReactNode }> = ({
                 );
             })()}
 
+            {/* Outgoing call waiting overlay - показываем когда звонок инициирован, но еще не принят */}
+            {isInCall && !remoteStream && !isIncomingCall && (() => {
+                console.log('📞 [CALL WRAPPER] Rendering outgoing call waiting overlay', {
+                    isInCall,
+                    hasMyStream: !!myStream,
+                    hasRemoteStream: !!remoteStream,
+                    isIncomingCall
+                });
+                return (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                        <div className="flex flex-col gap-4 items-center">
+                            <div className="text-white text-xl font-semibold">
+                                Звонок {callType === 'VIDEO' ? 'видео' : 'аудио'}...
+                            </div>
+                            <div className="flex gap-4">
+                                <Button
+                                    onClick={() => {
+                                        console.log('🛑 [CALL WRAPPER] Cancel call button clicked');
+                                        handleEndCall();
+                                    }}
+                                    size="lg"
+                                    variant="destructive"
+                                >
+                                    <PhoneOff className="h-5 w-5 mr-2" />
+                                    Отменить вызов
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })()}
+
             {/* overlay */}
-            {isInCall && (() => {
+            {isInCall && remoteStream && (() => {
                 console.log('🎬 [CALL WRAPPER] Rendering overlay', {
                     isInCall,
                     callType,
