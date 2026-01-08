@@ -5,7 +5,6 @@ import {
     Container,
     Font,
     Head,
-    Heading,
     Html,
     Img,
     Preview,
@@ -16,16 +15,23 @@ import {
 
 
 interface EmailVerificationTemplateProps {
-    name: string
+    name?: string
     activationLink: string
-
+    clientUrl: string
 }
 
+export function EmailVerificationTemplate({ name, activationLink, clientUrl }: EmailVerificationTemplateProps) {
+    const logoLink = `${clientUrl}/logo.svg`
 
-
-export function EmailVerificationTemplate({ name, activationLink }: EmailVerificationTemplateProps) {
-
-
+    // Цвета из sociopath-light темы
+    const colors = {
+        background: '#F4F4F4', // oklch(0.96 0 0)
+        foreground: '#212121', // oklch(0.25 0 0)
+        primary: '#F44848', // oklch(0.65 0.2 25)
+        card: '#FFFFFF', // oklch(1 0 0)
+        mutedForeground: '#808080', // oklch(0.55 0 0)
+        border: '#EDEDED', // oklch(0.94 0 0)
+    }
 
     return (
         <Tailwind>
@@ -41,40 +47,102 @@ export function EmailVerificationTemplate({ name, activationLink }: EmailVerific
                     />
                 </Head>
 
-                <Body style={{ backgroundColor: '#f8f9fa', fontFamily: 'Inter, Arial, sans-serif' }}>
+                <Body style={{ backgroundColor: colors.background, fontFamily: 'Geist, Arial, sans-serif', margin: 0, padding: 0 }}>
+                    <Preview>Подтверди email, чтобы завершить вход в Sociopath</Preview>
 
-                    <Preview>Активация аккаунта на IT Booster Platform</Preview>
-                    <Container className='mx-auto my-10 max-w-[500px] rounded-lg bg-white p-8 shadow-lg'>
-                        <Section className='text-center'>
+                    <Container style={{ maxWidth: '600px', margin: '0 auto', padding: '40px 20px' }}>
+                        <Section style={{ backgroundColor: colors.card, borderRadius: '12px', padding: '40px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                            {/* Логотип */}
+                            <Section style={{ textAlign: 'center', marginBottom: '32px' }}>
+                                <Img
+                                    src={logoLink}
+                                    alt="Sociopath Logo"
+                                    width="120"
+                                    height="auto"
+                                    style={{ margin: '0 auto' }}
+                                />
+                            </Section>
 
-                            <Heading className='text-2xl font-bold text-gray-800' style={{ fontFamily: 'Geist, Arial' }}>
-                                Активация аккаунта
-                            </Heading>
-                            <Text className='mb-6 text-gray-500' style={{ fontFamily: 'Geist, Arial' }}>
-                                Привет, {name} ! Мы получили запрос на активацию вашего аккаунта.
+                            {/* Приветствие */}
+                            <Text style={{
+                                fontSize: '18px',
+                                lineHeight: '1.6',
+                                color: colors.foreground,
+                                marginBottom: '24px',
+                                fontFamily: 'Geist, Arial, sans-serif'
+                            }}>
+                                Привет.
                             </Text>
-                            <Section className='mb-8 rounded-lg border border-gray-100 bg-gray-50 p-6'>
-                                <Text className='mb-4 text-gray-800' style={{ fontFamily: 'Geist, Arial' }}>
-                                    Нажмите на кнопку ниже, чтобы подтвердить ваш адрес электронной почты.
-                                </Text>
+
+                            <Text style={{
+                                fontSize: '18px',
+                                lineHeight: '1.6',
+                                color: colors.foreground,
+                                marginBottom: '24px',
+                                fontFamily: 'Geist, Arial, sans-serif'
+                            }}>
+                                Это Sociopath.
+                            </Text>
+
+                            <Text style={{
+                                fontSize: '18px',
+                                lineHeight: '1.6',
+                                color: colors.foreground,
+                                marginBottom: '32px',
+                                fontFamily: 'Geist, Arial, sans-serif'
+                            }}>
+                                Подтверди email, чтобы завершить вход.
+                            </Text>
+
+                            <Text style={{
+                                fontSize: '18px',
+                                lineHeight: '1.6',
+                                color: colors.foreground,
+                                marginBottom: '32px',
+                                fontFamily: 'Geist, Arial, sans-serif'
+                            }}>
+                                Дальше — по желанию.
+                            </Text>
+
+                            {/* Кнопка подтверждения */}
+                            <Section style={{ textAlign: 'center', marginBottom: '32px' }}>
                                 <Button
                                     href={activationLink}
-                                    className='inline-flex items-center justify-center rounded-full bg-gray-800 px-8 py-3 text-sm font-medium text-white hover:bg-pink-600/90 leading-none'
-                                    style={{ fontFamily: 'Geist, Arial' }}
+                                    style={{
+                                        backgroundColor: colors.primary,
+                                        color: '#FFFFFF',
+                                        padding: '14px 32px',
+                                        borderRadius: '8px',
+                                        fontSize: '16px',
+                                        fontWeight: '500',
+                                        textDecoration: 'none',
+                                        display: 'inline-block',
+                                        fontFamily: 'Geist, Arial, sans-serif',
+                                        border: 'none',
+                                        cursor: 'pointer'
+                                    }}
                                 >
-                                    Активировать
+                                    Подтвердить email
                                 </Button>
                             </Section>
-                            <Text className='text-sm text-gray-500' style={{ fontFamily: 'Geist, Arial' }}>
-                                Если вы не запрашивали активацию аккаунта, просто проигнорируйте это письмо.
+
+                            {/* Футер */}
+                            <Text style={{
+                                fontSize: '14px',
+                                lineHeight: '1.6',
+                                color: colors.mutedForeground,
+                                marginTop: '32px',
+                                fontFamily: 'Geist, Arial, sans-serif'
+                            }}>
+                                Если ты здесь случайно — просто проигнорируй письмо.
                             </Text>
+
                             <Text className='mt-6 text-sm text-gray-400' style={{ fontFamily: 'Geist, Arial' }}>
-                                © {new Date().getFullYear()} IT Booster Platform. Все права защищены.
+                                © {new Date().getFullYear()} Sociopath. Все права защищены.
                             </Text>
                         </Section>
                     </Container>
                 </Body>
-
             </Html>
         </Tailwind>
     )

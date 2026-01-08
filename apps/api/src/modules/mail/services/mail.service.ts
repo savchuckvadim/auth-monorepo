@@ -28,7 +28,7 @@ export class MailService {
 
         const html = await render(
             EmailVerificationTemplate(
-                { name, activationLink }
+                { name, activationLink,  clientUrl }
             ))
 
 
@@ -58,8 +58,8 @@ export class MailService {
         }>;
     }) {
         try {
-            const from = `"Test" <${process.env.MAIL_LOGIN || 'manager@sociopath-network.ru'}>`
-         
+            const from = `Sociopath. <${process.env.MAIL_LOGIN || 'manager@sociopath-network.ru'}>`
+
 
             const emailsList: string[] = params.to;
 
