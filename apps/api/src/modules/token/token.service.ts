@@ -3,7 +3,6 @@ import { ConfigService } from "@nestjs/config";
 import { JwtService } from '@nestjs/jwt';
 import { TokenRepository } from "./token.repository";
 import { TokenPayloadDto, TokensDto } from "./token.dto";
-import { UserDto } from "../user";
 @Injectable()
 export class TokenService {
     constructor(
@@ -47,7 +46,7 @@ export class TokenService {
 
     public async validateRefreshToken(refreshToken: string): Promise<TokenPayloadDto | null> {
         const userData = await this.jwtService.verify(refreshToken, { secret: this.configService.get('JWT_REFRESH_SECRET') });
-        
+
         return userData || null;
     }
 }

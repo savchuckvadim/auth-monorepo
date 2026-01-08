@@ -27,7 +27,6 @@ export default function NetworkProfilePage() {
         <div className='w-full flex flex-col gap-4 '>
             <DynamicProfileInformation userId={currentUser.id!} />
             <DynamicProfilePosts userId={currentUser.id!} />
-
         </div>
     );
 }

@@ -112,7 +112,7 @@ export const usePresenceSocket = () => {
 
         // Отправляем ping каждые 25 секунд для продления TTL (TTL = 60 сек)
         const interval = setInterval(() => {
-            console.log('🔵 Presence PING event sent');
+            // console.log('🔵 Presence PING event sent');
             socket.emit(EnumPresenceSocketEvent.PING);
         }, 25_000); // Исправлено: было 2_000 (2 секунды), должно быть 25_000 (25 секунд)
 

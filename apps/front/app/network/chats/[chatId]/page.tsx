@@ -11,7 +11,7 @@ import { Button } from '@workspace/ui/components/button';
 import { useChatMessages } from '@/modules/entities/messages';
 import { useChatSocket, useSendMessage } from '@/modules/entities/chats';
 
-import { CallWrapperWidget } from '@/modules/widgetes/call/CallWrapperWidget';
+import { CallWrapperWidget } from '@/modules/widgetes/call/CallWrapper/CallWrapperWidget';
 import { ChatInputWidget, ChatMessagesWidget, } from '@/modules/widgetes/chat';
 import { LoadingComponent } from '@/modules/shared/ui/Loading/ui/LoadingComponent';
 import { scrollToBottom } from '@/modules/entities/messages/lib/utils/scroll-to-bottom.util';
@@ -97,7 +97,7 @@ export default function ChatPage() {
         <div className="md:h-[82vh] h-[calc(100dvh-10rem)] bg-background flex overflow-hidden border-2 rounded-3xl">
 
 
-            <CallWrapperWidget chatId={chatId || ''} otherUserId={otherUserId}>
+            <CallWrapperWidget>
 
                 <div className=" flex flex-col h-full overflow-hidden bg-card">
                     <ChatMessagesWidget

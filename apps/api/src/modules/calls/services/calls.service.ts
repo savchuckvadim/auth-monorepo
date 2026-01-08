@@ -7,7 +7,7 @@ export class CallsService {
     constructor(private readonly prisma: PrismaService) { }
 
     async createCall(data: {
-        chatId: string;
+        chatId: string; // Обязательный - звонок всегда из чата
         initiatorId: string;
         receiverId?: string;
         type: CallType;

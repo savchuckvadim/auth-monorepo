@@ -1,10 +1,16 @@
+import { IsString } from 'class-validator';
+
 export class PeerNegoNeededDto {
-  to: string;
-  offer: RTCSessionDescriptionInit;
+    @IsString()
+    toUserId: string;
+
+    offer: RTCSessionDescriptionInit;
 }
 
 export class PeerNegoDoneDto {
-  to: string;
-  ans: RTCSessionDescriptionInit;
+    @IsString()
+    toUserId: string;
+
+    ans: RTCSessionDescriptionInit;
 }
 

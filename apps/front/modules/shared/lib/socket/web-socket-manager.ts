@@ -1,6 +1,6 @@
 // socket.manager.ts
 import { io, Socket } from 'socket.io-client';
-const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL ||  'https://api.sociopath-network.ru' // 'http://localhost:3000' // 'https://api.sociopath-network.ru' //
+const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.sociopath-network.ru' // 'http://localhost:3000' // 'https://api.sociopath-network.ru' //
 class SocketManager {
     private socket: Socket | null = null;
     private userId: string | null = null;
@@ -45,6 +45,10 @@ class SocketManager {
             throw new Error('Socket not connected. Call connect(userId) first.');
         }
         return this.socket;
+    }
+
+    public getSocketSafe(): Socket | null {
+        return this.socket || null;
     }
 
     public isConnected(): boolean {

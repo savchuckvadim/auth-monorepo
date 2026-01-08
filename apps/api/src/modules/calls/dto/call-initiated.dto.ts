@@ -1,4 +1,7 @@
+import { IsString } from 'class-validator';
+
 export class CallInitiatedDto {
-    toSocketId: string;
+    @IsString()
+    toUserId: string;
 }
 

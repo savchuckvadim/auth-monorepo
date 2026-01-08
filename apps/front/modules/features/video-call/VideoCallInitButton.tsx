@@ -1,12 +1,12 @@
 'use client';
 import { Button } from "@workspace/ui/components/button";
 import { Video, Loader2 } from "lucide-react";
-import { useCallContext } from "../call/lib/context/call-context";
+import { useGlobalCallContext } from "../call/lib/context/global-call-provider";
 import { useAppDispatch, useAppSelector } from "@/modules/app";
 import { callUserThunk } from "../call/model/thunk/CallThunk";
 
 export const VideoCallInitButton = ({ chatId, otherUserId }: { chatId: string, otherUserId: string }) => {
-    const { handleCallUser } = useCallContext();
+    const { handleCallUser } = useGlobalCallContext();
     const dispatch = useAppDispatch();
     const isRequestingMedia = useAppSelector((state) => state.call.isRequestingMedia);
 
@@ -15,7 +15,7 @@ export const VideoCallInitButton = ({ chatId, otherUserId }: { chatId: string, o
             chatId,
             otherUserId,
             type: 'VIDEO',
-            handleCallUser,
+            handleCallUser: (type: 'VIDEO' | 'AUDIO') => handleCallUser(otherUserId, chatId, type),
         }));
     };
 

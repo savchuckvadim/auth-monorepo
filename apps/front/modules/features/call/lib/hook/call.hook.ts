@@ -4,15 +4,14 @@ import { useCallMedia } from './call-media.hook';
 import { useCallControls } from './call-controls.hook';
 import { useCallEngine } from './call-engine.hook';
 import { useState, useEffect } from 'react';
-import { ensurePeerConnection } from '../utils/ensure-peer-connection';
 import { logger } from '@/modules/shared';
 import { useAuth } from '@/modules/processes';
 
-export const useCall = (chatId: string, otherUserId: string, type: 'VIDEO' | 'AUDIO') => {
+export const useCall = (otherUserId: string | null, type: 'VIDEO' | 'AUDIO', chatId: string) => {
     const [saveHistory, setSaveHistory] = useState(false);
     const { currentUser } = useAuth();
     const media = useCallMedia();
-    const engine = useCallEngine(chatId, otherUserId, type, media);
+    const engine = useCallEngine(otherUserId, type, media, chatId);
     const controls = useCallControls(engine.peerService);
 
     // Устанавливаем userId для logger
@@ -83,8 +82,12 @@ export const useCall = (chatId: string, otherUserId: string, type: 'VIDEO' | 'AU
             sdpLength: offer.sdp?.length || 0
         });
 
-        console.log('📤 [HANDLE CALL USER] Sending call via callUser');
-        await engine.callUser(offer, t);
+        console.log('📤 [HANDLE CALL USER] Sending call via callUser', {
+            otherUserId,
+            chatId,
+            type: t
+        });
+        await engine.callUser(offer, t, otherUserId, chatId);
         console.log('✅ [HANDLE CALL USER] Call initiated');
     };
 
@@ -118,6 +121,8 @@ export const useCall = (chatId: string, otherUserId: string, type: 'VIDEO' | 'AU
         isIncomingCall,
         acceptCall,
         rejectCall,
+        incomingCallFromUserId,
+        remoteUserId,
     } = engine;
 
     return {
@@ -133,6 +138,8 @@ export const useCall = (chatId: string, otherUserId: string, type: 'VIDEO' | 'AU
         isIncomingCall,
         acceptCall,
         rejectCall,
+        incomingCallFromUserId, // ID звонящего пользователя (для входящих звонков)
+        remoteUserId, // ID пользователя на другом конце звонка (для активных звонков)
 
         isAudioMute: controls.isAudioMute,
         isVideoOnHold: controls.isVideoOnHold,

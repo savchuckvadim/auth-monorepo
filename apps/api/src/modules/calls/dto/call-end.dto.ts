@@ -1,7 +1,15 @@
+import { IsString, IsOptional, IsNumber } from 'class-validator';
+
 export class CallEndDto {
-    toSocketId?: string;
-    toUserId?: string;
+    @IsString()
+    toUserId: string;
+
+    @IsOptional()
+    @IsString()
     callId?: string;
+
+    @IsOptional()
+    @IsNumber()
     duration?: number;
 }
 

@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common";
-import { UserController } from "./user.controller";
-import { UserService } from "./user.service";
-import { UserRepository } from "./user.repository";
-import { UserPrismaRepository } from "./user.prisma.repository";
+import { UserController } from "./controllers/user.controller";
+import { UserService } from "./services/user.service";
+import { UserRepository } from "./repositories/user.repository";
+import { UserPrismaRepository } from "./repositories/user.prisma.repository";
 import { TokenModule } from "../token";
-import { UserAdminController } from "./user.admin.controller";
+import { UserAdminController } from "./controllers/user.admin.controller";
 
 
 @Module({

@@ -9,7 +9,6 @@ import { scrollToBottom } from '@/modules/entities/messages/lib/utils/scroll-to-
 import { Chat, ChatType, CreateChat } from '@/modules/entities/chats';
 import { useAllUsers } from '@/modules/entities/followers';
 import { ChatMemberDto, CreateChatDto } from '@workspace/nest-api';
-import { CallWrapperWidget } from '@/modules/widgetes/call/CallWrapperWidget';
 
 export default function ChatsPage() {
     const { currentUser } = useAuth();
@@ -106,13 +105,6 @@ export default function ChatsPage() {
     return (
         <div className="md:h-[88vh] h-[calc(100dvh-10rem)] bg-background flex overflow-hidden border-2 rounded-3xl">
 
-            {/* <ChatListWidget
-                currentUserId={currentUser.id}
-                selectedChatId={selectedChatId}
-                onChatSelect={setSelectedChatId}
-                onNewChatClick={() => setShowNewChatDialog(true)}
-            /> */}
-            <CallWrapperWidget chatId={selectedChatId || ''} otherUserId={otherUserId}>
 
                 <div className=" flex flex-col h-full overflow-hidden bg-card">
                     <ChatMessagesWidget
@@ -132,7 +124,7 @@ export default function ChatsPage() {
 
                     )}
                 </div>
-            </CallWrapperWidget>
+
             <CreateChatDialogWidget
                 isOpen={showNewChatDialog}
                 currentUserId={currentUser.id}

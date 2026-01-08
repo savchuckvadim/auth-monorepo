@@ -7,15 +7,15 @@ import {
     IncomingCallData,
     PeerNegoDoneData,
     PeerNegoNeededData,
-} from '@/modules/features/secret-chat/lib/types/webrtc.types';
-import { connectCallsSocket, PeerService, logger } from '@/modules/shared';
+} from '@/modules/features/call/lib/type/webrtc.types';
+import { socketManager, PeerService, logger } from '@/modules/shared';
+import { CallEvent } from '../type/call-event.type';
 import { useAuth } from '@/modules/processes';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ensurePeerConnection } from '../utils/ensure-peer-connection';
 
 export const useCallEngine = (
-    chatId: string,
-    otherUserId: string,
+    otherUserId: string | null, // null для глобального режима (принимать звонки от любого)
     defaultType: 'VIDEO' | 'AUDIO',
     media: {
         myStream: MediaStream | null;
@@ -23,7 +23,8 @@ export const useCallEngine = (
         setMyStream: (s: MediaStream | null) => void;
         setRemoteStream: (s: MediaStream | null) => void;
         stopMyStream: () => void;
-    }
+    },
+    chatId: string // Обязательный - звонок всегда из чата
 ) => {
     const { currentUser } = useAuth();
     const [peerService] = useState(() => new PeerService());
@@ -37,7 +38,7 @@ export const useCallEngine = (
     }, [currentUser?.id]);
 
     const [remoteSocketId, setRemoteSocketId] = useState<string | null>(null);
-
+    const [remoteUserId, setRemoteUserId] = useState<string | null>(null); // ID пользователя на другом конце звонка
 
     const [callType, setCallType] = useState(defaultType);
     const [isInCall, setIsInCall] = useState(false);
@@ -58,60 +59,52 @@ export const useCallEngine = (
             return;
         }
 
-        console.log('🔌 [SOCKET INIT] Connecting to calls socket', {
-            userId: currentUser.id,
-            chatId,
-            otherUserId
-        });
+        // Функция для инициализации сокета
+        const initSocket = () => {
+            if (!socketManager.isConnected()) {
+                console.log('⚠️ [SOCKET INIT] Socket not connected yet, waiting...');
+                return false;
+            }
 
-        const s = connectCallsSocket(currentUser.id);
-        setSocket(s);
-
-        console.log('📤 [SOCKET INIT] Joining room', { chatId });
-        s.emit('room:join', { chatId }, (res: any) => {
-            console.log('✅ [SOCKET INIT] Room join response', {
-                users: res?.users?.length || 0,
-                response: res
+            console.log('🔌 [SOCKET INIT] Getting socket from socketManager', {
+                userId: currentUser.id,
+                otherUserId,
+                isGlobalMode: otherUserId === null
             });
 
-            const u = res?.users?.find((u: any) => u.userId === otherUserId);
-            if (u?.socketId) {
-                console.log('✅ [SOCKET INIT] Found other user socket', {
-                    userId: otherUserId,
-                    socketId: u.socketId
-                });
-                setRemoteSocketId(u.socketId);
-            } else {
-                console.log('⚠️ [SOCKET INIT] Other user not in room yet', {
-                    userId: otherUserId
-                });
-            }
-        });
-
-        const joined = (d: any) => {
-            console.log('👤 [SOCKET INIT] User joined', {
-                userId: d.userId,
-                socketId: d.socketId,
-                isOtherUser: d.userId === otherUserId
-            });
-
-            if (d.userId === otherUserId) {
-                console.log('✅ [SOCKET INIT] Setting remoteSocketId', { socketId: d.socketId });
-                setRemoteSocketId(d.socketId);
-            }
+            const s = socketManager.getSocket();
+            setSocket(s);
+            return true;
         };
 
-        s.on('user:joined', joined);
+        // Пытаемся инициализировать сразу
+        if (!initSocket()) {
+            // Если сокет еще не подключен, проверяем периодически
+            const interval = setInterval(() => {
+                if (initSocket()) {
+                    clearInterval(interval);
+                }
+            }, 100);
+
+            // Очищаем интервал через 10 секунд или когда сокет подключится
+            const timeout = setTimeout(() => {
+                clearInterval(interval);
+            }, 10000);
+
+            return () => {
+                clearInterval(interval);
+                clearTimeout(timeout);
+                console.log('🧹 [SOCKET INIT] Cleaning up socket listeners');
+            };
+        }
 
         return () => {
-            console.log('🧹 [SOCKET INIT] Cleaning up socket', { chatId });
-            s.off('user:joined', joined);
-            s.emit('room:leave', { chatId });
+            console.log('🧹 [SOCKET INIT] Cleaning up socket listeners');
         };
-    }, [currentUser?.id, chatId, otherUserId]);
+    }, [currentUser?.id, otherUserId]);
 
     // ---------- incoming call ----------
-    const onIncomingCall = useCallback(({ from, fromUserId, offer, type }: IncomingCallData) => {
+    const onIncomingCall = useCallback(({ from, fromUserId, offer, type, chatId: incomingChatId }: IncomingCallData) => {
         // Создаем уникальный идентификатор для этого входящего звонка
         const incomingCallId = `${from}-${offer.sdp?.substring(0, 50) || 'no-sdp'}`;
 
@@ -148,36 +141,36 @@ export const useCallEngine = (
             return;
         }
 
-        // Если otherUserId еще не установлен, но fromUserId совпадает с ожидаемым, принимаем звонок
-        // Это может произойти, если событие пришло до того, как otherUserId был установлен
-        if (otherUserId && fromUserId !== otherUserId) {
-            console.log('❌ [INCOMING CALL] Rejected - wrong user', {
+        // Если otherUserId установлен, проверяем что звонок от правильного пользователя
+        // Если otherUserId === null - принимаем звонок от любого (глобальный режим)
+        if (otherUserId !== null && fromUserId !== otherUserId) {
+            logger.log('❌ [INCOMING CALL] Rejected - wrong user', {
                 fromUserId,
                 otherUserId
             });
             return;
         }
 
-        // Если otherUserId пустой, но это первый входящий звонок, принимаем его
-        // (это может быть нормально, если событие пришло раньше установки otherUserId)
-        if (!otherUserId) {
-            console.log('⚠️ [INCOMING CALL] otherUserId not set yet, but accepting call anyway', {
-                fromUserId
-            });
-        }
-
         // Сохраняем данные входящего звонка и показываем UI для принятия
-        console.log('📥 [INCOMING CALL] Saving incoming call data, waiting for user to accept');
+        // Используем chatId из входящего звонка (звонящий всегда звонит из чата)
+        const callChatId = incomingChatId || chatId;
+        console.log('📥 [INCOMING CALL] Saving incoming call data, waiting for user to accept', {
+            fromUserId,
+            incomingChatId,
+            localChatId: chatId,
+            finalChatId: callChatId
+        });
         setIncomingCallData({
             from,
             fromUserId,
             offer,
             type,
             callId: '', // Может быть пустым, если не передается
-            chatId
+            chatId: callChatId
         });
         setIsIncomingCall(true);
         setRemoteSocketId(from);
+        setRemoteUserId(fromUserId); // Сохраняем ID звонящего пользователя
         setCallType(type);
     }, [socket, otherUserId, isInCall, isIncomingCall, chatId]);
 
@@ -337,26 +330,26 @@ export const useCallEngine = (
             toSocketId: from
         });
 
-        // ВАЖНО: Убеждаемся, что отправляем правильный socket ID
-        if (!from) {
-            console.error('❌ [ACCEPT CALL] Cannot send call:accepted - no target socket ID');
+        // ВАЖНО: Убеждаемся, что есть fromUserId
+        if (!fromUserId) {
+            console.error('❌ [ACCEPT CALL] Cannot send call:accepted - no fromUserId');
             return;
         }
 
         console.log('📡 [ACCEPT CALL] Emitting call:accepted event', {
             event: 'call:accepted',
             payload: {
-                toSocketId: from, // ВАЖНО: используем toSocketId, а не to
+                toUserId: fromUserId,
                 hasAnswer: !!answer,
                 answerType: answer.type
             },
             mySocketId: socket.id,
-            targetSocketId: from,
+            targetUserId: fromUserId,
             socketConnected: socket.connected
         });
 
-        // ВАЖНО: Сервер ожидает toSocketId, а не to
-        socket.emit('call:accepted', { toSocketId: from, ans: answer }, (response: any) => {
+        // Отправляем используя toUserId
+        socket.emit(CallEvent.ACCEPTED, { toUserId: fromUserId, ans: answer }, (response: any) => {
             console.log('📨 [ACCEPT CALL] Server response received', {
                 hasResponse: !!response,
                 response,
@@ -388,6 +381,7 @@ export const useCallEngine = (
         console.log('❌ [REJECT CALL] Rejecting incoming call');
         setIsIncomingCall(false);
         setIncomingCallData(null);
+        setRemoteUserId(null); // Сбрасываем ID пользователя
         isProcessingIncomingCallRef.current = false;
 
         // Можно отправить событие об отклонении звонка на сервер
@@ -398,7 +392,16 @@ export const useCallEngine = (
     }, [incomingCallData, socket]);
 
     // ---------- outgoing ----------
-    const callUser = useCallback(async (offer: RTCSessionDescriptionInit, type: 'VIDEO' | 'AUDIO') => {
+    const callUser = useCallback(async (
+        offer: RTCSessionDescriptionInit,
+        type: 'VIDEO' | 'AUDIO',
+        targetUserId?: string | null,
+        targetChatId?: string
+    ) => {
+        // Используем переданные параметры или значения из замыкания
+        const finalOtherUserId = targetUserId !== undefined ? targetUserId : otherUserId;
+        const finalChatId = targetChatId !== undefined ? targetChatId : chatId;
+
         // Сбрасываем флаги обработанных событий для нового звонка
         processedAnswerRef.current = null;
         processedIncomingCallRef.current = null;
@@ -413,33 +416,57 @@ export const useCallEngine = (
             });
         }
 
+        // Получаем сокет напрямую из socketManager, а не из state
+        // Это гарантирует, что мы используем актуальный сокет
+        let currentSocket = socket;
+        if (!currentSocket && socketManager.isConnected()) {
+            currentSocket = socketManager.getSocket();
+            console.log('🔌 [OUTGOING CALL] Got socket directly from socketManager');
+        }
+
         console.log('📞 [OUTGOING CALL] Initiating call', {
             type,
-            toUserId: otherUserId,
-            toSocketId: remoteSocketId,
-            chatId,
-            hasSocket: !!socket,
+            toUserId: finalOtherUserId,
+            chatId: finalChatId,
+            hasSocket: !!currentSocket,
+            hasSocketFromState: !!socket,
+            socketManagerConnected: socketManager.isConnected(),
             offerType: offer.type,
-            hasSdp: !!offer.sdp
+            hasSdp: !!offer.sdp,
+            usingParams: targetUserId !== undefined || targetChatId !== undefined
         });
 
-        if (!socket) {
-            console.error('❌ [OUTGOING CALL] No socket available');
+        if (!currentSocket) {
+            console.error('❌ [OUTGOING CALL] No socket available', {
+                socketFromState: !!socket,
+                socketManagerConnected: socketManager.isConnected()
+            });
             return;
         }
 
-        socket.emit('user:call', {
-            toSocketId: remoteSocketId || undefined,
-            toUserId: otherUserId,
-            chatId,
+        if (!finalOtherUserId) {
+            console.error('❌ [OUTGOING CALL] Cannot initiate call - otherUserId is required', {
+                targetUserId,
+                otherUserId,
+                finalOtherUserId
+            });
+            return;
+        }
+
+        currentSocket.emit(CallEvent.INITIATE, {
+            toUserId: finalOtherUserId,
+            chatId: finalChatId,
             offer,
             type,
         });
 
         console.log('✅ [OUTGOING CALL] Call event sent', {
             type,
-            toSocketId: remoteSocketId || 'will be found by userId'
+            toUserId: finalOtherUserId
         });
+
+        // Сохраняем ID пользователя, которому звоним
+        setRemoteUserId(finalOtherUserId);
 
         console.log('🔄 [OUTGOING CALL] Setting callType', {
             newCallType: type,
@@ -453,7 +480,7 @@ export const useCallEngine = (
         });
         setIsInCall(true);
         console.log('✅ [OUTGOING CALL] isInCall updated to true');
-    }, [socket, remoteSocketId, otherUserId, chatId, callType, isInCall]);
+    }, [socket, otherUserId, chatId, callType, isInCall]);
 
     // ---------- negotiation ----------
     useEffect(() => {
@@ -566,9 +593,9 @@ export const useCallEngine = (
                     sdpMLineIndex: event.candidate.sdpMLineIndex
                 });
                 // Отправляем ICE-кандидата другому пиру
-                if (socket && remoteSocketId) {
-                    socket.emit('peer:ice-candidate', {
-                        to: remoteSocketId,
+                if (socket && otherUserId) {
+                    socket.emit(CallEvent.PEER_ICE_CANDIDATE, {
+                        toUserId: otherUserId,
                         candidate: event.candidate,
                     });
                 }
@@ -970,8 +997,8 @@ export const useCallEngine = (
         });
 
 
-        socket.on('incoming:call', (data: IncomingCallData) => {
-            console.log('📥 [SOCKET EVENTS] incoming:call event received', {
+        socket.on(CallEvent.INCOMING, (data: IncomingCallData) => {
+            console.log('📥 [SOCKET EVENTS] call:incoming event received', {
                 from: data.from,
                 fromUserId: data.fromUserId,
                 type: data.type,
@@ -984,9 +1011,9 @@ export const useCallEngine = (
             onIncomingCall(data);
             console.log('✅ [SOCKET EVENTS] onIncomingCall handler called');
         });
-        console.log('✅ [SOCKET EVENTS] Registered incoming:call handler');
+        console.log('✅ [SOCKET EVENTS] Registered call:incoming handler');
 
-        socket.on('call:accepted', (data: CallAcceptedData) => {
+        socket.on(CallEvent.ACCEPTED, (data: CallAcceptedData) => {
             console.log('📥 [SOCKET EVENTS] call:accepted event received', {
                 hasAnswer: !!data.ans,
                 answerType: data.ans?.type,
@@ -1004,7 +1031,7 @@ export const useCallEngine = (
 
         console.log('✅ [SOCKET EVENTS] Registered call:accepted handler');
 
-        socket.on('peer:nego:needed', async ({ from, offer }: PeerNegoNeededData) => {
+        socket.on(CallEvent.PEER_NEGO_NEEDED, async ({ from, offer }: PeerNegoNeededData) => {
             console.log('🔄 [PEER NEGO NEEDED] Received peer:nego:needed', {
                 from,
                 offerType: offer.type,
@@ -1051,8 +1078,13 @@ export const useCallEngine = (
                     newSignalingState: peerService.connection?.signalingState
                 });
 
-                console.log('📤 [PEER NEGO NEEDED] Sending peer:nego:done', { to: from });
-                socket.emit('peer:nego:done', { to: from, ans });
+                // Используем otherUserId для отправки
+                console.log('📤 [PEER NEGO NEEDED] Sending peer:nego:done', { toUserId: otherUserId });
+                if (!otherUserId) {
+                    console.error('❌ [PEER NEGO NEEDED] Cannot send answer - otherUserId is required');
+                    return;
+                }
+                socket.emit(CallEvent.PEER_NEGO_FINAL, { toUserId: otherUserId, ans });
                 console.log('✅ [PEER NEGO NEEDED] peer:nego:done sent');
             } catch (error) {
                 console.error('❌ [PEER NEGO NEEDED] Error creating answer:', error);
@@ -1061,7 +1093,7 @@ export const useCallEngine = (
                 ensurePeerConnection(peerService, media.myStream);
                 try {
                     const ans = await peerService.getAnswer(offer);
-                    socket.emit('peer:nego:done', { to: from, ans });
+                    socket.emit(CallEvent.PEER_NEGO_FINAL, { toUserId: otherUserId, ans });
                     console.log('✅ [PEER NEGO NEEDED] Retry successful');
                 } catch (retryError) {
                     console.error('❌ [PEER NEGO NEEDED] Retry failed:', retryError);
@@ -1071,8 +1103,8 @@ export const useCallEngine = (
 
         console.log('✅ [SOCKET EVENTS] Registered peer:nego:needed handler');
 
-        socket.on('peer:nego:done', ({ ans }: PeerNegoDoneData) => {
-            console.log('✅ [PEER NEGO DONE] Received peer:nego:done', {
+        socket.on(CallEvent.PEER_NEGO_FINAL, ({ ans }: PeerNegoDoneData) => {
+            console.log('✅ [PEER NEGO DONE] Received peer:nego:final', {
                 answerType: ans.type,
                 hasSdp: !!ans.sdp,
                 hasPeer: !!peerService.connection,
@@ -1112,7 +1144,7 @@ export const useCallEngine = (
             }
         });
 
-        console.log('✅ [SOCKET EVENTS] Registered peer:nego:done handler');
+        console.log('✅ [SOCKET EVENTS] Registered peer:nego:final handler');
 
         // КРИТИЧНО: Обработка входящих ICE candidates
         socket.on('peer:ice-candidate', ({ from, candidate }: { from: string; candidate: RTCIceCandidateInit }) => {
@@ -1163,7 +1195,7 @@ export const useCallEngine = (
         });
         console.log('✅ [SOCKET EVENTS] Registered peer:ice-candidate handler');
 
-        socket.on('call:end', ({ from }: CallEndData) => {
+        socket.on(CallEvent.END, ({ from }: CallEndData) => {
             console.log('📞 [CALL END] Received call:end', {
                 from,
                 remoteSocketId,
@@ -1217,7 +1249,7 @@ export const useCallEngine = (
 
         console.log('✅ [SOCKET EVENTS] Registered call:end handler');
 
-        socket.on('call:initiated', ({ from }: CallInitiatedData) => {
+        socket.on(CallEvent.INITIATED, ({ from }: CallInitiatedData) => {
             console.log('📞 [CALL INITIATED] Received call:initiated', {
                 from,
                 remoteSocketId,
@@ -1235,18 +1267,18 @@ export const useCallEngine = (
 
         return () => {
             console.log('🧹 [SOCKET EVENTS] Removing socket listeners');
-            socket.off('incoming:call', onIncomingCall);
-            socket.off('call:accepted', handleCallAccepted);
-            socket.removeAllListeners('peer:nego:needed');
-            socket.removeAllListeners('peer:nego:done');
-            socket.removeAllListeners('call:end');
-            socket.removeAllListeners('call:initiated');
-            socket.removeAllListeners('peer:ice-candidate');
+            socket.off(CallEvent.INCOMING, onIncomingCall);
+            socket.off(CallEvent.ACCEPTED, handleCallAccepted);
+            socket.removeAllListeners(CallEvent.PEER_NEGO_NEEDED);
+            socket.removeAllListeners(CallEvent.PEER_NEGO_FINAL);
+            socket.removeAllListeners(CallEvent.END);
+            socket.removeAllListeners(CallEvent.INITIATED);
+            socket.removeAllListeners(CallEvent.PEER_ICE_CANDIDATE);
             // Сбрасываем флаги обработанных событий при размонтировании
             processedAnswerRef.current = null;
             processedIncomingCallRef.current = null;
         };
-    }, [socket, onIncomingCall, handleCallAccepted, peerService, media, remoteSocketId, isIncomingCall, incomingCallData]);
+    }, [socket, onIncomingCall, handleCallAccepted, peerService, media, isIncomingCall, incomingCallData, otherUserId]);
 
     const endCall = useCallback(() => {
         console.log('🛑 [END CALL] Ending call manually', {
@@ -1259,6 +1291,7 @@ export const useCallEngine = (
         // ВАЖНО: Сбрасываем все состояния звонка, включая входящий звонок
         setIsIncomingCall(false);
         setIncomingCallData(null);
+        setRemoteUserId(null); // Сбрасываем ID пользователя
         isProcessingIncomingCallRef.current = false;
         remoteStreamRef.current = null; // Сбрасываем remote stream ref
 
@@ -1279,7 +1312,7 @@ export const useCallEngine = (
             // Если нет targetSocketId, но есть socket, отправляем по otherUserId
             // Сервер сам найдет socketId через OnlineUsersService
             console.log('📤 [END CALL] Sending call:end without toSocketId, server will find by userId', { otherUserId });
-            socket.emit('call:end', { toUserId: otherUserId });
+            socket.emit(CallEvent.END, { toUserId: otherUserId });
         }
 
         console.log('✅ [END CALL] Call ended');
@@ -1312,5 +1345,7 @@ export const useCallEngine = (
         isIncomingCall,
         acceptCall,
         rejectCall,
+        incomingCallFromUserId: incomingCallData?.fromUserId || null, // ID звонящего пользователя (для входящих звонков)
+        remoteUserId, // ID пользователя на другом конце звонка (для активных звонков)
     };
 };

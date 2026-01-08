@@ -28,16 +28,16 @@ export class TokenPrismaRepository implements TokenRepository {
         });
     }
 
-    async findToken(userId: string): Promise<Token> {
+    async findToken(userId: string): Promise<Token | null> {
 
         const token = await this.prisma.token.findFirst({
             where: { userId },
         });
-  
-        if (!token) {
-            throw new NotFoundException('Token not found');
-        }
-        return token;
+
+        // if (!token) {
+        //     throw new NotFoundException('Token not found');
+        // }
+        return token || null;
     }
 
     async removeToken(refreshToken: string): Promise<Token> {

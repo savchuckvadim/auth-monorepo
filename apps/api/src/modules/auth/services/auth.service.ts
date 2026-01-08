@@ -5,7 +5,8 @@ import { TokenService } from "@/modules/token";
 import { ConfigService } from "@nestjs/config";
 import { LoginDto } from "../dtos/login.dto";
 import { AuthenticatedUserDto } from "../dtos/login.dto";
-
+import { CookieService } from "@/core/cookie";
+import { Response } from 'express';
 
 
 @Injectable()
@@ -15,6 +16,7 @@ export class AuthService {
         private readonly mailService: SendMailActivationLinkUseCase,
         private readonly tokenService: TokenService,
         private readonly configService: ConfigService,
+        private readonly cookieService: CookieService,
 
     ) { }
 
@@ -60,14 +62,16 @@ export class AuthService {
         return await this.generateTokens(user);
 
     }
-    public async refreshToken(refreshToken: string) {
+    public async refreshToken(refreshToken: string, res: Response) {
         if (!refreshToken) {
+            this.cookieService.clearAuthCookies(res as Response);
             throw new UnauthorizedException('Refresh token not found');
         }
         const userData = await this.tokenService.validateRefreshToken(refreshToken);
 
         const tokenFromDb = await this.tokenService.findToken(userData?.userId || '');
         if (!tokenFromDb || !userData?.userId) {
+            this.cookieService.clearAuthCookies(res as Response);
             throw new UnauthorizedException('Invalid refresh token');
         }
 

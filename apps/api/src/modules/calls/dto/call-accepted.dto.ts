@@ -1,6 +1,13 @@
+import { IsOptional, IsString } from "class-validator";
+
 export class CallAcceptedDto {
-    toSocketId: string;
+    @IsString()
+    toUserId: string;
+
+    @IsOptional()
+    @IsString()
     callId?: string;
+
     ans: RTCSessionDescriptionInit;
 }
 
