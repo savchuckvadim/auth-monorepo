@@ -214,7 +214,12 @@ export const useCallEngine = (
         // Сбрасываем флаги обработанных событий для нового звонка
         processedAnswerRef.current = null;
         processedIncomingCallRef.current = null;
-        iceCandidateBufferRef.current = []; // Очищаем буфер ICE candidates
+        // ВАЖНО: НЕ очищаем iceCandidateBufferRef здесь!
+        // ICE candidates могут прийти ДО того, как пользователь принял звонок
+        // Они будут обработаны после установки remote description
+        console.log('📦 [ACCEPT CALL] ICE candidates buffer', {
+            bufferedCount: iceCandidateBufferRef.current.length
+        });
 
         console.log('🔄 [ACCEPT CALL] Recreating peer connection');
         peerService.recreate();
@@ -570,8 +575,29 @@ export const useCallEngine = (
             console.log('🧊 [NEGOTIATION] ICE connection state changed', {
                 state: peer.iceConnectionState,
                 connectionState: peer.connectionState,
-                iceGatheringState: peer.iceGatheringState
+                iceGatheringState: peer.iceGatheringState,
+                signalingState: peer.signalingState,
+                receiversCount: peer.getReceivers().length,
+                sendersCount: peer.getSenders().length,
+                hasRemoteStream: !!remoteStreamRef.current,
+                remoteStreamTracks: remoteStreamRef.current?.getTracks().length || 0
             });
+
+            // Если соединение установлено, проверяем remote stream
+            if (peer.iceConnectionState === 'connected' || peer.iceConnectionState === 'completed') {
+                const receivers = peer.getReceivers();
+                console.log('🔍 [NEGOTIATION] Connection established, checking receivers', {
+                    receiversCount: receivers.length,
+                    receivers: receivers.map(r => ({
+                        trackId: r.track?.id,
+                        trackKind: r.track?.kind,
+                        trackEnabled: r.track?.enabled,
+                        trackReadyState: r.track?.readyState
+                    })),
+                    hasRemoteStream: !!remoteStreamRef.current,
+                    remoteStreamTracks: remoteStreamRef.current?.getTracks().length || 0
+                });
+            }
         };
 
         peer.onicegatheringstatechange = () => {

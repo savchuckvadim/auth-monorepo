@@ -64,7 +64,12 @@ export const useCall = (chatId: string, otherUserId: string, type: 'VIDEO' | 'AU
         console.log('✅ [HANDLE CALL USER] Offer created', {
             offerType: offer.type,
             hasSdp: !!offer.sdp,
-            signalingState: engine.peerService.connection?.signalingState
+            signalingState: engine.peerService.connection?.signalingState,
+            sendersCount: engine.peerService.connection?.getSenders().length || 0,
+            // Проверяем, что треки включены в SDP
+            sdpContainsAudio: offer.sdp?.includes('m=audio') || false,
+            sdpContainsVideo: offer.sdp?.includes('m=video') || false,
+            sdpLength: offer.sdp?.length || 0
         });
 
         console.log('📤 [HANDLE CALL USER] Sending call via callUser');
