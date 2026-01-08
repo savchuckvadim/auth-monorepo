@@ -50,11 +50,11 @@ export function EmailVerificationTemplate({ name, activationLink, clientUrl }: E
                     />
                 </Head>
 
-                <Body style={{ backgroundColor: '#f8f9fa', fontFamily: 'Inter, Arial, sans-serif' }}>
+                <Body style={{ backgroundColor: colors.background, fontFamily: 'Inter, Arial, sans-serif' }}>
 
                     <Preview>Активация аккаунта в сети Sociopath</Preview>
                     <Container className='mx-auto my-10 max-w-[500px] rounded-lg p-8 shadow-lg'
-                        style={{ backgroundColor: colors.background }}
+                        style={{ backgroundColor: colors.card }}
                     >
                         <Section className='text-center'>
 
@@ -70,13 +70,8 @@ export function EmailVerificationTemplate({ name, activationLink, clientUrl }: E
                                 </Text>
                                 <Button
                                     href={activationLink}
-                                    className='inline-flex items-center justify-center rounded-full  px-8 py-3 text-sm font-medium text-white leading-none'
-                                    style={{
-                                        fontFamily: 'Geist, Arial',
-                                        backgroundColor: `${colors.primary} hover:${colors.primary} `,
-                                        color: '#FFFFFF',
-
-                                    }}
+                                    className={`inline-flex items-center justify-center rounded-full bg-gray-800 px-8 py-3 text-sm font-medium text-white hover:${colors.primary} leading-none`}
+                                    style={{ fontFamily: 'Geist, Arial' }}
                                 >
                                     Активировать
                                 </Button>
