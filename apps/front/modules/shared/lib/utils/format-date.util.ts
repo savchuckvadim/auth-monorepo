@@ -46,6 +46,19 @@ export const formatRelativeDate = (dateString: string | Date): string => {
     // Разница в днях
     const diffDays = Math.floor(diffHours / 24);
 
+    if (diffDays === 1) {
+        return '1 day ago';
+    }
+    if (diffDays === 3) {
+        return '3 days ago';
+    }
+    if (diffDays === 7) {
+        return '1 week ago';
+    }
+    if (diffDays < 30) {
+        return `${diffDays} days ago`;
+    }
+
     // Разница в месяцах (приблизительно, 30 дней = 1 месяц)
     const diffMonths = Math.floor(diffDays / 30);
     if (diffMonths === 1) {
