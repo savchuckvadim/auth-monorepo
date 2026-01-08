@@ -641,8 +641,13 @@ export const useCallEngine = (
             hasSdp: !!ans.sdp,
             hasPeer: !!peerService.connection,
             hasMyStream: !!media.myStream,
+            myStreamId: media.myStream?.id,
+            myStreamTracks: media.myStream?.getTracks().length || 0,
+            myStreamActive: media.myStream?.active,
             peerSignalingState: peerService.connection?.signalingState,
             peerConnectionState: peerService.connection?.connectionState,
+            peerIceConnectionState: peerService.connection?.iceConnectionState,
+            sendersCount: peerService.connection?.getSenders().length || 0,
             answerId,
             alreadyProcessed: processedAnswerRef.current === answerId
         });
@@ -743,6 +748,71 @@ export const useCallEngine = (
                 }
             }
         }
+
+        // ВАЖНО: Проверяем и переустанавливаем треки после получения answer
+        // На мобильных устройствах треки могут теряться при установке remote description
+        const sendersBefore = peer.getSenders();
+        logger.log('🔍 [CALL ACCEPTED] Checking senders before track verification', {
+            sendersCount: sendersBefore.length,
+            senders: sendersBefore.map(s => ({
+                trackId: s.track?.id,
+                trackKind: s.track?.kind,
+                trackEnabled: s.track?.enabled
+            })),
+            hasMyStream: !!media.myStream,
+            myStreamTracks: media.myStream?.getTracks().length || 0
+        });
+
+        // Если myStream есть, но треков нет в senders - добавляем их заново
+        if (media.myStream && sendersBefore.length === 0) {
+            logger.warn('⚠️ [CALL ACCEPTED] No senders found, re-adding tracks from myStream', {
+                myStreamId: media.myStream.id,
+                tracksCount: media.myStream.getTracks().length
+            });
+
+            media.myStream.getTracks().forEach((track) => {
+                try {
+                    peerService.addTrack(track, media.myStream!);
+                    logger.log('➕ [CALL ACCEPTED] Re-added track', {
+                        trackId: track.id,
+                        trackKind: track.kind,
+                        trackEnabled: track.enabled
+                    });
+                } catch (error) {
+                    logger.error('❌ [CALL ACCEPTED] Error re-adding track', { error, trackId: track.id });
+                }
+            });
+        } else if (media.myStream && sendersBefore.length < media.myStream.getTracks().length) {
+            logger.warn('⚠️ [CALL ACCEPTED] Some tracks missing, re-adding missing tracks', {
+                sendersCount: sendersBefore.length,
+                myStreamTracks: media.myStream.getTracks().length
+            });
+
+            const existingTrackIds = new Set(sendersBefore.map(s => s.track?.id).filter(Boolean));
+            media.myStream.getTracks().forEach((track) => {
+                if (!existingTrackIds.has(track.id)) {
+                    try {
+                        peerService.addTrack(track, media.myStream!);
+                        logger.log('➕ [CALL ACCEPTED] Re-added missing track', {
+                            trackId: track.id,
+                            trackKind: track.kind
+                        });
+                    } catch (error) {
+                        logger.error('❌ [CALL ACCEPTED] Error re-adding missing track', { error, trackId: track.id });
+                    }
+                }
+            });
+        }
+
+        const sendersAfter = peer.getSenders();
+        logger.log('✅ [CALL ACCEPTED] Senders after verification', {
+            sendersCount: sendersAfter.length,
+            senders: sendersAfter.map(s => ({
+                trackId: s.track?.id,
+                trackKind: s.track?.kind,
+                trackEnabled: s.track?.enabled
+            }))
+        });
 
         // Проверяем, есть ли уже треки в соединении
         const receivers = peerService.connection.getReceivers();
