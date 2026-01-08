@@ -43,6 +43,10 @@ export class AuthService {
         if (!user) {
             throw new UnauthorizedException('User not found');
         }
+        if (!user.isAcivated) {
+            throw new UnauthorizedException('User not activated');
+        }
+
 
         const isPasswordValid = await this.userService.comparePassword(loginDto.password, user.password);
         if (!isPasswordValid) {
