@@ -2,15 +2,15 @@
 const nextConfig = {
 
     //for debug
-    compress: false, // <--- отключает gzip-сжатие и минификацию на сервере
-    webpack(config, { dev, isServer }) {
-        if (!dev) {
-            config.optimization.minimize = false;
-        }
-        return config;
-    },
-    reactStrictMode: true,
-    productionBrowserSourceMaps: true,
+    // compress: false, // <--- отключает gzip-сжатие и минификацию на сервере
+    // webpack(config, { dev, isServer }) {
+    //     if (!dev) {
+    //         config.optimization.minimize = false;
+    //     }
+    //     return config;
+    // },
+    // reactStrictMode: true,
+    // productionBrowserSourceMaps: true,
     env: {
         NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     },

@@ -3,6 +3,7 @@ export * from './socket/notifications-socket';
 export * from './socket/calls-socket';
 export * from './utils/getToken';
 export * from './utils/format-date.util';
+export * from './utils/logger';
 export * from './webrtc/peer-service';
 export * from './webrtc/webrtc.config';
 export * from './socket/web-socket-manager';

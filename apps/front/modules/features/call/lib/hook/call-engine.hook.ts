@@ -8,7 +8,7 @@ import {
     PeerNegoDoneData,
     PeerNegoNeededData,
 } from '@/modules/features/secret-chat/lib/types/webrtc.types';
-import { connectCallsSocket, PeerService } from '@/modules/shared';
+import { connectCallsSocket, PeerService, logger } from '@/modules/shared';
 import { useAuth } from '@/modules/processes';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ensurePeerConnection } from '../utils/ensure-peer-connection';
@@ -28,6 +28,13 @@ export const useCallEngine = (
     const { currentUser } = useAuth();
     const [peerService] = useState(() => new PeerService());
     const [socket, setSocket] = useState<any>(null);
+
+    // Устанавливаем userId для logger
+    useEffect(() => {
+        if (currentUser?.id) {
+            logger.setUserId(currentUser.id);
+        }
+    }, [currentUser?.id]);
 
     const [remoteSocketId, setRemoteSocketId] = useState<string | null>(null);
 
@@ -107,7 +114,7 @@ export const useCallEngine = (
         // Создаем уникальный идентификатор для этого входящего звонка
         const incomingCallId = `${from}-${offer.sdp?.substring(0, 50) || 'no-sdp'}`;
 
-        console.log('📞 [INCOMING CALL] Received incoming call', {
+        logger.log('📞 [INCOMING CALL] Received incoming call', {
             from,
             fromUserId,
             type,
@@ -175,7 +182,7 @@ export const useCallEngine = (
 
     // Функция для принятия звонка
     const acceptCall = useCallback(async () => {
-        console.log('📞 [ACCEPT CALL] acceptCall called', {
+        logger.log('📞 [ACCEPT CALL] acceptCall called', {
             hasIncomingCallData: !!incomingCallData,
             hasSocket: !!socket,
             incomingCallData: incomingCallData ? {
@@ -455,7 +462,7 @@ export const useCallEngine = (
         remoteStreamRef.current = null;
 
         const handleTrack = (e: RTCTrackEvent) => {
-            console.log('📹 [NEGOTIATION] Track received', {
+            logger.log('📹 [NEGOTIATION] Track received', {
                 streamId: e.streams[0]?.id,
                 trackId: e.track.id,
                 trackKind: e.track.kind,
@@ -513,7 +520,7 @@ export const useCallEngine = (
 
             // Устанавливаем remote stream только если есть треки
             if (stream && stream.getTracks().length > 0) {
-                console.log('✅ [NEGOTIATION] Setting remote stream', {
+                logger.log('✅ [NEGOTIATION] Setting remote stream', {
                     streamId: stream.id,
                     hasStream: !!stream,
                     tracksCount: stream.getTracks().length,
@@ -586,7 +593,7 @@ export const useCallEngine = (
             // Если соединение установлено, проверяем remote stream
             if (peer.iceConnectionState === 'connected' || peer.iceConnectionState === 'completed') {
                 const receivers = peer.getReceivers();
-                console.log('🔍 [NEGOTIATION] Connection established, checking receivers', {
+                logger.log('🔍 [NEGOTIATION] Connection established, checking receivers', {
                     receiversCount: receivers.length,
                     receivers: receivers.map(r => ({
                         trackId: r.track?.id,
@@ -629,7 +636,7 @@ export const useCallEngine = (
         // Создаем уникальный идентификатор для этого answer (используем первые 50 символов SDP)
         const answerId = ans.sdp?.substring(0, 50) || '';
 
-        console.log('✅ [CALL ACCEPTED] Received call:accepted', {
+        logger.log('✅ [CALL ACCEPTED] Received call:accepted', {
             answerType: ans.type,
             hasSdp: !!ans.sdp,
             hasPeer: !!peerService.connection,
@@ -818,17 +825,47 @@ export const useCallEngine = (
         setTimeout(() => {
             const peer = peerService.connection;
             if (peer) {
+                const receivers = peer.getReceivers();
                 console.log('🔍 [CALL ACCEPTED] Peer connection state after 1s', {
                     connectionState: peer.connectionState,
                     iceConnectionState: peer.iceConnectionState,
                     iceGatheringState: peer.iceGatheringState,
                     signalingState: peer.signalingState,
-                    receivers: peer.getReceivers().length,
+                    receivers: receivers.length,
                     senders: peer.getSenders().length,
-                    hasRemoteStream: false // Will be set via setRemoteStream
+                    receiversDetails: receivers.map(r => ({
+                        trackId: r.track?.id,
+                        trackKind: r.track?.kind,
+                        trackEnabled: r.track?.enabled,
+                        trackReadyState: r.track?.readyState,
+                        trackMuted: r.track?.muted
+                    })),
+                    hasRemoteStream: !!remoteStreamRef.current,
+                    remoteStreamTracks: remoteStreamRef.current?.getTracks().length || 0
                 });
             }
         }, 1000);
+
+        // Также проверяем через 3 секунды
+        setTimeout(() => {
+            const peer = peerService.connection;
+            if (peer) {
+                const receivers = peer.getReceivers();
+                console.log('🔍 [CALL ACCEPTED] Peer connection state after 3s', {
+                    connectionState: peer.connectionState,
+                    iceConnectionState: peer.iceConnectionState,
+                    receivers: receivers.length,
+                    receiversDetails: receivers.map(r => ({
+                        trackId: r.track?.id,
+                        trackKind: r.track?.kind,
+                        trackEnabled: r.track?.enabled,
+                        trackReadyState: r.track?.readyState
+                    })),
+                    hasRemoteStream: !!remoteStreamRef.current,
+                    remoteStreamTracks: remoteStreamRef.current?.getTracks().length || 0
+                });
+            }
+        }, 3000);
     }, [peerService, media, isInCall, callType]);
 
     // ---------- socket events ----------

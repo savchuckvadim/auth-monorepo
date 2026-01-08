@@ -1,4 +1,5 @@
 import { WEBRTC_CONFIG } from './webrtc.config';
+import { logger } from '../utils/logger';
 
 /**
  * Сервис для управления WebRTC Peer Connection
@@ -87,7 +88,30 @@ export class PeerService {
             throw new Error('Peer connection not initialized');
         }
 
+        // ВАЖНО: Проверяем, что треки добавлены перед созданием offer
+        const senders = this.peer.getSenders();
+        logger.log('📝 [PEER SERVICE] Creating offer', {
+            sendersCount: senders.length,
+            senders: senders.map(s => ({
+                trackId: s.track?.id,
+                trackKind: s.track?.kind,
+                trackEnabled: s.track?.enabled
+            }))
+        });
+
         const offer = await this.peer.createOffer();
+
+        // ВАЖНО: Проверяем, что треки включены в SDP
+        logger.log('📝 [PEER SERVICE] Offer created', {
+            offerType: offer.type,
+            hasSdp: !!offer.sdp,
+            sdpLength: offer.sdp?.length || 0,
+            sdpContainsAudio: offer.sdp?.includes('m=audio') || false,
+            sdpContainsVideo: offer.sdp?.includes('m=video') || false,
+            audioLineCount: (offer.sdp?.match(/m=audio/g) || []).length,
+            videoLineCount: (offer.sdp?.match(/m=video/g) || []).length
+        });
+
         await this.peer.setLocalDescription(new RTCSessionDescription(offer));
         return offer;
     }

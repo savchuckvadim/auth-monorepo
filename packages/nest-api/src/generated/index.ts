@@ -10,3 +10,5 @@ export * from './profile/profile';
 export * from './posts/posts';
 
 export * from './model';
+
+export * from './telegram/telegram';

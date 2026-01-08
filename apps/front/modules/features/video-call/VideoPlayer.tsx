@@ -66,7 +66,50 @@ export const VideoPlayer: FC<VideoPlayerProps> = ({
                 muted: videoRef.current.muted,
                 paused: videoRef.current.paused,
                 readyState: videoRef.current.readyState,
-                hasVideo
+                hasVideo,
+                videoWidth: videoRef.current.videoWidth,
+                videoHeight: videoRef.current.videoHeight,
+                streamActive: stream.active,
+                streamVideoTracks: stream.getVideoTracks().length,
+                streamVideoTracksActive: stream.getVideoTracks().filter(t => t.readyState === 'live').length
+            });
+
+            // Отслеживаем изменения readyState
+            const checkReadyState = () => {
+                if (videoRef.current) {
+                    const currentReadyState = videoRef.current.readyState;
+                    if (currentReadyState > 0) {
+                        console.log('✅ [VIDEO PLAYER] Video readyState changed', {
+                            name,
+                            readyState: currentReadyState,
+                            readyStateText: ['HAVE_NOTHING', 'HAVE_METADATA', 'HAVE_CURRENT_DATA', 'HAVE_FUTURE_DATA', 'HAVE_ENOUGH_DATA'][currentReadyState],
+                            videoWidth: videoRef.current.videoWidth,
+                            videoHeight: videoRef.current.videoHeight
+                        });
+                    }
+                }
+            };
+
+            // Проверяем readyState через небольшие интервалы
+            const readyStateInterval = setInterval(() => {
+                if (videoRef.current && videoRef.current.readyState > 0) {
+                    clearInterval(readyStateInterval);
+                    checkReadyState();
+                }
+            }, 100);
+
+            // Очищаем интервал через 5 секунд
+            setTimeout(() => clearInterval(readyStateInterval), 5000);
+
+            // Также слушаем события
+            videoRef.current.addEventListener('loadedmetadata', () => {
+                console.log('📹 [VIDEO PLAYER] Video metadata loaded', { name });
+            });
+            videoRef.current.addEventListener('loadeddata', () => {
+                console.log('📹 [VIDEO PLAYER] Video data loaded', { name });
+            });
+            videoRef.current.addEventListener('canplay', () => {
+                console.log('▶️ [VIDEO PLAYER] Video can play', { name });
             });
         }
         if (audioRef.current) {
@@ -75,7 +118,10 @@ export const VideoPlayer: FC<VideoPlayerProps> = ({
                 muted: audioRef.current.muted,
                 paused: audioRef.current.paused,
                 readyState: audioRef.current.readyState,
-                hasAudio
+                hasAudio,
+                streamActive: stream.active,
+                streamAudioTracks: stream.getAudioTracks().length,
+                streamAudioTracksActive: stream.getAudioTracks().filter(t => t.readyState === 'live').length
             });
         }
     }, [stream, isAudioMute, name, hasVideo, hasAudio]);

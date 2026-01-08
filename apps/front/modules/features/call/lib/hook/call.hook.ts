@@ -5,15 +5,25 @@ import { useCallControls } from './call-controls.hook';
 import { useCallEngine } from './call-engine.hook';
 import { useState, useEffect } from 'react';
 import { ensurePeerConnection } from '../utils/ensure-peer-connection';
+import { logger } from '@/modules/shared';
+import { useAuth } from '@/modules/processes';
 
 export const useCall = (chatId: string, otherUserId: string, type: 'VIDEO' | 'AUDIO') => {
     const [saveHistory, setSaveHistory] = useState(false);
+    const { currentUser } = useAuth();
     const media = useCallMedia();
     const engine = useCallEngine(chatId, otherUserId, type, media);
     const controls = useCallControls(engine.peerService);
 
+    // Устанавливаем userId для logger
+    useEffect(() => {
+        if (currentUser?.id) {
+            logger.setUserId(currentUser.id);
+        }
+    }, [currentUser?.id]);
+
     const handleCallUser = async (t: 'VIDEO' | 'AUDIO') => {
-        console.log('📞 [HANDLE CALL USER] Initiating call', {
+        logger.log('📞 [HANDLE CALL USER] Initiating call', {
             type: t,
             chatId,
             otherUserId,
