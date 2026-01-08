@@ -50,7 +50,8 @@ export const useCall = (chatId: string, otherUserId: string, type: 'VIDEO' | 'AU
         // ВАЖНО: Используем возвращенный stream напрямую, а не media.myStream
         // потому что setMyStream асинхронный (useState) и состояние может еще не обновиться
         // getMedia уже вызывает setMyStream внутри, стрим будет сохранен
-        console.log('💾 [HANDLE CALL USER] Stream will be saved by getMedia (useState is async)');
+        // Также stream будет сохранен в ref в callUser для надежного доступа
+        console.log('💾 [HANDLE CALL USER] Stream will be saved by getMedia (useState is async) and in ref in callUser');
 
         console.log('🎵 [HANDLE CALL USER] Adding tracks to peer connection', {
             tracksCount: stream.getTracks().length

@@ -49,6 +49,7 @@ export const useCallEngine = (
     const processedIncomingCallRef = useRef<string | null>(null); // Для защиты от повторной обработки incoming call
     const iceCandidateBufferRef = useRef<RTCIceCandidateInit[]>([]); // Буфер для ICE candidates, которые пришли до установки remote description
     const remoteStreamRef = useRef<MediaStream | null>(null); // Для сбора всех remote треков в один стрим
+    const myStreamRef = useRef<MediaStream | null>(null); // Сохраняем stream в ref для надежного доступа
 
     // ---------- socket init ----------
     useEffect(() => {
@@ -403,6 +404,15 @@ export const useCallEngine = (
         processedIncomingCallRef.current = null;
         iceCandidateBufferRef.current = []; // Очищаем буфер ICE candidates
 
+        // Сохраняем myStream в ref для надежного доступа
+        if (media.myStream) {
+            myStreamRef.current = media.myStream;
+            logger.log('💾 [OUTGOING CALL] Saved myStream to ref', {
+                streamId: media.myStream.id,
+                tracksCount: media.myStream.getTracks().length
+            });
+        }
+
         console.log('📞 [OUTGOING CALL] Initiating call', {
             type,
             toUserId: otherUserId,
@@ -751,6 +761,9 @@ export const useCallEngine = (
 
         // ВАЖНО: Проверяем и переустанавливаем треки после получения answer
         // На мобильных устройствах треки могут теряться при установке remote description
+        // Используем ref для надежного доступа к stream
+        const currentMyStream = myStreamRef.current || media.myStream;
+
         const sendersBefore = peer.getSenders();
         logger.log('🔍 [CALL ACCEPTED] Checking senders before track verification', {
             sendersCount: sendersBefore.length,
@@ -760,19 +773,23 @@ export const useCallEngine = (
                 trackEnabled: s.track?.enabled
             })),
             hasMyStream: !!media.myStream,
-            myStreamTracks: media.myStream?.getTracks().length || 0
+            hasMyStreamRef: !!myStreamRef.current,
+            myStreamTracks: media.myStream?.getTracks().length || 0,
+            myStreamRefTracks: myStreamRef.current?.getTracks().length || 0,
+            usingRef: !!myStreamRef.current
         });
 
-        // Если myStream есть, но треков нет в senders - добавляем их заново
-        if (media.myStream && sendersBefore.length === 0) {
+        // Если myStream есть (из ref или state), но треков нет в senders - добавляем их заново
+        if (currentMyStream && sendersBefore.length === 0) {
             logger.warn('⚠️ [CALL ACCEPTED] No senders found, re-adding tracks from myStream', {
-                myStreamId: media.myStream.id,
-                tracksCount: media.myStream.getTracks().length
+                myStreamId: currentMyStream.id,
+                tracksCount: currentMyStream.getTracks().length,
+                source: myStreamRef.current ? 'ref' : 'state'
             });
 
-            media.myStream.getTracks().forEach((track) => {
+            currentMyStream.getTracks().forEach((track) => {
                 try {
-                    peerService.addTrack(track, media.myStream!);
+                    peerService.addTrack(track, currentMyStream);
                     logger.log('➕ [CALL ACCEPTED] Re-added track', {
                         trackId: track.id,
                         trackKind: track.kind,
@@ -782,17 +799,18 @@ export const useCallEngine = (
                     logger.error('❌ [CALL ACCEPTED] Error re-adding track', { error, trackId: track.id });
                 }
             });
-        } else if (media.myStream && sendersBefore.length < media.myStream.getTracks().length) {
+        } else if (currentMyStream && sendersBefore.length < currentMyStream.getTracks().length) {
             logger.warn('⚠️ [CALL ACCEPTED] Some tracks missing, re-adding missing tracks', {
                 sendersCount: sendersBefore.length,
-                myStreamTracks: media.myStream.getTracks().length
+                myStreamTracks: currentMyStream.getTracks().length,
+                source: myStreamRef.current ? 'ref' : 'state'
             });
 
             const existingTrackIds = new Set(sendersBefore.map(s => s.track?.id).filter(Boolean));
-            media.myStream.getTracks().forEach((track) => {
+            currentMyStream.getTracks().forEach((track) => {
                 if (!existingTrackIds.has(track.id)) {
                     try {
-                        peerService.addTrack(track, media.myStream!);
+                        peerService.addTrack(track, currentMyStream);
                         logger.log('➕ [CALL ACCEPTED] Re-added missing track', {
                             trackId: track.id,
                             trackKind: track.kind
@@ -839,19 +857,20 @@ export const useCallEngine = (
             }))
         });
 
-        if (media.myStream) {
+        if (currentMyStream) {
             const existingTracks = existingSenders.map(s => s.track).filter(Boolean);
-            const tracksToAdd = media.myStream.getTracks().filter(
+            const tracksToAdd = currentMyStream.getTracks().filter(
                 track => !existingTracks.includes(track)
             );
 
             if (tracksToAdd.length > 0) {
                 console.log('🎵 [CALL ACCEPTED] Adding missing tracks to peer connection', {
-                    streamId: media.myStream.id,
+                    streamId: currentMyStream.id,
                     tracksToAdd: tracksToAdd.length,
-                    totalTracks: media.myStream.getTracks().length,
-                    videoTracks: media.myStream.getVideoTracks().length,
-                    audioTracks: media.myStream.getAudioTracks().length
+                    totalTracks: currentMyStream.getTracks().length,
+                    videoTracks: currentMyStream.getVideoTracks().length,
+                    audioTracks: currentMyStream.getAudioTracks().length,
+                    source: myStreamRef.current ? 'ref' : 'state'
                 });
 
                 tracksToAdd.forEach(track => {
@@ -860,7 +879,7 @@ export const useCallEngine = (
                         trackKind: track.kind,
                         trackEnabled: track.enabled
                     });
-                    peerService.addTrack(track, media.myStream!);
+                    peerService.addTrack(track, currentMyStream);
                 });
 
                 console.log('✅ [CALL ACCEPTED] Missing tracks added', {
