@@ -21,9 +21,7 @@ export class UserController {
     @ApiResponse({ status: 200, description: 'Users list', type: [UserDto] })
     @Get()
     async getAllUsers(@CurrentUser() user: TokenPayloadDto) {
-        if (!user?.userId) {
-            throw new ForbiddenException('User not authenticated');
-        }
+      
         return await this.service.getAllUsers(user.userId);
     }
 

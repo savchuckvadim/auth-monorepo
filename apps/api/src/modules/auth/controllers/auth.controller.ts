@@ -54,10 +54,24 @@ export class AuthController {
     async login(@Body() loginDto: LoginDto): Promise<AuthenticatedUserDto> {
 
         const user = await this.authService.login(loginDto);
-
+        console.log('login', user);
         return user;
 
     }
+
+    @ApiOperation({ summary: 'Login for mobile app' })
+    @ApiBody({ type: LoginDto, description: 'Login for mobile app' })
+    @ApiResponse({ status: 200, description: 'User with tokens', type: AuthenticatedUserDto })
+    // @UseInterceptors(AuthCookieInterceptor) // убираем interceptor для мобильного приложения так как он отрезает токены от ответа и вставляет в куки
+    @Post('mobile/login')
+    async mobileLogin(@Body() loginDto: LoginDto): Promise<AuthenticatedUserDto> {
+
+        const user = await this.authService.login(loginDto);
+        console.log('login', user);
+        return user;
+
+    }
+
     @ApiOperation({ summary: 'Activate' })
     @ApiParam({ name: 'link', description: 'Activate link' })
     @SetAuthCookie() // вызов interceptor через декоратор. декоратор просто обертка для UseInterceptors(AuthCookieInterceptor)

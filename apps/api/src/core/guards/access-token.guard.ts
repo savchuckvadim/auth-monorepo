@@ -5,7 +5,7 @@ import {
     UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { TokenService } from '@/modules/token';
+import { TokenPayloadDto, TokenService } from '@/modules/token';
 
 @Injectable()
 export class AccessTokenGuard implements CanActivate {
@@ -15,29 +15,27 @@ export class AccessTokenGuard implements CanActivate {
     ) { }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
-        const req = context.switchToHttp().getRequest<Request>();
+        const req = context.switchToHttp().getRequest<Request & { user?: TokenPayloadDto }>();
 
 
 
         let accessToken: string | undefined;
         // 1) Берём из заголовка Authorization
-        // const authHeader = req.headers.authorization;
-        // if (authHeader?.startsWith('Bearer ')) {
-        //     accessToken = authHeader.split(' ')[1];
-        // }
+        const authHeader = req.headers.authorization;
+        if (authHeader?.startsWith('Bearer ')) {
+            accessToken = authHeader.split(' ')[1];
+        }
 
         // 2) fallback: берём из Cookies
         if (!accessToken && req.cookies?.accessToken) {
             accessToken = req.cookies.accessToken;
         }
         if (!accessToken) {
-            throw new UnauthorizedException('Требуется авторизация');
+            throw new UnauthorizedException('ACCESS_TOKEN_MISSING'); // Требуется авторизация
         }
         const user = await this.tokenService.validateAccessToken(accessToken);
-        if (!user) {
-            throw new UnauthorizedException('Invalid access token');
-        }
-        (req as any).user = user;
+
+        req.user = user;
 
         return true;
 
