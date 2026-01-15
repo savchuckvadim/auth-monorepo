@@ -1,0 +1,9 @@
+port: 7880
+bind_addresses:
+  - ""
+rtc:
+  tcp_port: 7881
+  udp_port: 7882
+  use_external_ip: true
+# Если Dockploy дает домен с SSL (например через Nginx/Traefik),
+# LiveKit может работать за прокси.
