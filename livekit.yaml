@@ -7,9 +7,9 @@ rtc:
   use_external_ip: true
 
 
-keys:
-  LK_API_KEY: ${LIVEKIT_API_KEY}
-  LK_API_SECRET: ${LIVEKIT_API_SECRET}
+# keys:
+#   LK_API_KEY: ${LIVEKIT_API_KEY}
+#   LK_API_SECRET: ${LIVEKIT_API_SECRET}
 
 room:
   auto_create: true

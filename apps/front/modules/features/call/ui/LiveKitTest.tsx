@@ -1,7 +1,7 @@
 import { LiveKitRoom, VideoConference, RoomAudioRenderer } from '@livekit/components-react';
 import '@livekit/components-styles';
 
-const LIVEKIT_URL = process.env.NEXT_PUBLIC_LIVEKIT_URL || 'https://livekit.sociopath-network.ru';
+const LIVEKIT_URL = process.env.NEXT_PUBLIC_LIVEKIT_URL || 'https://sociopath-livekit-cf4g84-e253d2-109-69-19-219.traefik.me';
 export const VideoCall = ({ token }: { token: string }) => {
     return (
         <div className="h-screen">

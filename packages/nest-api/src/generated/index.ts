@@ -9,6 +9,8 @@ export * from './followers/followers';
 export * from './profile/profile';
 export * from './posts/posts';
 
+export * from './calls/calls';
+
 export * from './model';
 
 export * from './telegram/telegram';

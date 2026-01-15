@@ -33,6 +33,17 @@ export const getAuth = () => {
         });
     };
     /**
+     * @summary Login for mobile app
+     */
+    const authMobileLogin = (loginDto: LoginDto) => {
+        return customAxios<AuthenticatedUserDto>({
+            url: `/api/auth/mobile/login`,
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            data: loginDto,
+        });
+    };
+    /**
      * @summary Activate
      */
     const authActivate = (link: string) => {
@@ -59,6 +70,7 @@ export const getAuth = () => {
     return {
         authRegistration,
         authLogin,
+        authMobileLogin,
         authActivate,
         authLogout,
         authRefreshToken,
@@ -69,6 +81,9 @@ export type AuthRegistrationResult = NonNullable<
 >;
 export type AuthLoginResult = NonNullable<
     Awaited<ReturnType<ReturnType<typeof getAuth>['authLogin']>>
+>;
+export type AuthMobileLoginResult = NonNullable<
+    Awaited<ReturnType<ReturnType<typeof getAuth>['authMobileLogin']>>
 >;
 export type AuthActivateResult = NonNullable<
     Awaited<ReturnType<ReturnType<typeof getAuth>['authActivate']>>
