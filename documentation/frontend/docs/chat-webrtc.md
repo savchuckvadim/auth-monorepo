@@ -172,6 +172,113 @@ socket.on('webrtc:ice-candidate', async ({ candidate }) => {
 - `webrtc:ice-candidate` - обмен ICE candidates
 - `webrtc:end` - завершение соединения
 
+#### 3. CallWrapper Widget
+
+**Расположение**: `modules/widgetes/call/CallWrapper/CallWrapperWidget.tsx`
+
+**Назначение**: Глобальный виджет-обертка для управления UI звонков во всем приложении. Обеспечивает отображение входящих, исходящих и активных звонков поверх всего контента приложения.
+
+**Архитектура**:
+
+CallWrapper использует глобальный контекст `useGlobalCallContext()`, который предоставляет:
+- Состояние звонка (`isInCall`, `callType`, `isIncomingCall`)
+- Медиа потоки (`myStream`, `remoteStream`)
+- Управление звонком (`handleToggleAudio`, `handleToggleVideo`, `handleEndCall`, `acceptCall`, `rejectCall`)
+- Информацию о пользователях (`remoteUserId`, `incomingCallFromUserId`)
+
+**Состояния UI**:
+
+1. **Входящий звонок** (`isIncomingCall === true`):
+   - Показывается компонент `CallIncoming`
+   - Отображает информацию о звонящем пользователе
+   - Кнопки "Принять" и "Отклонить"
+
+2. **Исходящий звонок** (`isInCall === true && !remoteStream && !isIncomingCall`):
+   - Показывается overlay с текстом "Звонок видео/аудио..."
+   - Кнопка "Отменить вызов"
+   - Ожидание ответа от принимающей стороны
+
+3. **Активный звонок** (`isInCall === true && remoteStream`):
+   - **Видео звонок** (`callType === 'VIDEO'`):
+     - Полноэкранное удаленное видео (на весь экран)
+     - Маленькое локальное видео (справа внизу, 28x36 на мобильных, 56x72 на десктопе)
+     - Контролы внизу экрана (`CallControls`)
+   - **Аудио звонок** (`callType === 'AUDIO'`):
+     - Центрированный текст "Аудио звонок"
+     - Контролы по центру экрана
+
+**Компоненты**:
+
+- `CallWrapperWidget` - основной компонент-обертка
+- `CallIncoming` - компонент для входящих звонков
+- `CallControls` - компонент с кнопками управления (микрофон, камера, завершить)
+- `VideoPlayer` - компонент для отображения видео потока
+
+**Интеграция**:
+
+CallWrapper оборачивает все приложение и должен быть размещен на верхнем уровне (обычно в `layout.tsx`):
+
+```typescript
+// app/network/layout.tsx
+import { CallWrapperWidget } from '@/modules/widgetes/call/CallWrapper';
+import { GlobalCallProvider } from '@/modules/features/call/lib/context/global-call-provider';
+
+export default function NetworkLayout({ children }) {
+    return (
+        <GlobalCallProvider>
+            <CallWrapperWidget>
+                {children}
+            </CallWrapperWidget>
+        </GlobalCallProvider>
+    );
+}
+```
+
+**Поток работы**:
+
+1. **Инициация звонка**:
+   - Пользователь вызывает `handleCallUser(otherUserId, chatId, type)`
+   - CallWrapper показывает overlay "Звонок видео/аудио..."
+   - Через WebSocket отправляется сигнал принимающей стороне
+
+2. **Входящий звонок**:
+   - Принимающая сторона получает сигнал через WebSocket
+   - `GlobalCallProvider` устанавливает `isIncomingCall = true`
+   - CallWrapper показывает `CallIncoming` компонент
+
+3. **Принятие звонка**:
+   - Принимающая сторона вызывает `acceptCall()`
+   - Устанавливается WebRTC соединение
+   - `remoteStream` становится доступным
+   - CallWrapper переключается на активный звонок UI
+
+4. **Активный звонок**:
+   - Обе стороны имеют `myStream` и `remoteStream`
+   - CallWrapper показывает полноэкранный overlay с видео/аудио
+   - Пользователи могут управлять микрофоном, камерой, завершить звонок
+
+5. **Завершение звонка**:
+   - Любая сторона вызывает `handleEndCall()`
+   - WebRTC соединение закрывается
+   - Медиа потоки останавливаются
+   - CallWrapper скрывает overlay
+
+**Зависимости**:
+
+- `useGlobalCallContext()` - глобальный контекст звонков
+- `useUser(remoteUserId)` - получение данных пользователя для отображения имени
+- `VideoPlayer` - компонент для отображения видео
+- `CallControls` - компонент управления звонком
+- `CallIncoming` - компонент входящего звонка
+
+**Важные детали**:
+
+- CallWrapper использует `fixed inset-0 z-50` для overlay, чтобы показываться поверх всего контента
+- Локальное видео имеет меньший размер и позиционируется абсолютно в правом нижнем углу
+- Удаленное видео занимает весь экран
+- Контролы всегда видны внизу экрана для видео звонков
+- Все состояния отслеживаются через React hooks и контекст
+
 ### Состояния соединения
 
 RTCPeerConnection имеет несколько состояний:
@@ -211,6 +318,7 @@ peerService.connection?.addEventListener('iceconnectionstatechange', () => {
 В проекте есть тестовая страница `/network/calls` для проверки работы LiveKit:
 - `app/network/calls/page.tsx` - тестовая страница
 - `modules/features/call/ui/LiveKitTest.tsx` - тестовый компонент
+- `app/network/calls/useLivekitToken.ts` - хук для получения токена
 
 ### Задача
 
@@ -220,37 +328,237 @@ peerService.connection?.addEventListener('iceconnectionstatechange', () => {
 - Масштабируемости (поддержка групповых звонков)
 - Готовых UI компонентов
 
+### Получение токена LiveKit
+
+#### API Endpoint
+
+**Backend**: `POST /api/calls/token`
+
+**Расположение**: `apps/api/src/modules/calls/controllers/calls.controller.ts`
+
+**Request Body**:
+```typescript
+{
+    roomName: string;  // Имя комнаты (обычно chatId или уникальный идентификатор)
+    userId: string;    // ID пользователя
+}
+```
+
+**Response**:
+```typescript
+{
+    token: string;  // JWT токен для подключения к LiveKit
+}
+```
+
+#### Backend реализация
+
+**Сервис**: `apps/api/src/modules/calls/services/live-kit.service.ts`
+
+```typescript
+import { AccessToken } from 'livekit-server-sdk';
+
+export class LiveKitService {
+    private readonly apiKey = process.env.LIVEKIT_API_KEY;
+    private readonly apiSecret = process.env.LIVEKIT_API_SECRET;
+
+    async generateToken(roomName: string, participantIdentity: string) {
+        const at = new AccessToken(this.apiKey, this.apiSecret, {
+            identity: participantIdentity,
+        });
+
+        at.addGrant({
+            roomJoin: true,
+            room: roomName,
+            canPublish: true,
+            canSubscribe: true,
+        });
+
+        return at.toJwt();
+    }
+}
+```
+
+**Переменные окружения** (требуются на backend):
+- `LIVEKIT_API_KEY` - API ключ LiveKit сервера
+- `LIVEKIT_API_SECRET` - API секрет LiveKit сервера
+
+#### Frontend получение токена
+
+**Хук**: `app/network/calls/useLivekitToken.ts`
+
+```typescript
+import { useAuth } from "@/modules/processes";
+import { useQuery } from "@tanstack/react-query";
+import { getCalls } from "@workspace/nest-api";
+
+export const useLivekitToken = (roomName: string) => {
+    const { currentUser } = useAuth();
+    const api = getCalls()
+    const { data, isPending: isLoading, error } = useQuery({
+        queryKey: ['livekit-token', currentUser?.id, roomName],
+        queryFn: () => currentUser?.id
+            ? api.callsGetToken({
+                roomName,
+                userId: currentUser.id
+            })
+            : null,
+    })
+
+    return { data, isLoading, error };
+}
+```
+
+**Использование**:
+```typescript
+const { data, isLoading, error } = useLivekitToken('room1');
+const token = data?.token;
+```
+
 ### LiveKit компоненты
+
+**Базовый компонент**: `modules/features/call/ui/LiveKitTest.tsx`
 
 ```typescript
 import { LiveKitRoom, VideoConference, RoomAudioRenderer } from '@livekit/components-react';
+import '@livekit/components-styles';
+
+const LIVEKIT_URL = process.env.NEXT_PUBLIC_LIVEKIT_URL || 'https://ws.sociopath-network.ru';
 
 export const VideoCall = ({ token }: { token: string }) => {
     return (
-        <LiveKitRoom
-            video={true}
-            audio={true}
-            token={token}
-            serverUrl={LIVEKIT_URL}
-            connect={true}
-        >
-            <VideoConference />
-            <RoomAudioRenderer />
-        </LiveKitRoom>
+        <div className="h-screen">
+            <LiveKitRoom
+                video={true}
+                audio={true}
+                token={token}
+                serverUrl={LIVEKIT_URL}
+                connect={true}
+            >
+                <VideoConference />
+                <RoomAudioRenderer />
+            </LiveKitRoom>
+        </div>
     );
 };
 ```
 
-### Получение токена LiveKit
+**Переменные окружения** (требуются на frontend):
+- `NEXT_PUBLIC_LIVEKIT_URL` - URL LiveKit сервера (например, `https://ws.sociopath-network.ru`)
+
+### Миграция CallWrapper на LiveKit
+
+**Текущая реализация** использует:
+- `PeerService` для WebRTC соединений
+- `useCallEngine` для управления звонками
+- WebSocket для signaling
+- `MediaStream` для локального и удаленного видео
+
+**Целевая реализация** должна использовать:
+- `LiveKitRoom` вместо `RTCPeerConnection`
+- `useRoom` hook из `@livekit/components-react` вместо `useCallEngine`
+- LiveKit токены вместо WebSocket signaling
+- LiveKit tracks вместо `MediaStream`
+
+**План миграции CallWrapper**:
+
+1. **Заменить получение медиа потоков**:
+   - Убрать `getUserMedia()` вызовы
+   - LiveKit автоматически получает медиа при подключении к комнате
+
+2. **Заменить управление соединением**:
+   - Убрать `PeerService` и `useCallEngine`
+   - Использовать `useRoom()` hook из LiveKit
+   - Убрать WebSocket события для WebRTC
+
+3. **Обновить UI компоненты**:
+   - Заменить `VideoPlayer` на LiveKit компоненты (`ParticipantTile`, `TrackLoop`)
+   - Использовать `VideoConference` или кастомные компоненты из LiveKit
+   - Обновить `CallControls` для работы с LiveKit API
+
+4. **Обновить получение токенов**:
+   - Использовать `useLivekitToken(roomName)` вместо WebSocket signaling
+   - Генерировать `roomName` на основе `chatId` или `callId`
+   - Получать токен перед подключением к комнате
+
+5. **Обновить состояния**:
+   - Заменить `isInCall`, `remoteStream`, `myStream` на LiveKit состояния
+   - Использовать `room.state`, `room.participants`, `room.localParticipant`
+   - Обновить логику входящих/исходящих звонков
+
+**Пример миграции CallWrapper**:
 
 ```typescript
-import { getCalls } from '@workspace/nest-api';
+// Новый CallWrapper с LiveKit
+import { LiveKitRoom, useRoom, RoomAudioRenderer } from '@livekit/components-react';
+import { useLivekitToken } from '@/app/network/calls/useLivekitToken';
 
-const api = getCalls();
-const { token } = await api.callsGetToken({
-    roomName: 'chat-123',
-    userId: currentUser.id
-});
+const CallWrapperWidgetContent = ({ children }) => {
+    const call = useGlobalCallContext();
+    const { isInCall, callType, remoteUserId, chatId } = call;
+
+    // Получаем токен для комнаты
+    const roomName = chatId ? `chat-${chatId}` : null;
+    const { data: tokenData, isLoading } = useLivekitToken(roomName);
+
+    if (isInCall && tokenData?.token) {
+        return (
+            <LiveKitRoom
+                video={callType === 'VIDEO'}
+                audio={true}
+                token={tokenData.token}
+                serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL}
+                connect={true}
+            >
+                <CallWrapperContent />
+                <RoomAudioRenderer />
+            </LiveKitRoom>
+        );
+    }
+
+    return <>{children}</>;
+};
+
+const CallWrapperContent = () => {
+    const room = useRoom();
+    const call = useGlobalCallContext();
+    const { callType } = call;
+
+    // Получаем участников из LiveKit
+    const participants = Array.from(room.participants.values());
+    const localParticipant = room.localParticipant;
+
+    if (callType === 'VIDEO') {
+        return (
+            <div className="fixed inset-0 z-50 bg-black">
+                {/* Удаленное видео */}
+                {participants.map(participant => (
+                    <ParticipantTile
+                        key={participant.identity}
+                        participant={participant}
+                        className="absolute inset-0"
+                    />
+                ))}
+
+                {/* Локальное видео */}
+                <ParticipantTile
+                    participant={localParticipant}
+                    className="absolute bottom-24 right-4 w-56 h-72"
+                />
+
+                {/* Контролы */}
+                <CallControls room={room} />
+            </div>
+        );
+    }
+
+    // Аудио звонок
+    return (
+        <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+            <CallControls room={room} />
+        </div>
+    );
+};
 ```
 
 ---

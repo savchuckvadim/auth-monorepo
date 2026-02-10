@@ -106,3 +106,4 @@ pnpm dev
 
 - [Frontend документация](./frontend.md)
 - [Swagger API](https://api.sociopath-network.ru/docs/api)
+- [Задачи](./backend/tasks/tasks.md) - список задач для выполнения
