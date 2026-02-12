@@ -4,6 +4,19 @@
 
 Текущая реализация системы аутентификации не поддерживает работу пользователя с нескольких устройств одновременно. При логине с нового устройства (например, React Native) старый refresh token из браузера инвалидируется, что приводит к ошибке "Refresh token not found" при попытке обновить токен на старом устройстве.
 
+### Конкретная проблема пользователя
+
+**Сценарий воспроизведения**:
+1. **Пользователь логинится в браузере 1** → создается refresh token A, сохраняется в БД
+2. **Пользователь логинится в браузере 2** → создается refresh token B, который **заменяет** токен A в БД (из-за `saveToken` который обновляет существующий)
+3. **Пользователь разлогинивается с браузера 1** → удаляется refresh token B (так как в cookie браузера 1 может быть токен B после обновления страницы, или происходит путаница)
+4. **Пользователь обновляет страницу в браузере 1** → frontend пытается обновить токен через `/api/auth/refresh` → получает ошибку `"Invalid refresh token"` (resultCode: 1)
+
+**Дополнительные проблемы**:
+- Logout не работает с первого раза (возможно, из-за проблем с cookie или асинхронности)
+- После logout при обновлении страницы возникает ошибка "Invalid refresh token"
+- Нет констант/enums для всех возможных ошибок аутентификации
+
 ### Текущее поведение
 
 1. **Пользователь логинится в браузере** → создается refresh token A, сохраняется в БД
@@ -17,6 +30,8 @@
 - Таблица `tokens` хранит только **один** refresh token на пользователя (связь один-к-одному через `userId`)
 - Метод `saveToken` в `TokenPrismaRepository` **обновляет** существующий токен вместо создания нового
 - Метод `refreshToken` в `AuthService` ищет токен по `userId`, а не по самому `refreshToken`, что небезопасно
+- Метод `logout` не проверяет существование токена перед удалением, что может привести к ошибкам
+- Нет централизованных констант для всех ошибок аутентификации - используются строковые литералы
 
 ## Текущая архитектура
 
@@ -312,12 +327,14 @@ export class TokenPrismaRepository implements TokenRepository {
         });
     }
 
-    async removeToken(refreshToken: string): Promise<Token> {
+    async removeToken(refreshToken: string): Promise<Token | null> {
+        // ✅ Проверяем существование токена перед удалением
         const token = await this.prisma.token.findFirst({
             where: { refreshToken },
         });
         if (!token) {
-            throw new NotFoundException('Token not found');
+            // ✅ Не выбрасываем ошибку, если токен уже удален (идемпотентность)
+            return null;
         }
         return await this.prisma.token.delete({
             where: { id: token.id },
@@ -375,6 +392,11 @@ export class TokenService {
         return await this.tokenRepository.findTokenByUserId(userId);
     }
 
+    public async removeToken(refreshToken: string) {
+        // ✅ Возвращаем null если токен не найден (идемпотентность)
+        return await this.tokenRepository.removeToken(refreshToken);
+    }
+
     public async removeAllUserTokens(userId: string) {
         return await this.tokenRepository.removeAllUserTokens(userId);
     }
@@ -385,7 +407,62 @@ export class TokenService {
 }
 ```
 
-#### Шаг 4: Обновить AuthService
+#### Шаг 3.1: Обновить AuthService.logout
+
+**Файл**: `apps/api/src/modules/auth/services/auth.service.ts`
+
+**Обновить метод `logout`**:
+```typescript
+public async logout(refreshToken: string) {
+    // ✅ Проверяем существование токена перед удалением
+    if (!refreshToken) {
+        // Если токена нет, просто возвращаем true (идемпотентность)
+        return true;
+    }
+
+    // ✅ Удаляем токен (может вернуть null, если токен уже удален)
+    await this.tokenService.removeToken(refreshToken);
+    return true;
+}
+```
+
+#### Шаг 4: Добавить константы ошибок
+
+**Файл**: `apps/api/src/modules/token/token.type.ts`
+
+**Обновить EnumAuthErrorCode**:
+```typescript
+export enum EnumAuthErrorCode {
+    // Access Token ошибки
+    ACCESS_TOKEN_MISSING = 'ACCESS_TOKEN_MISSING',
+    ACCESS_TOKEN_EXPIRED = 'ACCESS_TOKEN_EXPIRED',
+    ACCESS_TOKEN_INVALID = 'ACCESS_TOKEN_INVALID',
+    ACCESS_TOKEN_ERROR = 'ACCESS_TOKEN_ERROR',
+
+    // Refresh Token ошибки
+    REFRESH_TOKEN_MISSING = 'REFRESH_TOKEN_MISSING',
+    REFRESH_TOKEN_EXPIRED = 'REFRESH_TOKEN_EXPIRED',
+    REFRESH_TOKEN_INVALID = 'REFRESH_TOKEN_INVALID',
+    REFRESH_TOKEN_NOT_FOUND = 'REFRESH_TOKEN_NOT_FOUND',
+    REFRESH_TOKEN_ERROR = 'REFRESH_TOKEN_ERROR',
+
+    // User ошибки
+    USER_NOT_FOUND = 'USER_NOT_FOUND',
+    USER_NOT_ACTIVATED = 'USER_NOT_ACTIVATED',
+    INVALID_PASSWORD = 'INVALID_PASSWORD',
+
+    // Token ошибки
+    TOKEN_USER_MISMATCH = 'TOKEN_USER_MISMATCH',
+    TOKEN_NOT_FOUND = 'TOKEN_NOT_FOUND',
+}
+
+export enum EnumAuthSecrets {
+    ACCESS_TOKEN = 'JWT_ACCESS_SECRET',
+    REFRESH_TOKEN = 'JWT_REFRESH_SECRET',
+}
+```
+
+#### Шаг 5: Обновить AuthService
 
 **Файл**: `apps/api/src/modules/auth/services/auth.service.ts`
 
@@ -394,28 +471,28 @@ export class TokenService {
 public async refreshToken(refreshToken: string, res: Response, req?: Request) {
     if (!refreshToken) {
         this.cookieService.clearAuthCookies(res as Response);
-        throw new UnauthorizedException('Refresh token not found');
+        throw new UnauthorizedException(EnumAuthErrorCode.REFRESH_TOKEN_MISSING);
     }
 
     // ✅ Валидируем токен
     const userData = await this.tokenService.validateRefreshToken(refreshToken);
     if (!userData?.userId) {
         this.cookieService.clearAuthCookies(res as Response);
-        throw new UnauthorizedException('Invalid refresh token');
+        throw new UnauthorizedException(EnumAuthErrorCode.REFRESH_TOKEN_INVALID);
     }
 
     // ✅ Ищем токен в БД по самому refreshToken
     const tokenFromDb = await this.tokenService.findToken(refreshToken);
     if (!tokenFromDb) {
         this.cookieService.clearAuthCookies(res as Response);
-        throw new UnauthorizedException('Refresh token not found');
+        throw new UnauthorizedException(EnumAuthErrorCode.REFRESH_TOKEN_NOT_FOUND);
     }
 
     // ✅ Проверяем, что токен не истек (дополнительная проверка)
     if (tokenFromDb.expiresAt && tokenFromDb.expiresAt < new Date()) {
         await this.tokenService.removeToken(refreshToken);
         this.cookieService.clearAuthCookies(res as Response);
-        throw new UnauthorizedException('Refresh token expired');
+        throw new UnauthorizedException(EnumAuthErrorCode.REFRESH_TOKEN_EXPIRED);
     }
 
     // ✅ Проверяем, что токен принадлежит правильному пользователю
@@ -471,15 +548,15 @@ private async generateTokens(
 public async login(loginDto: LoginDto, req?: Request) {
     const user = await this.userService.getUserByEmail(loginDto.email);
     if (!user) {
-        throw new UnauthorizedException('User not found');
+        throw new UnauthorizedException(EnumAuthErrorCode.USER_NOT_FOUND);
     }
     if (!user.isAcivated) {
-        throw new UnauthorizedException('User not activated');
+        throw new UnauthorizedException(EnumAuthErrorCode.USER_NOT_ACTIVATED);
     }
 
     const isPasswordValid = await this.userService.comparePassword(loginDto.password, user.password);
     if (!isPasswordValid) {
-        throw new UnauthorizedException('Invalid password');
+        throw new UnauthorizedException(EnumAuthErrorCode.INVALID_PASSWORD);
     }
 
     // ✅ Передаем информацию об устройстве
@@ -510,7 +587,7 @@ public async registration(registerDto: CreateUserDto, req?: Request): Promise<Au
 }
 ```
 
-#### Шаг 5: Обновить AuthController
+#### Шаг 6: Обновить AuthController
 
 **Файл**: `apps/api/src/modules/auth/controllers/auth.controller.ts`
 
@@ -550,15 +627,27 @@ async refreshToken(
     const refreshToken = this.cookieService.getRefreshToken(req);
     if (!refreshToken) {
         this.cookieService.clearAuthCookies(res);
-        throw new UnauthorizedException('Refresh token not found');
+        throw new UnauthorizedException(EnumAuthErrorCode.REFRESH_TOKEN_MISSING);
     }
     // ✅ Передаем Request в refreshToken
     const user = await this.authService.refreshToken(refreshToken, res, req);
     return user;
 }
+
+@Get('logout')
+async logout(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response
+): Promise<boolean> {
+    const refreshToken = this.cookieService.getRefreshToken(req);
+    // ✅ Logout идемпотентен - если токена нет, просто очищаем cookies
+    await this.authService.logout(refreshToken);
+    this.cookieService.clearAuthCookies(res);
+    return true;
+}
 ```
 
-#### Шаг 6: Добавить задачу для очистки истекших токенов (опционально)
+#### Шаг 7: Добавить задачу для очистки истекших токенов
 
 **Файл**: `apps/api/src/modules/token/token-cleanup.service.ts` (новый файл)
 
@@ -607,6 +696,37 @@ import { ScheduleModule } from '@nestjs/schedule';
     ],
 })
 export class AppModule {}
+```
+
+#### Шаг 8: Обновить все места использования строковых ошибок
+
+**Найти и заменить все строковые литералы на константы из `EnumAuthErrorCode`**:
+
+**Файл**: `apps/api/src/modules/auth/services/auth.service.ts`
+```typescript
+import { EnumAuthErrorCode } from '@/modules/token/token.type';
+
+// Заменить:
+// throw new UnauthorizedException('User not found');
+// на:
+throw new UnauthorizedException(EnumAuthErrorCode.USER_NOT_FOUND);
+
+// Заменить:
+// throw new UnauthorizedException('User not activated');
+// на:
+throw new UnauthorizedException(EnumAuthErrorCode.USER_NOT_ACTIVATED);
+
+// Заменить:
+// throw new UnauthorizedException('Invalid password');
+// на:
+throw new UnauthorizedException(EnumAuthErrorCode.INVALID_PASSWORD);
+```
+
+**Файл**: `apps/api/src/modules/auth/controllers/auth.controller.ts`
+```typescript
+import { EnumAuthErrorCode } from '@/modules/token/token.type';
+
+// Заменить все строковые ошибки на константы
 ```
 
 ### 3. Изменения на Frontend
@@ -756,6 +876,7 @@ AuthModule
 
 - [ ] Проверить, что refresh token interceptor работает корректно
 - [ ] Опционально: добавить `x-device-id` заголовок в axios
+- [ ] Обновить обработку ошибок для новых кодов ошибок из `EnumAuthErrorCode`
 
 ### База данных
 
@@ -769,6 +890,21 @@ AuthModule
 2. **Удаление сессий**: Добавить endpoint для удаления конкретной сессии по `deviceId`
 3. **Ограничение сессий**: Ограничить количество одновременных сессий (например, максимум 5)
 4. **Уведомления**: Отправлять уведомление пользователю при логине с нового устройства
+5. **Логирование**: Добавить логирование всех операций с токенами для отладки
+
+## Решение проблемы с logout
+
+### Проблема
+После logout при обновлении страницы возникает ошибка "Invalid refresh token". Это происходит потому что:
+1. При logout удаляется токен из БД
+2. При обновлении страницы frontend пытается обновить токен через `/api/auth/refresh`
+3. Токен уже удален → ошибка "Invalid refresh token"
+
+### Решение
+1. **Идемпотентность logout**: Если токен уже удален, не выбрасывать ошибку
+2. **Проверка существования токена**: В `removeToken` возвращать `null` если токен не найден
+3. **Очистка cookies**: Всегда очищать cookies при logout, даже если токен не найден
+4. **Обработка на frontend**: При получении ошибки "Invalid refresh token" после logout, перенаправлять на страницу логина
 
 ## Связанные файлы
 
@@ -786,3 +922,406 @@ AuthModule
 
 ### Документация
 - `documentation/backend/docs/auth.md` (обновить после реализации)
+
+## Решение проблемы с logout и "Invalid refresh token"
+
+### Проблема
+
+**Сценарий воспроизведения**:
+1. Пользователь логинится в браузере 1 → создается refresh token A
+2. Пользователь логинится в браузере 2 → создается refresh token B (заменяет токен A в БД)
+3. Пользователь разлогинивается с браузера 1 → удаляется refresh token B (так как в cookie браузера 1 может быть токен B после обновления страницы)
+4. Пользователь обновляет страницу в браузере 1 → frontend пытается обновить токен через `/api/auth/refresh` → получает ошибку `"Invalid refresh token"` (resultCode: 1)
+
+**Дополнительные проблемы**:
+- Logout не работает с первого раза (возможно, из-за проблем с cookie или асинхронности)
+- После logout при обновлении страницы возникает ошибка "Invalid refresh token"
+- Нет констант/enums для всех возможных ошибок аутентификации
+
+### Решение
+
+#### 1. Идемпотентность logout
+
+**Проблема**: Если токен уже удален или не существует, `removeToken` выбрасывает ошибку `NotFoundException`.
+
+**Решение**: Изменить `removeToken` чтобы возвращать `null` если токен не найден (идемпотентность):
+
+```typescript
+// apps/api/src/modules/token/token.prisma.repository.ts
+async removeToken(refreshToken: string): Promise<Token | null> {
+    const token = await this.prisma.token.findFirst({
+        where: { refreshToken },
+    });
+    if (!token) {
+        // ✅ Не выбрасываем ошибку, если токен уже удален (идемпотентность)
+        return null;
+    }
+    return await this.prisma.token.delete({
+        where: { id: token.id },
+    });
+}
+```
+
+#### 2. Обновить AuthService.logout
+
+**Проблема**: `logout` не обрабатывает случай, когда токен уже удален.
+
+**Решение**: Сделать logout идемпотентным:
+
+```typescript
+// apps/api/src/modules/auth/services/auth.service.ts
+public async logout(refreshToken: string) {
+    // ✅ Проверяем существование токена перед удалением
+    if (!refreshToken) {
+        // Если токена нет, просто возвращаем true (идемпотентность)
+        return true;
+    }
+
+    // ✅ Удаляем токен (может вернуть null, если токен уже удален)
+    await this.tokenService.removeToken(refreshToken);
+    return true;
+}
+```
+
+#### 3. Обновить AuthController.logout
+
+**Проблема**: При logout не всегда очищаются cookies, если токен не найден.
+
+**Решение**: Всегда очищать cookies при logout:
+
+```typescript
+// apps/api/src/modules/auth/controllers/auth.controller.ts
+@Get('logout')
+async logout(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response
+): Promise<boolean> {
+    const refreshToken = this.cookieService.getRefreshToken(req);
+    // ✅ Logout идемпотентен - если токена нет, просто очищаем cookies
+    await this.authService.logout(refreshToken);
+    this.cookieService.clearAuthCookies(res);
+    return true;
+}
+```
+
+#### 4. Добавить константы ошибок
+
+**Проблема**: Используются строковые литералы для ошибок, нет централизованного управления.
+
+**Решение**: Расширить `EnumAuthErrorCode` всеми возможными ошибками:
+
+```typescript
+// apps/api/src/modules/token/token.type.ts
+export enum EnumAuthErrorCode {
+    // Access Token ошибки
+    ACCESS_TOKEN_MISSING = 'ACCESS_TOKEN_MISSING',
+    ACCESS_TOKEN_EXPIRED = 'ACCESS_TOKEN_EXPIRED',
+    ACCESS_TOKEN_INVALID = 'ACCESS_TOKEN_INVALID',
+    ACCESS_TOKEN_ERROR = 'ACCESS_TOKEN_ERROR',
+
+    // Refresh Token ошибки
+    REFRESH_TOKEN_MISSING = 'REFRESH_TOKEN_MISSING',
+    REFRESH_TOKEN_EXPIRED = 'REFRESH_TOKEN_EXPIRED',
+    REFRESH_TOKEN_INVALID = 'REFRESH_TOKEN_INVALID',
+    REFRESH_TOKEN_NOT_FOUND = 'REFRESH_TOKEN_NOT_FOUND',
+    REFRESH_TOKEN_ERROR = 'REFRESH_TOKEN_ERROR',
+
+    // User ошибки
+    USER_NOT_FOUND = 'USER_NOT_FOUND',
+    USER_NOT_ACTIVATED = 'USER_NOT_ACTIVATED',
+    INVALID_PASSWORD = 'INVALID_PASSWORD',
+
+    // Token ошибки
+    TOKEN_USER_MISMATCH = 'TOKEN_USER_MISMATCH',
+    TOKEN_NOT_FOUND = 'TOKEN_NOT_FOUND',
+}
+```
+
+#### 5. Заменить все строковые ошибки на константы
+
+**Файл**: `apps/api/src/modules/auth/services/auth.service.ts`
+
+```typescript
+import { EnumAuthErrorCode } from '@/modules/token/token.type';
+
+// Заменить:
+// throw new UnauthorizedException('User not found');
+// на:
+throw new UnauthorizedException(EnumAuthErrorCode.USER_NOT_FOUND);
+
+// Заменить:
+// throw new UnauthorizedException('User not activated');
+// на:
+throw new UnauthorizedException(EnumAuthErrorCode.USER_NOT_ACTIVATED);
+
+// Заменить:
+// throw new UnauthorizedException('Invalid password');
+// на:
+throw new UnauthorizedException(EnumAuthErrorCode.INVALID_PASSWORD);
+
+// Заменить:
+// throw new UnauthorizedException('Refresh token not found');
+// на:
+throw new UnauthorizedException(EnumAuthErrorCode.REFRESH_TOKEN_MISSING);
+
+// Заменить:
+// throw new UnauthorizedException('Invalid refresh token');
+// на:
+throw new UnauthorizedException(EnumAuthErrorCode.REFRESH_TOKEN_INVALID);
+```
+
+**Файл**: `apps/api/src/modules/auth/controllers/auth.controller.ts`
+
+```typescript
+import { EnumAuthErrorCode } from '@/modules/token/token.type';
+
+// Заменить все строковые ошибки на константы
+```
+
+### Тестирование решения
+
+1. **Логин с двух браузеров**:
+   - Логин в браузере 1 → должен работать
+   - Логин в браузере 2 → должен работать
+   - Оба токена должны существовать в БД
+
+2. **Logout**:
+   - Logout в браузере 1 → должен удалить только токен браузера 1
+   - Logout в браузере 2 → должен удалить только токен браузера 2
+   - Повторный logout → не должен выбрасывать ошибку (идемпотентность)
+
+3. **Обновление страницы после logout**:
+   - После logout обновить страницу → должен перенаправить на страницу логина
+   - Не должно быть ошибки "Invalid refresh token"
+
+4. **Обработка ошибок**:
+   - Все ошибки должны использовать константы из `EnumAuthErrorCode`
+   - Frontend должен корректно обрабатывать все коды ошибок
+
+## Решение проблемы на Frontend
+
+### Проблема
+
+**Сценарий**:
+1. Пользователь разлогинивается → токены удаляются из БД, cookies очищаются
+2. Пользователь обновляет страницу → middleware видит отсутствие токенов → редирект на `/auth/login` ✅
+3. **НО**: Если cookies не очистились полностью или остались старые токены:
+   - Middleware видит токены в cookies → пропускает на защищенную страницу
+   - Страница загружается и делает запрос к API
+   - API возвращает 401 (токен невалидный)
+   - Axios interceptor пытается refresh → получает ошибку "Invalid refresh token"
+   - **ПРОБЛЕМА**: Interceptor просто выбрасывает ошибку, НЕ ДЕЛАЕТ РЕДИРЕКТ на `/auth/login`
+   - Пользователь остается на странице с ошибкой
+
+### Корневая причина
+
+1. **Axios Interceptor** (`packages/nest-api/src/lib/back-api.ts`):
+   - При ошибке refresh просто логирует "НЕ АВТОРИЗОВАН" и выбрасывает ошибку
+   - НЕ ДЕЛАЕТ РЕДИРЕКТ на `/auth/login`
+   - НЕ ОЧИЩАЕТ cookies
+
+2. **Next.js Middleware** (`apps/front/middleware.ts`):
+   - Проверяет только наличие токенов в cookies (не валидность!)
+   - Если токены есть → пропускает на защищенную страницу
+   - НО токены могут быть невалидными (удалены из БД после logout)
+
+### Решение
+
+#### Шаг 1: Обновить Axios Interceptor
+
+**Файл**: `packages/nest-api/src/lib/back-api.ts`
+
+**Проблема**: При ошибке refresh interceptor не делает редирект и не очищает cookies.
+
+**Решение**: Добавить редирект и очистку cookies при ошибке refresh:
+
+```typescript
+import { AUTH_ACCESS_TOKEN_NAME_PUBLIC, AUTH_REFRESH_TOKEN_NAME_PUBLIC } from './consts/auth.consts';
+
+$api.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        // Проверяем, что это не запрос на refresh
+        const isRefresh = error.response?.request?.responseURL?.includes('auth/refresh');
+
+        // Если получили 401 и это не запрос на refresh
+        if (error.response?.status === 401 && error.config && !isRefresh) {
+            const originalRequest = error.config;
+
+            try {
+                // Пытаемся обновить токен
+                const res = await $api.post('/api/auth/refresh');
+
+                if (res.data.resultCode === EResultCode.SUCCESS) {
+                    // Повторяем оригинальный запрос
+                    return $api(originalRequest);
+                }
+            } catch (refreshError) {
+                // ✅ Ошибка refresh - токен невалидный или истек
+                console.log('НЕ АВТОРИЗОВАН - токен невалидный');
+
+                // ✅ Очищаем cookies на клиенте
+                if (typeof document !== 'undefined') {
+                    // Удаляем cookies
+                    document.cookie = `${AUTH_ACCESS_TOKEN_NAME_PUBLIC}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+                    document.cookie = `${AUTH_REFRESH_TOKEN_NAME_PUBLIC}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+
+                    // ✅ Редирект на страницу логина
+                    window.location.href = '/auth/login';
+                }
+
+                // Выбрасываем ошибку, чтобы компоненты могли обработать
+                throw refreshError;
+            }
+        }
+
+        // ✅ Если это ошибка refresh (401 на /auth/refresh)
+        if (error.response?.status === 401 && isRefresh) {
+            console.log('Ошибка refresh токена - редирект на логин');
+
+            // ✅ Очищаем cookies на клиенте
+            if (typeof document !== 'undefined') {
+                document.cookie = `${AUTH_ACCESS_TOKEN_NAME_PUBLIC}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+                document.cookie = `${AUTH_REFRESH_TOKEN_NAME_PUBLIC}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+
+                // ✅ Редирект на страницу логина
+                window.location.href = '/auth/login';
+            }
+        }
+
+        throw error;
+    }
+);
+```
+
+**Альтернативное решение** (более чистое): Создать утилиту для очистки cookies и редиректа:
+
+**Файл**: `packages/nest-api/src/lib/auth-utils.ts` (новый файл)
+
+```typescript
+import { AUTH_ACCESS_TOKEN_NAME_PUBLIC, AUTH_REFRESH_TOKEN_NAME_PUBLIC } from '../consts/auth.consts';
+
+/**
+ * Очищает auth cookies и редиректит на страницу логина
+ */
+export const clearAuthAndRedirect = () => {
+    if (typeof document === 'undefined') {
+        return; // SSR
+    }
+
+    // Очищаем cookies
+    const cookieOptions = 'expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    document.cookie = `${AUTH_ACCESS_TOKEN_NAME_PUBLIC}=; ${cookieOptions}`;
+    document.cookie = `${AUTH_REFRESH_TOKEN_NAME_PUBLIC}=; ${cookieOptions}`;
+
+    // Редирект на страницу логина
+    window.location.href = '/auth/login';
+};
+```
+
+**Обновить interceptor**:
+
+```typescript
+import { clearAuthAndRedirect } from './auth-utils';
+
+$api.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const isRefresh = error.response?.request?.responseURL?.includes('auth/refresh');
+
+        if (error.response?.status === 401 && error.config && !isRefresh) {
+            const originalRequest = error.config;
+
+            try {
+                const res = await $api.post('/api/auth/refresh');
+                if (res.data.resultCode === EResultCode.SUCCESS) {
+                    return $api(originalRequest);
+                }
+            } catch (refreshError) {
+                // ✅ Ошибка refresh - очищаем cookies и редиректим
+                clearAuthAndRedirect();
+                throw refreshError;
+            }
+        }
+
+        // ✅ Если это ошибка refresh (401 на /auth/refresh)
+        if (error.response?.status === 401 && isRefresh) {
+            clearAuthAndRedirect();
+        }
+
+        throw error;
+    }
+);
+```
+
+#### Шаг 2: Улучшить Middleware (опционально)
+
+**Проблема**: Middleware проверяет только наличие токенов, а не их валидность.
+
+**Решение**: Можно добавить проверку валидности токенов, но это требует запроса к API, что может замедлить middleware.
+
+**Альтернатива**: Middleware остается как есть (проверяет только наличие), а валидация происходит на уровне API и обрабатывается через interceptor.
+
+**Файл**: `apps/front/middleware.ts` (без изменений, но можно добавить комментарий):
+
+```typescript
+export async function middleware(req: NextRequest) {
+    const accessToken = await req.cookies.get(AUTH_ACCESS_TOKEN_NAME_PUBLIC);
+    const refreshToken = await req.cookies.get(AUTH_REFRESH_TOKEN_NAME_PUBLIC);
+
+    const hasToken = accessToken || refreshToken;
+    // ⚠️ ВАЖНО: Middleware проверяет только наличие токенов, не валидность
+    // Валидация происходит на уровне API и обрабатывается через axios interceptor
+
+    // ... остальной код
+}
+```
+
+#### Шаг 3: Обработка ошибок в компонентах (опционально)
+
+Если нужно обрабатывать ошибки аутентификации в компонентах:
+
+**Файл**: `apps/front/modules/shared/lib/hooks/useAuthError.ts` (новый файл)
+
+```typescript
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { clearAuthAndRedirect } from '@workspace/nest-api';
+
+export const useAuthError = (error: Error | null) => {
+    const router = useRouter();
+
+    useEffect(() => {
+        if (error && error.message?.includes('Invalid refresh token')) {
+            clearAuthAndRedirect();
+        }
+    }, [error]);
+};
+```
+
+### Тестирование решения на Frontend
+
+1. **Logout и обновление страницы**:
+   - Logout → cookies должны очиститься
+   - Обновить страницу → должен быть редирект на `/auth/login`
+   - Не должно быть ошибки "Invalid refresh token" на странице
+
+2. **Ошибка refresh токена**:
+   - Удалить токен из БД вручную
+   - Обновить страницу → должен быть редирект на `/auth/login`
+   - Cookies должны быть очищены
+
+3. **Ошибка при запросе с невалидным токеном**:
+   - Сделать запрос с невалидным токеном
+   - Interceptor должен попытаться refresh
+   - При ошибке refresh → должен быть редирект на `/auth/login`
+   - Cookies должны быть очищены
+
+### Чеклист для Frontend
+
+- [ ] Обновить axios interceptor для редиректа при ошибке refresh
+- [ ] Добавить очистку cookies при ошибке refresh
+- [ ] Создать утилиту `clearAuthAndRedirect` (опционально, но рекомендуется)
+- [ ] Протестировать сценарий logout → обновление страницы
+- [ ] Протестировать сценарий с невалидным токеном
+- [ ] Убедиться, что редирект работает корректно
