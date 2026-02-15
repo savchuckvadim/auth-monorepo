@@ -147,12 +147,12 @@ const CallOverlay = ({ callType }) => {
 
 **Что нужно изменить**:
 
-- [ ] Убрать зависимость от `useCall` hook (который использует WebRTC)
-- [ ] Создать новый `useLiveKitCall` hook для работы с LiveKit
-- [ ] Обновить контекст для работы с LiveKit состояниями:
+- [x]  Убрать зависимость от `useCall` hook (который использует WebRTC)
+- [x]  Создать новый `useLiveKitCall` hook для работы с LiveKit
+- [x] Обновить контекст для работы с LiveKit состояниями:
   - Заменить `myStream` и `remoteStream` на `room` и `participants`
   - Обновить методы управления (`handleToggleAudio`, `handleToggleVideo`) для работы с LiveKit API
-- [ ] Обновить логику входящих звонков (возможно, оставить WebSocket для уведомлений, но использовать LiveKit для медиа)
+- [x]  Обновить логику входящих звонков (возможно, оставить WebSocket для уведомлений, но использовать LiveKit для медиа)
 
 ### Этап 4: Обновление хуков звонков
 
@@ -164,10 +164,10 @@ const CallOverlay = ({ callType }) => {
 
 **Что нужно сделать**:
 
-- [ ] Создать новый `useLiveKitCall` hook вместо `useCall`
-- [ ] Убрать `useCallEngine` (заменить на `useRoom` из LiveKit)
-- [ ] Убрать `useCallMedia` (LiveKit управляет медиа автоматически)
-- [ ] Обновить `useCallControls` для работы с `room.localParticipant`:
+- [x]  Создать новый `useLiveKitCall` hook вместо `useCall`
+- [x] Убрать `useCallEngine` (заменить на `useRoom` из LiveKit)
+- [x]  Убрать `useCallMedia` (LiveKit управляет медиа автоматически)
+- [x]  Обновить `useCallControls` для работы с `room.localParticipant`:
   ```typescript
   const toggleAudio = () => {
       room.localParticipant.setMicrophoneEnabled(!room.localParticipant.isMicrophoneEnabled);
