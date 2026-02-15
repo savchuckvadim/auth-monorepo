@@ -2,11 +2,9 @@
 
 import React from 'react';
 import { Card, CardContent } from '@workspace/ui/components/card';
-import { Button } from '@workspace/ui/components/button';
-import { MessageCircle, Lock } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 import { Chat, ChatType, ChatMemberDto } from '../../lib/types/chats.types';
-import { useRouter } from 'next/navigation';
-
+//TODO: компонента походу нишде не используется и надо ее удалить
 interface ChatCardProps {
     chat: Chat;
     currentUserId: string;
@@ -15,7 +13,7 @@ interface ChatCardProps {
 }
 
 export const ChatCard = ({ chat, currentUserId, isSelected, onClick }: ChatCardProps) => {
-    const router = useRouter();
+
     const otherMembers = chat.members?.filter(
         (m: ChatMemberDto) => m.userId !== currentUserId
     ) || [];
@@ -26,7 +24,7 @@ export const ChatCard = ({ chat, currentUserId, isSelected, onClick }: ChatCardP
 
     return (
         <Card
-            className={`mb-2 cursor-pointer hover:bg-accent transition-colors ${isSelected ? 'bg-accent' : '' }`}
+            className={`mb-2 cursor-pointer hover:bg-accent transition-colors ${isSelected ? 'bg-accent' : ''}`}
             onClick={onClick}
         >
             <CardContent className="p-4">
@@ -43,19 +41,7 @@ export const ChatCard = ({ chat, currentUserId, isSelected, onClick }: ChatCardP
                         )}
                     </div>
                     <div className="flex items-center gap-2">
-                        {chat.type === ChatType.PRIVATE && (
-                            <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    router.push(`/network/secret-chat/${chat.id}`);
-                                }}
-                                title="Секретный чат"
-                            >
-                                <Lock className="h-4 w-4" />
-                            </Button>
-                        )}
+
                         {chat.unreadCount && chat.unreadCount > 0 && (
                             <span className="bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
                                 {chat.unreadCount}

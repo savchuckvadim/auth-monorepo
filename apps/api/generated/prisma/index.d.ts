@@ -8617,7 +8617,7 @@ export namespace Prisma {
 
   export type CallGroupByOutputType = {
     id: string
-    chatId: string | null
+    chatId: string
     initiatorId: string
     receiverId: string | null
     type: $Enums.CallType
@@ -8658,7 +8658,7 @@ export namespace Prisma {
     endedAt?: boolean
     duration?: boolean
     createdAt?: boolean
-    chat?: boolean | Call$chatArgs<ExtArgs>
+    chat?: boolean | ChatDefaultArgs<ExtArgs>
     initiator?: boolean | UserDefaultArgs<ExtArgs>
     receiver?: boolean | Call$receiverArgs<ExtArgs>
   }, ExtArgs["result"]["call"]>
@@ -8680,7 +8680,7 @@ export namespace Prisma {
 
   export type CallOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "chatId" | "initiatorId" | "receiverId" | "type" | "status" | "startedAt" | "endedAt" | "duration" | "createdAt", ExtArgs["result"]["call"]>
   export type CallInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    chat?: boolean | Call$chatArgs<ExtArgs>
+    chat?: boolean | ChatDefaultArgs<ExtArgs>
     initiator?: boolean | UserDefaultArgs<ExtArgs>
     receiver?: boolean | Call$receiverArgs<ExtArgs>
   }
@@ -8688,13 +8688,13 @@ export namespace Prisma {
   export type $CallPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Call"
     objects: {
-      chat: Prisma.$ChatPayload<ExtArgs> | null
+      chat: Prisma.$ChatPayload<ExtArgs>
       initiator: Prisma.$UserPayload<ExtArgs>
       receiver: Prisma.$UserPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      chatId: string | null
+      chatId: string
       initiatorId: string
       receiverId: string | null
       type: $Enums.CallType
@@ -9043,7 +9043,7 @@ export namespace Prisma {
    */
   export interface Prisma__CallClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    chat<T extends Call$chatArgs<ExtArgs> = {}>(args?: Subset<T, Call$chatArgs<ExtArgs>>): Prisma__ChatClient<$Result.GetResult<Prisma.$ChatPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    chat<T extends ChatDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ChatDefaultArgs<ExtArgs>>): Prisma__ChatClient<$Result.GetResult<Prisma.$ChatPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     initiator<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     receiver<T extends Call$receiverArgs<ExtArgs> = {}>(args?: Subset<T, Call$receiverArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
@@ -9425,25 +9425,6 @@ export namespace Prisma {
      * Limit how many Calls to delete.
      */
     limit?: number
-  }
-
-  /**
-   * Call.chat
-   */
-  export type Call$chatArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Chat
-     */
-    select?: ChatSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Chat
-     */
-    omit?: ChatOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ChatInclude<ExtArgs> | null
-    where?: ChatWhereInput
   }
 
   /**
@@ -14341,7 +14322,7 @@ export namespace Prisma {
     OR?: CallWhereInput[]
     NOT?: CallWhereInput | CallWhereInput[]
     id?: StringFilter<"Call"> | string
-    chatId?: StringNullableFilter<"Call"> | string | null
+    chatId?: StringFilter<"Call"> | string
     initiatorId?: StringFilter<"Call"> | string
     receiverId?: StringNullableFilter<"Call"> | string | null
     type?: EnumCallTypeFilter<"Call"> | $Enums.CallType
@@ -14350,14 +14331,14 @@ export namespace Prisma {
     endedAt?: DateTimeNullableFilter<"Call"> | Date | string | null
     duration?: IntNullableFilter<"Call"> | number | null
     createdAt?: DateTimeFilter<"Call"> | Date | string
-    chat?: XOR<ChatNullableScalarRelationFilter, ChatWhereInput> | null
+    chat?: XOR<ChatScalarRelationFilter, ChatWhereInput>
     initiator?: XOR<UserScalarRelationFilter, UserWhereInput>
     receiver?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
   }
 
   export type CallOrderByWithRelationInput = {
     id?: SortOrder
-    chatId?: SortOrderInput | SortOrder
+    chatId?: SortOrder
     initiatorId?: SortOrder
     receiverId?: SortOrderInput | SortOrder
     type?: SortOrder
@@ -14377,7 +14358,7 @@ export namespace Prisma {
     AND?: CallWhereInput | CallWhereInput[]
     OR?: CallWhereInput[]
     NOT?: CallWhereInput | CallWhereInput[]
-    chatId?: StringNullableFilter<"Call"> | string | null
+    chatId?: StringFilter<"Call"> | string
     initiatorId?: StringFilter<"Call"> | string
     receiverId?: StringNullableFilter<"Call"> | string | null
     type?: EnumCallTypeFilter<"Call"> | $Enums.CallType
@@ -14386,14 +14367,14 @@ export namespace Prisma {
     endedAt?: DateTimeNullableFilter<"Call"> | Date | string | null
     duration?: IntNullableFilter<"Call"> | number | null
     createdAt?: DateTimeFilter<"Call"> | Date | string
-    chat?: XOR<ChatNullableScalarRelationFilter, ChatWhereInput> | null
+    chat?: XOR<ChatScalarRelationFilter, ChatWhereInput>
     initiator?: XOR<UserScalarRelationFilter, UserWhereInput>
     receiver?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null
   }, "id">
 
   export type CallOrderByWithAggregationInput = {
     id?: SortOrder
-    chatId?: SortOrderInput | SortOrder
+    chatId?: SortOrder
     initiatorId?: SortOrder
     receiverId?: SortOrderInput | SortOrder
     type?: SortOrder
@@ -14414,7 +14395,7 @@ export namespace Prisma {
     OR?: CallScalarWhereWithAggregatesInput[]
     NOT?: CallScalarWhereWithAggregatesInput | CallScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Call"> | string
-    chatId?: StringNullableWithAggregatesFilter<"Call"> | string | null
+    chatId?: StringWithAggregatesFilter<"Call"> | string
     initiatorId?: StringWithAggregatesFilter<"Call"> | string
     receiverId?: StringNullableWithAggregatesFilter<"Call"> | string | null
     type?: EnumCallTypeWithAggregatesFilter<"Call"> | $Enums.CallType
@@ -15250,14 +15231,14 @@ export namespace Prisma {
     endedAt?: Date | string | null
     duration?: number | null
     createdAt?: Date | string
-    chat?: ChatCreateNestedOneWithoutCallsInput
+    chat: ChatCreateNestedOneWithoutCallsInput
     initiator: UserCreateNestedOneWithoutSentCallsInput
     receiver?: UserCreateNestedOneWithoutReceivedCallsInput
   }
 
   export type CallUncheckedCreateInput = {
     id?: string
-    chatId?: string | null
+    chatId: string
     initiatorId: string
     receiverId?: string | null
     type?: $Enums.CallType
@@ -15276,14 +15257,14 @@ export namespace Prisma {
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    chat?: ChatUpdateOneWithoutCallsNestedInput
+    chat?: ChatUpdateOneRequiredWithoutCallsNestedInput
     initiator?: UserUpdateOneRequiredWithoutSentCallsNestedInput
     receiver?: UserUpdateOneWithoutReceivedCallsNestedInput
   }
 
   export type CallUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    chatId?: NullableStringFieldUpdateOperationsInput | string | null
+    chatId?: StringFieldUpdateOperationsInput | string
     initiatorId?: StringFieldUpdateOperationsInput | string
     receiverId?: NullableStringFieldUpdateOperationsInput | string | null
     type?: EnumCallTypeFieldUpdateOperationsInput | $Enums.CallType
@@ -15296,7 +15277,7 @@ export namespace Prisma {
 
   export type CallCreateManyInput = {
     id?: string
-    chatId?: string | null
+    chatId: string
     initiatorId: string
     receiverId?: string | null
     type?: $Enums.CallType
@@ -15319,7 +15300,7 @@ export namespace Prisma {
 
   export type CallUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    chatId?: NullableStringFieldUpdateOperationsInput | string | null
+    chatId?: StringFieldUpdateOperationsInput | string
     initiatorId?: StringFieldUpdateOperationsInput | string
     receiverId?: NullableStringFieldUpdateOperationsInput | string | null
     type?: EnumCallTypeFieldUpdateOperationsInput | $Enums.CallType
@@ -16234,11 +16215,6 @@ export namespace Prisma {
     in?: $Enums.CallStatus[]
     notIn?: $Enums.CallStatus[]
     not?: NestedEnumCallStatusFilter<$PrismaModel> | $Enums.CallStatus
-  }
-
-  export type ChatNullableScalarRelationFilter = {
-    is?: ChatWhereInput | null
-    isNot?: ChatWhereInput | null
   }
 
   export type CallOrderByRelevanceInput = {
@@ -17521,12 +17497,10 @@ export namespace Prisma {
     set?: $Enums.CallStatus
   }
 
-  export type ChatUpdateOneWithoutCallsNestedInput = {
+  export type ChatUpdateOneRequiredWithoutCallsNestedInput = {
     create?: XOR<ChatCreateWithoutCallsInput, ChatUncheckedCreateWithoutCallsInput>
     connectOrCreate?: ChatCreateOrConnectWithoutCallsInput
     upsert?: ChatUpsertWithoutCallsInput
-    disconnect?: ChatWhereInput | boolean
-    delete?: ChatWhereInput | boolean
     connect?: ChatWhereUniqueInput
     update?: XOR<XOR<ChatUpdateToOneWithWhereWithoutCallsInput, ChatUpdateWithoutCallsInput>, ChatUncheckedUpdateWithoutCallsInput>
   }
@@ -18206,13 +18180,13 @@ export namespace Prisma {
     endedAt?: Date | string | null
     duration?: number | null
     createdAt?: Date | string
-    chat?: ChatCreateNestedOneWithoutCallsInput
+    chat: ChatCreateNestedOneWithoutCallsInput
     receiver?: UserCreateNestedOneWithoutReceivedCallsInput
   }
 
   export type CallUncheckedCreateWithoutInitiatorInput = {
     id?: string
-    chatId?: string | null
+    chatId: string
     receiverId?: string | null
     type?: $Enums.CallType
     status?: $Enums.CallStatus
@@ -18240,13 +18214,13 @@ export namespace Prisma {
     endedAt?: Date | string | null
     duration?: number | null
     createdAt?: Date | string
-    chat?: ChatCreateNestedOneWithoutCallsInput
+    chat: ChatCreateNestedOneWithoutCallsInput
     initiator: UserCreateNestedOneWithoutSentCallsInput
   }
 
   export type CallUncheckedCreateWithoutReceiverInput = {
     id?: string
-    chatId?: string | null
+    chatId: string
     initiatorId: string
     type?: $Enums.CallType
     status?: $Enums.CallStatus
@@ -18650,7 +18624,7 @@ export namespace Prisma {
     OR?: CallScalarWhereInput[]
     NOT?: CallScalarWhereInput | CallScalarWhereInput[]
     id?: StringFilter<"Call"> | string
-    chatId?: StringNullableFilter<"Call"> | string | null
+    chatId?: StringFilter<"Call"> | string
     initiatorId?: StringFilter<"Call"> | string
     receiverId?: StringNullableFilter<"Call"> | string | null
     type?: EnumCallTypeFilter<"Call"> | $Enums.CallType
@@ -21442,7 +21416,7 @@ export namespace Prisma {
 
   export type CallCreateManyInitiatorInput = {
     id?: string
-    chatId?: string | null
+    chatId: string
     receiverId?: string | null
     type?: $Enums.CallType
     status?: $Enums.CallStatus
@@ -21454,7 +21428,7 @@ export namespace Prisma {
 
   export type CallCreateManyReceiverInput = {
     id?: string
-    chatId?: string | null
+    chatId: string
     initiatorId: string
     type?: $Enums.CallType
     status?: $Enums.CallStatus
@@ -21674,13 +21648,13 @@ export namespace Prisma {
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    chat?: ChatUpdateOneWithoutCallsNestedInput
+    chat?: ChatUpdateOneRequiredWithoutCallsNestedInput
     receiver?: UserUpdateOneWithoutReceivedCallsNestedInput
   }
 
   export type CallUncheckedUpdateWithoutInitiatorInput = {
     id?: StringFieldUpdateOperationsInput | string
-    chatId?: NullableStringFieldUpdateOperationsInput | string | null
+    chatId?: StringFieldUpdateOperationsInput | string
     receiverId?: NullableStringFieldUpdateOperationsInput | string | null
     type?: EnumCallTypeFieldUpdateOperationsInput | $Enums.CallType
     status?: EnumCallStatusFieldUpdateOperationsInput | $Enums.CallStatus
@@ -21692,7 +21666,7 @@ export namespace Prisma {
 
   export type CallUncheckedUpdateManyWithoutInitiatorInput = {
     id?: StringFieldUpdateOperationsInput | string
-    chatId?: NullableStringFieldUpdateOperationsInput | string | null
+    chatId?: StringFieldUpdateOperationsInput | string
     receiverId?: NullableStringFieldUpdateOperationsInput | string | null
     type?: EnumCallTypeFieldUpdateOperationsInput | $Enums.CallType
     status?: EnumCallStatusFieldUpdateOperationsInput | $Enums.CallStatus
@@ -21710,13 +21684,13 @@ export namespace Prisma {
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    chat?: ChatUpdateOneWithoutCallsNestedInput
+    chat?: ChatUpdateOneRequiredWithoutCallsNestedInput
     initiator?: UserUpdateOneRequiredWithoutSentCallsNestedInput
   }
 
   export type CallUncheckedUpdateWithoutReceiverInput = {
     id?: StringFieldUpdateOperationsInput | string
-    chatId?: NullableStringFieldUpdateOperationsInput | string | null
+    chatId?: StringFieldUpdateOperationsInput | string
     initiatorId?: StringFieldUpdateOperationsInput | string
     type?: EnumCallTypeFieldUpdateOperationsInput | $Enums.CallType
     status?: EnumCallStatusFieldUpdateOperationsInput | $Enums.CallStatus
@@ -21728,7 +21702,7 @@ export namespace Prisma {
 
   export type CallUncheckedUpdateManyWithoutReceiverInput = {
     id?: StringFieldUpdateOperationsInput | string
-    chatId?: NullableStringFieldUpdateOperationsInput | string | null
+    chatId?: StringFieldUpdateOperationsInput | string
     initiatorId?: StringFieldUpdateOperationsInput | string
     type?: EnumCallTypeFieldUpdateOperationsInput | $Enums.CallType
     status?: EnumCallStatusFieldUpdateOperationsInput | $Enums.CallStatus

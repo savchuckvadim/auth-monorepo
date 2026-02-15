@@ -986,6 +986,13 @@ export const useCallEngine = (
 
     // ---------- socket events ----------
     useEffect(() => {
+        // ✅ НЕ регистрируем socket listeners если otherUserId === null (LiveKit режим)
+        // Это предотвращает инициализацию WebRTC для исходящих звонков через LiveKit
+        if (otherUserId === null) {
+            console.log('⏭️ [SOCKET EVENTS] Skipping WebRTC socket listeners (LiveKit mode)');
+            return;
+        }
+
         if (!socket) {
             console.log('⚠️ [SOCKET EVENTS] No socket available');
             return;

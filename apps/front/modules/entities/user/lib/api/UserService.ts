@@ -8,7 +8,7 @@ export class UserService {
     static async getUser(id: string): Promise<UserDto> {
         const user = await $api.userGetUser(id) as UserDto;
         console.log('🔍 [USER SERVICE] user', user);
-        debugger;
+
         return user;
     }
 

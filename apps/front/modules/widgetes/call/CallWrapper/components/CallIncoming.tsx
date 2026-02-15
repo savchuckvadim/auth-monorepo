@@ -10,9 +10,7 @@ export const CallIncoming = () => {
 
     const { user } = useUser(incomingCallFromUserId || '');
     console.log('🔍 [CALL INCOMING] user', user);
-    if (user) {
-        debugger
-    }
+  
     return (
 
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">

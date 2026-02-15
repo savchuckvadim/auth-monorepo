@@ -1,5 +1,5 @@
 /**
- * Типы для WebRTC секретных чатов
+ * Типы для принятие звонков по ws протоколу
  */
 
 export interface IncomingCallData {

@@ -94,11 +94,11 @@ export default function ChatPage() {
     };
 
     return (
-        <div className="md:h-[82vh] h-[calc(100dvh-10rem)] bg-background flex overflow-hidden border-2 rounded-3xl">
+        <div className="md:h-[82vh] h-[calc(100dvh-10rem)]  bg-background flex overflow-hidden border-2 rounded-3xl">
 
 
-            <CallWrapperWidget>
-
+            {/* <CallWrapperWidget> */}
+            <div className="w-full">
                 <div className=" flex flex-col h-full overflow-hidden bg-card">
                     <ChatMessagesWidget
                         chatId={chatId}
@@ -117,7 +117,8 @@ export default function ChatPage() {
 
                     )}
                 </div>
-            </CallWrapperWidget>
+            </div>
+            {/* </CallWrapperWidget> */}
 
 
         </div>

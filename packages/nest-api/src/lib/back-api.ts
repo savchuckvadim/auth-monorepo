@@ -54,6 +54,7 @@ $api.interceptors.response.use((response) => {
         const originalRequest = error.config;
 
         originalRequest._isRetry = true; // TODO: не работает как в видосе
+
         try {
             const res = await $api.post('/api/auth/refresh');
             if (res.data.resultCode === EResultCode.SUCCESS) {
@@ -62,12 +63,13 @@ $api.interceptors.response.use((response) => {
             }
 
         } catch (e) {
+
+           
             console.log('НЕ АВТОРИЗОВАН');
         }
 
     }
     throw error;
-
 });
 
 export const customAxios = async<T>({

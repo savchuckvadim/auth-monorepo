@@ -9,6 +9,8 @@ import { scrollToBottom } from '@/modules/entities/messages/lib/utils/scroll-to-
 import { Chat, ChatType, CreateChat } from '@/modules/entities/chats';
 import { useAllUsers } from '@/modules/entities/followers';
 import { ChatMemberDto, CreateChatDto } from '@workspace/nest-api';
+//TODO: страница чатов не используется и надо ее удалить теперь в чат попадаем через chat/[chatId]
+
 
 export default function ChatsPage() {
     const { currentUser } = useAuth();

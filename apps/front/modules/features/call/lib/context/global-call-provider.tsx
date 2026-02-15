@@ -1,14 +1,13 @@
 'use client';
 
-import React, { createContext, useContext, ReactNode, useState, useMemo } from 'react';
-import { useCall } from '../hook/call.hook';
+import React, { createContext, useContext, ReactNode, useState } from 'react';
+// import { useCall } from '../hook/call.hook'; // ✅ Отключен - используем только LiveKit
+import { useLiveKitCall } from '../hook/livekit-call.hook';
 import { CallErrorModal } from '../../ui/CallErrorModal';
 import { useAppDispatch, useAppSelector } from '@/modules/app';
 import { callActions } from '../../model/slice/CallSlice';
 import { useAuth } from '@/modules/processes';
 import { socketManager } from '@/modules/shared';
-import { CallEvent } from '../type/call-event.type';
-import { IncomingCallData } from '@/modules/features/call/lib/type/webrtc.types';
 import { useEffect } from 'react';
 
 interface GlobalCallContextValue {
@@ -28,6 +27,7 @@ interface GlobalCallContextValue {
     rejectCall: () => void;
     incomingCallFromUserId: string | null; // ID звонящего пользователя (для входящих звонков)
     remoteUserId: string | null; // ID пользователя на другом конце звонка (для активных звонков)
+    chatId: string | null; // ✅ ID чата для LiveKit комнаты
     // Все остальные значения из useCall
     [key: string]: any;
 }
@@ -47,10 +47,23 @@ export const GlobalCallProvider: React.FC<GlobalCallProviderProps> = ({
 }) => {
     const { currentUser, isAuthenticated } = useAuth();
     const [activeOtherUserId, setActiveOtherUserId] = useState<string | null>(null);
-    const [activeChatId, setActiveChatId] = useState<string>(''); // chatId из входящего звонка или пустая строка
+    const [activeChatId, setActiveChatId] = useState<string | null>(null); // ✅ chatId из входящего звонка или null
     const [isSocketReady, setIsSocketReady] = useState(false);
 
-    // Отслеживаем подключение сокета
+    // ✅ ВСЕГДА используем LiveKit для звонков (chatId всегда есть для звонков из чата)
+    // WebRTC хук НЕ создаем вообще - полностью перешли на LiveKit
+
+    // ✅ Используем упрощенный хук для LiveKit (БЕЗ WebRTC)
+    const liveKitCall = useLiveKitCall({ chatId: activeChatId });
+
+    // ✅ WebRTC хук НЕ создаем - полностью перешли на LiveKit
+    // Если нужна обратная совместимость, можно раскомментировать:
+    // const webRTCCall = useCall(null, 'AUDIO', activeChatId || 'temp-call');
+
+    // ✅ ВСЕГДА используем LiveKit хук (БЕЗ WebRTC!)
+    const call = liveKitCall;
+
+    // Отслеживаем подключение сокета (оптимизировано - логируем только при изменении состояния)
     useEffect(() => {
         if (!isAuthenticated || !currentUser?.id) {
             setIsSocketReady(false);
@@ -60,10 +73,13 @@ export const GlobalCallProvider: React.FC<GlobalCallProviderProps> = ({
         // Проверяем подключение сокета
         const checkSocket = () => {
             const connected = socketManager.isConnected();
-            setIsSocketReady(connected);
-            if (connected) {
-                console.log('✅ [GLOBAL CALL] Socket is ready');
-            }
+            setIsSocketReady(prev => {
+                // Логируем только при изменении состояния
+                if (prev !== connected && connected) {
+                    console.log('✅ [GLOBAL CALL] Socket is ready');
+                }
+                return connected;
+            });
         };
 
         // Проверяем сразу
@@ -73,7 +89,7 @@ export const GlobalCallProvider: React.FC<GlobalCallProviderProps> = ({
         if (!socketManager.isConnected()) {
             const interval = setInterval(() => {
                 checkSocket();
-            }, 100);
+            }, 1000); // Увеличиваем интервал до 1 секунды
 
             // Очищаем интервал когда сокет подключится или через 10 секунд
             const timeout = setTimeout(() => {
@@ -86,14 +102,6 @@ export const GlobalCallProvider: React.FC<GlobalCallProviderProps> = ({
             };
         }
     }, [currentUser?.id, isAuthenticated]);
-
-    // Используем useCall с null для глобального режима, но chatId обязателен
-    // Создаем useCall только когда сокет готов, чтобы избежать проблем с инициализацией
-    const call = useCall(
-        activeOtherUserId,
-        'AUDIO',
-        activeChatId || 'temp-call'
-    );
 
     const dispatch = useAppDispatch();
     const callState = useAppSelector((state) => state.call);
@@ -136,56 +144,78 @@ export const GlobalCallProvider: React.FC<GlobalCallProviderProps> = ({
     };
 
     const handleCallUser = async (otherUserId: string, chatId: string, type: 'VIDEO' | 'AUDIO') => {
-        // Устанавливаем otherUserId и chatId для UI состояния
+        // ✅ ВСЕГДА используем LiveKit (БЕЗ WebRTC!)
+        // chatId всегда есть для звонков из чата
+
+        // ✅ Устанавливаем otherUserId и chatId для UI состояния
         setActiveOtherUserId(otherUserId);
         setActiveChatId(chatId);
 
-        // Используем прямой доступ к методам через call объект
-        // Пересоздаем peer connection
-        call.peerService.recreate();
+        // ✅ Используем LiveKit хук (БЕЗ WebRTC!)
+        console.log('📞 [GLOBAL CALL] Using LiveKit for call', { otherUserId, chatId, type });
+        await liveKitCall.handleCallUser(otherUserId, chatId, type);
 
-        // Получаем медиа стрим - call содержит ...media, поэтому getMedia доступен
-        const stream = await (call as any).getMedia(type);
-
-        // Добавляем треки в peer connection
-        stream.getTracks().forEach((track: MediaStreamTrack) => {
-            call.peerService.addTrack(track, stream);
-        });
-
-        // Создаем offer
-        const offer = await call.peerService.getOffer();
-
-        // Вызываем callUser с параметрами напрямую (otherUserId и chatId передаются как параметры)
-        await call.callUser(offer, type, otherUserId, chatId);
     };
 
     const handleEndCall = () => {
+        // ✅ Используем правильный метод в зависимости от режима
         call.handleEndCall();
-        // Сбрасываем после завершения звонка
+
+        // ✅ Сбрасываем после завершения звонка
         setActiveOtherUserId(null);
-        setActiveChatId('');
+        setActiveChatId(null);
     };
 
     const acceptCall = () => {
+        // ✅ КРИТИЧНО: Устанавливаем chatId и otherUserId ПЕРЕД вызовом call.acceptCall()
+        // чтобы useLiveKitCall получил правильный chatId
+        if (liveKitCall.incomingCallFromUserId) {
+            // Получаем chatId из incomingCallData
+            const incomingData = (liveKitCall as any).incomingCallData;
+            if (incomingData?.chatId) {
+                setActiveChatId(incomingData.chatId);
+                console.log('✅ [GLOBAL CALL] Set chatId from incoming call BEFORE accept', {
+                    chatId: incomingData.chatId,
+                    fromUserId: incomingData.fromUserId
+                });
+            }
+            // ✅ Устанавливаем otherUserId для UI
+            if (incomingData?.fromUserId) {
+                setActiveOtherUserId(incomingData.fromUserId);
+            }
+        }
+
+        // ✅ Теперь вызываем acceptCall - chatId уже установлен
         call.acceptCall();
-        // otherUserId уже установлен из incoming call
     };
 
     const rejectCall = () => {
         call.rejectCall();
         setActiveOtherUserId(null);
-        setActiveChatId('');
+        setActiveChatId(null);
+    };
+
+    // ✅ Используем только LiveKit хук
+    // Добавляем недостающие поля для совместимости с интерфейсом
+    const contextValue: GlobalCallContextValue = {
+        ...liveKitCall,
+        // Добавляем недостающие поля для совместимости
+        myStream: null, // LiveKit управляет медиа сам
+        remoteStream: null, // LiveKit управляет медиа сам
+        isAudioMute: false, // Управляется через LiveKitRoom (обновляется в CallOverlay)
+        isVideoOnHold: false, // Управляется через LiveKitRoom (обновляется в CallOverlay)
+        handleToggleAudio: () => { }, // Управляется через LiveKitRoom (в CallOverlay)
+        handleToggleVideo: () => { }, // Управляется через LiveKitRoom (в CallOverlay)
+        handleSaveHistory: () => { }, // TODO: реализовать для LiveKit
+        chatId: activeChatId,
+        handleCallUser,
+        handleEndCall,
+        acceptCall,
+        rejectCall,
     };
 
     return (
-        <GlobalCallContext.Provider value={{
-            ...call,
-            handleCallUser,
-            handleEndCall,
-            acceptCall,
-            rejectCall,
-            // incomingCallFromUserId и remoteUserId уже включены в ...call
-        }}>
+        <GlobalCallContext.Provider value={contextValue}>
             {children}
             <CallErrorModal error={callState.error} onClose={handleCloseError} />
         </GlobalCallContext.Provider>

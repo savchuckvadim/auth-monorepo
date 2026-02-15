@@ -12,12 +12,14 @@
 
 ### Этап 1: Подготовка инфраструктуры
 
-- [ ] Проверить, что LiveKit сервер запущен и доступен
-- [ ] Убедиться, что переменные окружения настроены:
+- [x] Проверить, что LiveKit сервер запущен и доступен
+- [x] Убедиться, что переменные окружения настроены:
   - Backend: `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`
   - Frontend: `NEXT_PUBLIC_LIVEKIT_URL`
-- [ ] Проверить работу API endpoint `/api/calls/token`
-- [ ] Протестировать получение токена через `useLivekitToken` хук
+- [x] Проверить работу API endpoint `/api/calls/token`
+- [x] Протестировать получение токена через `useLivekitToken` хук
+- [x] Обновить `useLivekitToken` для условного запроса (только когда есть roomName)
+- [x] Добавить `chatId` в `GlobalCallContext`
 
 ### Этап 2: Миграция CallWrapper
 
@@ -32,38 +34,37 @@
 **Что нужно изменить**:
 
 1. **Заменить получение медиа потоков**:
-   - [ ] Убрать зависимость от `useCallMedia` и `getUserMedia()`
-   - [ ] LiveKit автоматически получает медиа при подключении к комнате
-   - [ ] Убрать `myStream` и `remoteStream` из контекста (заменить на LiveKit participants)
+   - [x] Убрать зависимость от `useCallMedia` и `getUserMedia()`
+   - [x] LiveKit автоматически получает медиа при подключении к комнате
+   - [x] Убрать `myStream` и `remoteStream` из контекста (заменить на LiveKit participants)
 
 2. **Заменить управление соединением**:
-   - [ ] Убрать зависимость от `useCallEngine` и `PeerService`
-   - [ ] Интегрировать `LiveKitRoom` компонент в CallWrapper
-   - [ ] Использовать `useRoom()` hook для получения состояния комнаты
-   - [ ] Убрать WebSocket события для WebRTC (`webrtc:offer`, `webrtc:answer`, `webrtc:ice-candidate`)
+   - [x] Убрать зависимость от `useCallEngine` и `PeerService` (частично, для обратной совместимости оставлен)
+   - [x] Интегрировать `LiveKitRoom` компонент в CallWrapper
+   - [x] Использовать `RoomContext` для получения состояния комнаты
+   - [x] Убрать WebSocket события для WebRTC (`webrtc:offer`, `webrtc:answer`, `webrtc:ice-candidate`) - LiveKit использует токены
 
 3. **Обновить получение токенов**:
-   - [ ] Интегрировать `useLivekitToken(roomName)` в CallWrapper
-   - [ ] Генерировать `roomName` на основе `chatId`: `chat-${chatId}`
-   - [ ] Получать токен перед подключением к комнате
-   - [ ] Обрабатывать состояния загрузки токена
+   - [x] Интегрировать `useLivekitToken(roomName)` в CallWrapper
+   - [x] Генерировать `roomName` на основе `chatId`: `chat-${chatId}`
+   - [x] Получать токен перед подключением к комнате (только когда `isInCall === true` и есть `chatId`)
+   - [x] Обрабатывать состояния загрузки токена
 
 4. **Обновить UI компоненты**:
-   - [ ] Заменить `VideoPlayer` на LiveKit компоненты:
+   - [x] Заменить `VideoPlayer` на LiveKit компоненты:
      - `ParticipantTile` для отображения участников
-     - `TrackLoop` для перебора треков участников
-     - Или использовать готовый `VideoConference` компонент
-   - [ ] Обновить `CallControls` для работы с LiveKit API:
+     - Сохранен внешний вид (удаленное видео на весь экран, локальное справа внизу)
+   - [x] Обновить `CallControls` для работы с LiveKit API:
      - Использовать `room.localParticipant.setMicrophoneEnabled()`
      - Использовать `room.localParticipant.setCameraEnabled()`
      - Использовать `room.disconnect()` для завершения звонка
-   - [ ] Обновить логику отображения локального/удаленного видео
+   - [x] Обновить логику отображения локального/удаленного видео
 
 5. **Обновить состояния**:
-   - [ ] Заменить `isInCall` на `room.state === 'connected'`
-   - [ ] Заменить `remoteStream` на `room.participants` (массив участников)
-   - [ ] Заменить `myStream` на `room.localParticipant`
-   - [ ] Обновить логику входящих/исходящих звонков (возможно, через WebSocket события для уведомлений)
+   - [x] Использовать `room.state === 'connected'` для проверки подключения
+   - [x] Заменить `remoteStream` на `room.remoteParticipants` (массив участников)
+   - [x] Заменить `myStream` на `room.localParticipant`
+   - [x] Обновить логику входящих/исходящих звонков (через WebSocket события для уведомлений, LiveKit для медиа)
 
 **Пример структуры нового CallWrapper**:
 

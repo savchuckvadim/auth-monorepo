@@ -8,6 +8,7 @@ import { VideoCall } from '@/modules/features/call/ui/LiveKitTest';
 
 export default function CallsPage() {
     const { data, isLoading, error } = useLivekitToken('room1');
+
     if (isLoading) {
         return <LoadingScreen />
     }
@@ -17,6 +18,7 @@ export default function CallsPage() {
     if (!data || !data.token) {
         return <div>No data</div>
     }
+    
     return (
         <div>
             {data.token && <VideoCall token={data.token} />}

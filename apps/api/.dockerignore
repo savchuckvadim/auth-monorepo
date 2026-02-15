@@ -7,3 +7,4 @@ nest-vscode-debugging
 
 /storage
 /storage/**
+/db_data/**
