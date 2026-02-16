@@ -141,6 +141,106 @@ exports.Prisma.TokenScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ChatScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  name: 'name',
+  description: 'description',
+  avatar: 'avatar',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  userId: 'userId'
+};
+
+exports.Prisma.ChatMemberScalarFieldEnum = {
+  id: 'id',
+  chatId: 'chatId',
+  userId: 'userId',
+  role: 'role',
+  joinedAt: 'joinedAt',
+  leftAt: 'leftAt',
+  lastReadAt: 'lastReadAt'
+};
+
+exports.Prisma.MessageScalarFieldEnum = {
+  id: 'id',
+  chatId: 'chatId',
+  senderId: 'senderId',
+  content: 'content',
+  type: 'type',
+  fileUrl: 'fileUrl',
+  fileName: 'fileName',
+  fileSize: 'fileSize',
+  replyToId: 'replyToId',
+  editedAt: 'editedAt',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.MessageReadStatusScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  userId: 'userId',
+  readAt: 'readAt'
+};
+
+exports.Prisma.CallScalarFieldEnum = {
+  id: 'id',
+  chatId: 'chatId',
+  initiatorId: 'initiatorId',
+  receiverId: 'receiverId',
+  type: 'type',
+  status: 'status',
+  startedAt: 'startedAt',
+  endedAt: 'endedAt',
+  duration: 'duration',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.FollowScalarFieldEnum = {
+  id: 'id',
+  followerId: 'followerId',
+  followingId: 'followingId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.ProfileScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  about: 'about',
+  avatar: 'avatar',
+  hero: 'hero',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PostScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  authorId: 'authorId',
+  text: 'text',
+  image: 'image',
+  audio: 'audio',
+  video: 'video',
+  link: 'link',
+  views: 'views',
+  originalPostId: 'originalPostId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.PostLikeScalarFieldEnum = {
+  id: 'id',
+  postId: 'postId',
+  userId: 'userId',
+  isLike: 'isLike',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -164,15 +264,130 @@ exports.Prisma.TokenOrderByRelevanceFieldEnum = {
   userId: 'userId',
   refreshToken: 'refreshToken'
 };
+
+exports.Prisma.ChatOrderByRelevanceFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  avatar: 'avatar',
+  createdBy: 'createdBy',
+  userId: 'userId'
+};
+
+exports.Prisma.ChatMemberOrderByRelevanceFieldEnum = {
+  id: 'id',
+  chatId: 'chatId',
+  userId: 'userId'
+};
+
+exports.Prisma.MessageOrderByRelevanceFieldEnum = {
+  id: 'id',
+  chatId: 'chatId',
+  senderId: 'senderId',
+  content: 'content',
+  fileUrl: 'fileUrl',
+  fileName: 'fileName',
+  replyToId: 'replyToId'
+};
+
+exports.Prisma.MessageReadStatusOrderByRelevanceFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  userId: 'userId'
+};
+
+exports.Prisma.CallOrderByRelevanceFieldEnum = {
+  id: 'id',
+  chatId: 'chatId',
+  initiatorId: 'initiatorId',
+  receiverId: 'receiverId'
+};
+
+exports.Prisma.FollowOrderByRelevanceFieldEnum = {
+  id: 'id',
+  followerId: 'followerId',
+  followingId: 'followingId'
+};
+
+exports.Prisma.ProfileOrderByRelevanceFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  name: 'name',
+  about: 'about',
+  avatar: 'avatar',
+  hero: 'hero'
+};
+
+exports.Prisma.PostOrderByRelevanceFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  authorId: 'authorId',
+  text: 'text',
+  image: 'image',
+  audio: 'audio',
+  video: 'video',
+  link: 'link',
+  originalPostId: 'originalPostId'
+};
+
+exports.Prisma.PostLikeOrderByRelevanceFieldEnum = {
+  id: 'id',
+  postId: 'postId',
+  userId: 'userId'
+};
 exports.user_roles = exports.$Enums.user_roles = {
   owner: 'owner',
   admin: 'admin',
   user: 'user'
 };
 
+exports.ChatType = exports.$Enums.ChatType = {
+  PRIVATE: 'PRIVATE',
+  GROUP: 'GROUP',
+  SECRET: 'SECRET'
+};
+
+exports.ChatMemberRole = exports.$Enums.ChatMemberRole = {
+  OWNER: 'OWNER',
+  ADMIN: 'ADMIN',
+  MEMBER: 'MEMBER'
+};
+
+exports.MessageType = exports.$Enums.MessageType = {
+  TEXT: 'TEXT',
+  IMAGE: 'IMAGE',
+  VIDEO: 'VIDEO',
+  AUDIO: 'AUDIO',
+  FILE: 'FILE',
+  SYSTEM: 'SYSTEM'
+};
+
+exports.CallType = exports.$Enums.CallType = {
+  AUDIO: 'AUDIO',
+  VIDEO: 'VIDEO'
+};
+
+exports.CallStatus = exports.$Enums.CallStatus = {
+  INITIATED: 'INITIATED',
+  RINGING: 'RINGING',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED',
+  MISSED: 'MISSED',
+  ENDED: 'ENDED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
-  Token: 'Token'
+  Token: 'Token',
+  Chat: 'Chat',
+  ChatMember: 'ChatMember',
+  Message: 'Message',
+  MessageReadStatus: 'MessageReadStatus',
+  Call: 'Call',
+  Follow: 'Follow',
+  Profile: 'Profile',
+  Post: 'Post',
+  PostLike: 'PostLike'
 };
 
 /**

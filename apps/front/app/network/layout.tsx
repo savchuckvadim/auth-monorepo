@@ -1,15 +1,13 @@
 'use client'
 import React from 'react';
-import Orb from '@workspace/ui/components/Orb';
+
 import { cn } from '@workspace/ui/lib/utils';
-import dynamic from 'next/dynamic';
 import { useAuth } from '@/modules/processes/auth';
 import { LoadingScreen } from '@/modules/shared';
+import { Header, Navigation } from '@/modules/widgetes';
+import { GlobalCallProvider } from '@/modules/features/call/lib/context/global-call-provider';
+import { CallWrapperWidget } from '@/modules/widgetes/call/CallWrapper/CallWrapperWidget';
 
-
-const DynamicHeader = dynamic(() => import('./components/Header').then(mod => mod.Header), {
-    ssr: false,
-});
 
 
 export default function NetworkLayout({ children }: { children: React.ReactNode }) {
@@ -18,37 +16,40 @@ export default function NetworkLayout({ children }: { children: React.ReactNode 
         return <LoadingScreen />
     }
     return (
-        <div className="min-h-screen flex flex-col scrollbar-hide">
-            <DynamicHeader />
-            <main className="flex-grow">
+        <GlobalCallProvider>
+            <CallWrapperWidget>
+                <div className="h-screen flex flex-col scrollbar-hide bg-background">
+                    <Header />
+                    <main className="flex-grow ">
 
-                <section id="hero" className={
-                    cn(
-                        "relative min-h-screen flex items-center justify-center overflow-hidden"
-                    )
-                }
-                    style={{
-                        backgroundColor: '#292b37'
-                    }}
-                >
-                    {/* Video Background */}
-                    <div className="absolute inset-0 opacity-50">
-                        <Orb hoverIntensity={0.2} />
-                    </div>
+                        <div
+                            className={"relative min-h-screen flex items-center justify-center overflow-hidden"}
 
+                        >
+                            <div className={
+                                cn(
+                                    'container mx-auto p-0 sm:px-6 lg:px-4 md:p-4 flex flex-row md:gap-4',
+                                )
+                            }>
 
-                    {/* Content */}
-                    <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                        <div className="max-w-4xl mx-auto text-center">
-                            {/* <h1 className="text-4xl font-bold text-white">   Auth Monorepo App </h1> */}
-                            {children}
+                                <div className='w-0 md:block md:w-1/6 h-screen  pt-20'>
+                                    <Navigation />
+                                </div>
+
+                                <div className='w-full md:w-5/6 flex flex-col gap-4 pt-20 pb-20 md:pb-4'>
+                                    <div className="container mx-auto p-2 sm:px-6 lg:px-0 ">
+
+                                        {children}
+
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </section>
+                    </main>
 
-            </main>
-
-        </div>
+                </div>
+            </CallWrapperWidget>
+        </GlobalCallProvider>
     );
 }
 

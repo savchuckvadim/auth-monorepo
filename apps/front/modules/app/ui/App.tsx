@@ -6,6 +6,9 @@ import { LoadingScreen } from '@/modules/shared';
 export const App = ({ children }: { children: React.ReactNode }) => {
     const { isLoading, isClient } = useApp();
 
+
+
+
     if (!isClient) {
         return <LoadingScreen />
     }

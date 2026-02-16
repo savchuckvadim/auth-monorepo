@@ -12,6 +12,22 @@ for (const envVar of requiredEnvVars) {
 
 const nextConfig: NextConfig = {
 
+    //for debug
+    // compress: false, // <--- отключает gzip-сжатие и минификацию на сервере
+
+    // // // если хочешь также отключить минификацию сборки (клиентского JS), допиши:
+    // webpack(config, { dev, isServer }) {
+    //     if (!dev) {
+    //         config.optimization.minimize = false;
+    //     }
+    //     return config;
+    // },
+    // reactStrictMode: true,
+
+
+
+    productionBrowserSourceMaps: true,
+
     env: {
         NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     },
@@ -27,6 +43,26 @@ const nextConfig: NextConfig = {
     experimental: {
         // Принудительно пересобираем transpiled пакеты при каждой сборке
         optimizePackageImports: ['@workspace/nest-api'],
+    },
+    // Настройки для изображений из S3
+    images: {
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: '*.s3.*.amazonaws.com',
+                pathname: '/**',
+            },
+            {
+                protocol: 'https',
+                hostname: 's3.*.amazonaws.com',
+                pathname: '/**',
+            },
+            {
+                protocol: 'https',
+                hostname: 'sociopath-network-bucket.s3.eu-north-1.amazonaws.com',
+                pathname: '/**',
+            },
+        ],
     },
 };
 

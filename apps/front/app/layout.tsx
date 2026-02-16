@@ -1,7 +1,7 @@
 import { Geist, Geist_Mono } from 'next/font/google';
 import '@workspace/ui/globals.css';
 import '@workspace/theme/themes.css';
-import { Providers } from '@/components/providers';
+import { Providers } from '@/modules/app';
 import { APP_DESCRIPTION, APP_TITLE } from '@/modules/app';
 import { Metadata } from 'next';
 
@@ -70,7 +70,7 @@ export default function RootLayout({
             <body
                 className={`${fontSans.variable} ${fontMono.variable} scrollbar-hide  font-sans antialiased `}
             >
-           
+
                 <Providers>{children}</Providers>
             </body>
         </html>

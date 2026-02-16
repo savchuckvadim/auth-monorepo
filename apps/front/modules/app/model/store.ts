@@ -10,6 +10,10 @@ import {
 import { appReducer } from './slice/AppSlice';
 import { errorHandler } from '../lib/error-handler';
 import { authReducer } from '@/modules/processes/auth';
+import { notificationReducer } from '@/modules/features/notifiactions';
+import { presenceReducer } from '@/modules/entities/presence';
+import { callReducer } from '@/modules/features/call/model/slice/CallSlice';
+import { createPostReducer } from '@/modules/features/post/CreatePost/model/slice/CreatePostSlice';
 
 
 const listenerMiddleware = createListenerMiddleware();
@@ -32,6 +36,17 @@ const errorMiddleware: Middleware = storeAPI => next => action => {
 const rootReducer = combineReducers({
     app: appReducer,
     auth: authReducer,
+
+
+    // Entities
+    presence: presenceReducer,
+
+
+
+    // Features
+    notification: notificationReducer,
+    call: callReducer,
+    createPost: createPostReducer,
 
 
 });

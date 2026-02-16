@@ -17,7 +17,8 @@ COPY . .
 RUN pnpm config set fetch-retries 5 && \
     pnpm config set fetch-timeout 60000 && \
     pnpm install --no-frozen-lockfile
-RUN pnpm approve-builds
+# RUN pnpm approve-builds
+RUN pnpm config set ignore-scripts false
 
 # Сборка NextJS API и проверка
 RUN pnpm --filter ${APP} run build
@@ -28,12 +29,14 @@ FROM node:20-slim AS prod
 
 
 ARG APP
+ENV CI=true
+ENV NODE_ENV=production
 WORKDIR /app
 
 
 
 RUN npm install -g pnpm
-
+RUN pnpm add typescript
 # Копируем только необходимые файлы
 
 COPY --from=base /app/apps/${APP}/.next ./.next
@@ -46,10 +49,11 @@ COPY --from=base /app/apps/${APP}/public ./public
 COPY --from=base /app/apps/${APP}/next.config.js ./next.config.js
 # COPY --from=base /app/apps/${APP}/.env ./.env
 
-
+RUN pnpm config set ignore-scripts false
 # Установка PNPM и зависимостей
-RUN pnpm install --prod --no-frozen-lockfile && \
-    pnpm --filter ${APP} install --prod --no-frozen-lockfile
+RUN pnpm install --prod --no-frozen-lockfile
+# RUN pnpm install --prod --no-frozen-lockfile && \
+#     pnpm --filter ${APP} install --prod --no-frozen-lockfile
 
 
 

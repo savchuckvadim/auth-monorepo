@@ -54,10 +54,24 @@ export class AuthController {
     async login(@Body() loginDto: LoginDto): Promise<AuthenticatedUserDto> {
 
         const user = await this.authService.login(loginDto);
-
+        console.log('login', user);
         return user;
 
     }
+
+    @ApiOperation({ summary: 'Login for mobile app' })
+    @ApiBody({ type: LoginDto, description: 'Login for mobile app' })
+    @ApiResponse({ status: 200, description: 'User with tokens', type: AuthenticatedUserDto })
+    // @UseInterceptors(AuthCookieInterceptor) // убираем interceptor для мобильного приложения так как он отрезает токены от ответа и вставляет в куки
+    @Post('mobile/login')
+    async mobileLogin(@Body() loginDto: LoginDto): Promise<AuthenticatedUserDto> {
+
+        const user = await this.authService.login(loginDto);
+        console.log('login', user);
+        return user;
+
+    }
+
     @ApiOperation({ summary: 'Activate' })
     @ApiParam({ name: 'link', description: 'Activate link' })
     @SetAuthCookie() // вызов interceptor через декоратор. декоратор просто обертка для UseInterceptors(AuthCookieInterceptor)
@@ -90,13 +104,14 @@ export class AuthController {
     @ApiResponse({ status: 200, description: 'User', type: AuthenticatedUserDto })
     @SetAuthCookie() // вызов interceptor через декоратор. декоратор просто обертка для UseInterceptors(AuthCookieInterceptor)
     @Post('refresh')
-    async refreshToken(@Req() req: Request): Promise<AuthenticatedUserDto> {
+    async refreshToken(@Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<AuthenticatedUserDto> {
         const refreshToken = this.cookieService.getRefreshToken(req);
 
         if (!refreshToken) {
+            this.cookieService.clearAuthCookies(res);
             throw new UnauthorizedException('Refresh token not found');
         }
-        const user = await this.authService.refreshToken(refreshToken);
+        const user = await this.authService.refreshToken(refreshToken, res);
         return user;
     }
 

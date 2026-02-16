@@ -2,6 +2,11 @@
 import { useEffect, useState } from 'react';
 import { useAppDispatch, useAppSelector } from './redux';
 import { initializeApp } from '../../model/thunk/AppThunk';
+import { useAppSocket } from './app-socket';
+import { useNotificationsSocket } from '@/modules/features/notifiactions';
+import { usePresenceSocket } from '@/modules/entities/presence';
+
+
 
 
 
@@ -9,6 +14,10 @@ export const useApp = () => {
     const dispatch = useAppDispatch();
     const app = useAppSelector(state => state.app);
     const [isClient, setIsClient] = useState(false);
+
+    useAppSocket();
+    useNotificationsSocket();
+    usePresenceSocket();
 
     useEffect(() => {
         setIsClient(true);

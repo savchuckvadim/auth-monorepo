@@ -45,7 +45,7 @@ export const ColorSchemePicker = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute z-50 mt-2 p-4 bg-popover rounded-md shadow-lg"
+                        className="absolute  mt-2 p-4 bg-popover rounded-md shadow-lg"
                     >
                         <div className="w-full  flex flex-col gap-2">
                             {schemeList.map(({ value, color }) => (

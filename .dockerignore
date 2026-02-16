@@ -6,7 +6,7 @@ node_modules
 Dockerfile
 docker
 logs
-apps/api/db_data    
+apps/api/db_data
 apps/api/db_dev
 *.md
 .pnpm-store
@@ -59,3 +59,5 @@ coverage
 # Misc
 .DS_Store
 *.pem
+
+

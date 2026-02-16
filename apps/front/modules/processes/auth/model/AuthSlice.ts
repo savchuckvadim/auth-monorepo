@@ -28,7 +28,7 @@ export const authSlice = createSlice({
             state.currentUser = action.payload;
             state.isLoading = false;
             if (action.payload) {
-                window.location.href = '/network/profile';
+                window.location.href = '/network/me';
             } else {
                 window.location.href = '/auth/confirm';
             }
@@ -46,7 +46,7 @@ export const authSlice = createSlice({
             state.currentUser = action.payload;
 
         });
- 
+
 
         builder.addCase(registerThunk.fulfilled, (state: IAuthState, action) => {
             state.isAuthenticated = true;

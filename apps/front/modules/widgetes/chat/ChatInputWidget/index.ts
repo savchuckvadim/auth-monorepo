@@ -1,0 +1,2 @@
+export { ChatInputWidget } from './ChatInputWidget';
+
