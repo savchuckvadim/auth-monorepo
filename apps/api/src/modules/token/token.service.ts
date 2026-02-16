@@ -48,6 +48,10 @@ export class TokenService {
         return await this.tokenRepository.findToken(userId);
     }
 
+    public async findTokenByRefreshToken(refreshToken: string) {
+        return await this.tokenRepository.findTokenByRefreshToken(refreshToken);
+    }
+
     public async removeToken(refreshToken: string) {
         return await this.tokenRepository.removeToken(refreshToken);
     }

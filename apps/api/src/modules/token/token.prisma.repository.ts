@@ -40,6 +40,13 @@ export class TokenPrismaRepository implements TokenRepository {
         return token || null;
     }
 
+    async findTokenByRefreshToken(refreshToken: string): Promise<Token | null> {
+        const token = await this.prisma.token.findFirst({
+            where: { refreshToken },
+        });
+        return token || null;
+    }
+
     async removeToken(refreshToken: string): Promise<Token> {
         const token = await this.prisma.token.findFirst({
             where: { refreshToken },

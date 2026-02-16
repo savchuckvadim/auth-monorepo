@@ -66,19 +66,32 @@ export class AuthService {
         return await this.generateTokens(user);
 
     }
-    public async refreshToken(refreshToken: string, res: Response) {
+    public async refreshToken(refreshToken: string, res?: Response) {
         if (!refreshToken) {
-            this.cookieService.clearAuthCookies(res as Response);
+            if (res) {
+                this.cookieService.clearAuthCookies(res as Response);
+            }
             throw new UnauthorizedException('Refresh token not found');
         }
         const userData = await this.tokenService.validateRefreshToken(refreshToken);
 
-        const tokenFromDb = await this.tokenService.findToken(userData?.userId || '');
+        // КРИТИЧНО: Проверяем, что токен из БД совпадает с переданным токеном
+        // Это предотвращает использование старых/отозванных токенов
+        const tokenFromDb = await this.tokenService.findTokenByRefreshToken(refreshToken);
         if (!tokenFromDb || !userData?.userId) {
-            this.cookieService.clearAuthCookies(res as Response);
+            if (res) {
+                this.cookieService.clearAuthCookies(res as Response);
+            }
             throw new UnauthorizedException('Invalid refresh token');
         }
 
+        // Дополнительная проверка: userId из токена должен совпадать с userId из БД
+        if (tokenFromDb.userId !== userData.userId) {
+            if (res) {
+                this.cookieService.clearAuthCookies(res as Response);
+            }
+            throw new UnauthorizedException('Invalid refresh token');
+        }
 
         const user = await this.userService.getUser(userData.userId);
         return await this.generateTokens(user);
