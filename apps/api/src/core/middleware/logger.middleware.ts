@@ -3,6 +3,9 @@ import { Request, Response, NextFunction } from 'express';
 import { TelegramService } from '../../modules/telegram/telegram.service';
 import dayjs from 'dayjs';
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null;
+
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
     constructor(private readonly telegram: TelegramService) {}
@@ -15,15 +18,15 @@ export class LoggerMiddleware implements NestMiddleware {
             message += `🔎 Query: ${JSON.stringify(req.query, null, 2)}\n`;
         }
 
-        if (req.body && Object.keys(req.body).length > 0) {
+        if (isRecord(req.body) && Object.keys(req.body).length > 0) {
             message += `📦 Body: ${JSON.stringify(req.body, null, 2)}\n`;
         }
 
         await this.telegram.sendMessage(message);
 
-        res.on('finish', async () => {
+        res.on('finish', () => {
             const duration = dayjs().diff(timeStart, 'ms');
-            await this.telegram.sendMessage(
+            void this.telegram.sendMessage(
                 `✅ Ответ: ${res.statusCode} за ${duration}мс\n🧭 ${req.method} ${req.originalUrl}`,
             );
         });

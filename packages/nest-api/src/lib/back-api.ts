@@ -64,7 +64,7 @@ $api.interceptors.response.use((response) => {
 
         } catch (e) {
 
-           
+
             console.log('НЕ АВТОРИЗОВАН');
         }
 

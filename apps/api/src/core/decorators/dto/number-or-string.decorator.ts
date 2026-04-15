@@ -6,14 +6,14 @@ import {
 
 // Кастомный валидатор для поля которое может быть числом или строкой
 export function IsNumberOrString(validationOptions?: ValidationOptions) {
-    return function (object: Object, propertyName: string) {
+    return function (object: object, propertyName: string) {
         registerDecorator({
             name: 'isNumberOrString',
             target: object.constructor,
             propertyName: propertyName,
             options: validationOptions,
             validator: {
-                validate(value: any, args: ValidationArguments) {
+                validate(value: unknown) {
                     return (
                         typeof value === 'string' || typeof value === 'number'
                     );

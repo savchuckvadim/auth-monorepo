@@ -35,4 +35,3 @@ export class OnlineUsersService {
         return this.socketToUserId.has(socketId);
     }
 }
-

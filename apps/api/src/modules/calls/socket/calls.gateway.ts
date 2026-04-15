@@ -18,14 +18,16 @@ import { CallInitiatedDto } from '../dto/call-initiated.dto';
 import { CallType, CallStatus } from 'generated/prisma';
 import { CallEvent } from '../type/call-event.type';
 
+const getErrorMessage = (error: unknown): string =>
+    error instanceof Error ? error.message : String(error);
+
 @WebSocketGateway({
     cors: {
         origin: '*',
         credentials: true,
     },
 })
-export class CallsGateway
-    implements OnGatewayConnection, OnGatewayDisconnect {
+export class CallsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer()
     server: Server;
 
@@ -34,9 +36,9 @@ export class CallsGateway
     constructor(
         private readonly onlineUsersService: OnlineUsersService,
         private readonly callsService: CallsService,
-    ) { }
+    ) {}
 
-    async handleConnection(client: Socket) {
+    handleConnection(client: Socket): void {
         // TODO: Получить userId из токена аутентификации
         // Пока используем query параметр для тестирования
         const userId = client.handshake.query.userId as string;
@@ -51,7 +53,7 @@ export class CallsGateway
 
         // Добавляем в персональную комнату (как в PostGateway)
         if (userId) {
-            client.join(`user:${userId}`);
+            void client.join(`user:${userId}`);
         }
 
         console.log(`Socket Connected: ${client.id} (user: ${userId})`);
@@ -102,11 +104,13 @@ export class CallsGateway
                 type: data.type,
             });
 
-            console.log(`Call event sent to user:${data.toUserId} (callId: ${call.id})`);
+            console.log(
+                `Call event sent to user:${data.toUserId} (callId: ${call.id})`,
+            );
 
             return { success: true, callId: call.id };
         } catch (error) {
-            return { error: error.message };
+            return { error: getErrorMessage(error) };
         }
     }
 
@@ -124,14 +128,19 @@ export class CallsGateway
             // Ищем callId по toUserId
             let callId = data.callId;
             if (!callId) {
-                const receiverSocketId = this.onlineUsersService.getSocketIdByUserId(data.toUserId);
+                const receiverSocketId =
+                    this.onlineUsersService.getSocketIdByUserId(data.toUserId);
                 if (receiverSocketId) {
                     callId = this.callIdMap.get(receiverSocketId);
                 }
             }
 
             if (callId) {
-                await this.callsService.updateCallStatus(callId, CallStatus.ACCEPTED, new Date());
+                await this.callsService.updateCallStatus(
+                    callId,
+                    CallStatus.ACCEPTED,
+                    new Date(),
+                );
             }
 
             // Отправляем в комнату пользователя
@@ -144,7 +153,7 @@ export class CallsGateway
 
             return { success: true };
         } catch (error) {
-            return { error: error.message };
+            return { error: getErrorMessage(error) };
         }
     }
 
@@ -153,10 +162,12 @@ export class CallsGateway
         @MessageBody() data: PeerNegoNeededDto,
         @ConnectedSocket() client: Socket,
     ) {
-        this.server.to(`user:${data.toUserId}`).emit(CallEvent.PEER_NEGO_NEEDED, {
-            from: client.id,
-            offer: data.offer
-        });
+        this.server
+            .to(`user:${data.toUserId}`)
+            .emit(CallEvent.PEER_NEGO_NEEDED, {
+                from: client.id,
+                offer: data.offer,
+            });
     }
 
     @SubscribeMessage(CallEvent.PEER_NEGO_FINAL)
@@ -164,10 +175,12 @@ export class CallsGateway
         @MessageBody() data: PeerNegoDoneDto,
         @ConnectedSocket() client: Socket,
     ) {
-        this.server.to(`user:${data.toUserId}`).emit(CallEvent.PEER_NEGO_FINAL, {
-            from: client.id,
-            ans: data.ans
-        });
+        this.server
+            .to(`user:${data.toUserId}`)
+            .emit(CallEvent.PEER_NEGO_FINAL, {
+                from: client.id,
+                ans: data.ans,
+            });
     }
 
     @SubscribeMessage(CallEvent.END)
@@ -196,7 +209,7 @@ export class CallsGateway
 
             return { success: true };
         } catch (error) {
-            return { error: error.message };
+            return { error: getErrorMessage(error) };
         }
     }
 
@@ -221,7 +234,8 @@ export class CallsGateway
 
     @SubscribeMessage(CallEvent.PEER_ICE_CANDIDATE)
     handlePeerIceCandidate(
-        @MessageBody() data: { toUserId: string; candidate: RTCIceCandidateInit },
+        @MessageBody()
+        data: { toUserId: string; candidate: RTCIceCandidateInit },
         @ConnectedSocket() client: Socket,
     ) {
         const userId = this.onlineUsersService.getUserIdBySocketId(client.id);
@@ -230,12 +244,13 @@ export class CallsGateway
         }
 
         // Пересылаем ICE candidate другому пиру
-        this.server.to(`user:${data.toUserId}`).emit(CallEvent.PEER_ICE_CANDIDATE, {
-            from: client.id,
-            candidate: data.candidate,
-        });
+        this.server
+            .to(`user:${data.toUserId}`)
+            .emit(CallEvent.PEER_ICE_CANDIDATE, {
+                from: client.id,
+                candidate: data.candidate,
+            });
 
         return { success: true };
     }
 }
-

@@ -4,4 +4,3 @@ export class CallInitiatedDto {
     @IsString()
     toUserId: string;
 }
-

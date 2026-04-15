@@ -9,15 +9,12 @@ import { TokenPayloadDto, TokenService } from '@/modules/token';
 
 @Injectable()
 export class AccessTokenGuard implements CanActivate {
-    constructor(
-
-        private readonly tokenService: TokenService,
-    ) { }
+    constructor(private readonly tokenService: TokenService) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
-        const req = context.switchToHttp().getRequest<Request & { user?: TokenPayloadDto }>();
-
-
+        const req = context
+            .switchToHttp()
+            .getRequest<Request & { user?: TokenPayloadDto }>();
 
         let accessToken: string | undefined;
         // 1) Берём из заголовка Authorization
@@ -28,7 +25,9 @@ export class AccessTokenGuard implements CanActivate {
 
         // 2) fallback: берём из Cookies
         if (!accessToken && req.cookies?.accessToken) {
-            accessToken = req.cookies.accessToken;
+            const cookieToken = req.cookies.accessToken as unknown;
+            accessToken =
+                typeof cookieToken === 'string' ? cookieToken : undefined;
         }
         if (!accessToken) {
             throw new UnauthorizedException('ACCESS_TOKEN_MISSING'); // Требуется авторизация
@@ -38,7 +37,5 @@ export class AccessTokenGuard implements CanActivate {
         req.user = user;
 
         return true;
-
-
     }
 }

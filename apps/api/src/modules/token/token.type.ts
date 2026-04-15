@@ -6,9 +6,9 @@ export enum EnumAuthErrorCode {
     REFRESH_TOKEN_INVALID = 'REFRESH_TOKEN_INVALID',
     ACCESS_TOKEN_ERROR = 'ACCESS_TOKEN_ERROR',
     REFRESH_TOKEN_ERROR = 'REFRESH_TOKEN_ERROR',
-  }
+}
 
-  export enum EnumAuthSecrets {
+export enum EnumAuthSecrets {
     ACCESS_TOKEN = 'JWT_ACCESS_SECRET',
     REFRESH_TOKEN = 'JWT_REFRESH_SECRET',
-  }
+}

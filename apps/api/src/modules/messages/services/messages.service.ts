@@ -1,4 +1,9 @@
-import { Injectable, ForbiddenException, Inject, forwardRef } from '@nestjs/common';
+import {
+    Injectable,
+    ForbiddenException,
+    Inject,
+    forwardRef,
+} from '@nestjs/common';
 import { MessagesRepository } from '../repositories/messages.repository';
 import { ChatsRepository } from '../../chats/repositories/chats.repository';
 import { CreateMessageDto, MessageDto } from '../dto';
@@ -11,11 +16,17 @@ export class MessagesService {
         private readonly chatsRepository: ChatsRepository,
         @Inject(forwardRef(() => MessagesGateway))
         private readonly messagesGateway: MessagesGateway,
-    ) { }
+    ) {}
 
-    async createMessage(userId: string, createMessageDto: CreateMessageDto): Promise<MessageDto> {
+    async createMessage(
+        userId: string,
+        createMessageDto: CreateMessageDto,
+    ): Promise<MessageDto> {
         // Проверяем, что пользователь является участником чата
-        const isMember = await this.chatsRepository.isMember(createMessageDto.chatId, userId);
+        const isMember = await this.chatsRepository.isMember(
+            createMessageDto.chatId,
+            userId,
+        );
         if (!isMember) {
             throw new ForbiddenException('You are not a member of this chat');
         }
@@ -28,27 +39,46 @@ export class MessagesService {
         const messageDto = new MessageDto(message);
 
         // Отправляем сообщение через WebSocket всем участникам чата
-        await this.messagesGateway.broadcastMessage(messageDto, createMessageDto.chatId, userId);
+        await this.messagesGateway.broadcastMessage(
+            messageDto,
+            createMessageDto.chatId,
+            userId,
+        );
 
         return messageDto;
     }
 
-    async getChatMessages(chatId: string, userId: string, limit?: number, offset?: number): Promise<MessageDto[]> {
+    async getChatMessages(
+        chatId: string,
+        userId: string,
+        limit?: number,
+        offset?: number,
+    ): Promise<MessageDto[]> {
         // Проверяем, что пользователь является участником чата
         const isMember = await this.chatsRepository.isMember(chatId, userId);
         if (!isMember) {
             throw new ForbiddenException('You are not a member of this chat');
         }
 
-        const messages = await this.repository.findByChatId(chatId, limit, offset);
+        const messages = await this.repository.findByChatId(
+            chatId,
+            limit,
+            offset,
+        );
         return messages.map(msg => new MessageDto(msg));
     }
 
-    async getMessageById(messageId: string, userId: string): Promise<MessageDto> {
+    async getMessageById(
+        messageId: string,
+        userId: string,
+    ): Promise<MessageDto> {
         const message = await this.repository.findById(messageId);
 
         // Проверяем, что пользователь является участником чата
-        const isMember = await this.chatsRepository.isMember(message.chatId, userId);
+        const isMember = await this.chatsRepository.isMember(
+            message.chatId,
+            userId,
+        );
         if (!isMember) {
             throw new ForbiddenException('You are not a member of this chat');
         }
@@ -56,7 +86,11 @@ export class MessagesService {
         return new MessageDto(message);
     }
 
-    async updateMessage(messageId: string, userId: string, content: string): Promise<MessageDto> {
+    async updateMessage(
+        messageId: string,
+        userId: string,
+        content: string,
+    ): Promise<MessageDto> {
         const message = await this.repository.findById(messageId);
 
         // Только отправитель может редактировать сообщение
@@ -68,12 +102,17 @@ export class MessagesService {
         return new MessageDto(updated);
     }
 
-    async deleteMessage(messageId: string, userId: string): Promise<MessageDto> {
+    async deleteMessage(
+        messageId: string,
+        userId: string,
+    ): Promise<MessageDto> {
         const message = await this.repository.findById(messageId);
 
         // Только отправитель может удалить сообщение
         if (message.senderId !== userId) {
-            throw new ForbiddenException('You can only delete your own messages');
+            throw new ForbiddenException(
+                'You can only delete your own messages',
+            );
         }
 
         const deleted = await this.repository.delete(messageId);
@@ -84,7 +123,10 @@ export class MessagesService {
         const message = await this.repository.findById(messageId);
 
         // Проверяем, что пользователь является участником чата
-        const isMember = await this.chatsRepository.isMember(message.chatId, userId);
+        const isMember = await this.chatsRepository.isMember(
+            message.chatId,
+            userId,
+        );
         if (!isMember) {
             throw new ForbiddenException('You are not a member of this chat');
         }
@@ -112,4 +154,3 @@ export class MessagesService {
         return this.repository.getUnreadCount(chatId, userId);
     }
 }
-

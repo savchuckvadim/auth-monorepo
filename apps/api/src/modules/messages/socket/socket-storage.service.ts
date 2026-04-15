@@ -14,7 +14,12 @@ export class SocketStorageService {
      * Сохраняет маппинг socketId -> userId
      */
     async setSocketUser(socketId: string, userId: string): Promise<void> {
-        await this.redis.set(`socket:${socketId}`, userId, 'EX', this.SOCKET_TTL);
+        await this.redis.set(
+            `socket:${socketId}`,
+            userId,
+            'EX',
+            this.SOCKET_TTL,
+        );
     }
 
     /**
@@ -73,4 +78,3 @@ export class SocketStorageService {
         return exists === 1;
     }
 }
-

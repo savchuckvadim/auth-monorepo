@@ -1,6 +1,6 @@
-import { RedisService } from "@/core/redis";
-import { Global, Injectable, OnModuleInit } from "@nestjs/common";
-import Redis from "ioredis";
+import { RedisService } from '@/core/redis';
+import { Global, Injectable, OnModuleInit } from '@nestjs/common';
+import Redis from 'ioredis';
 
 @Global()
 @Injectable()
@@ -41,7 +41,7 @@ export class PresenceService implements OnModuleInit {
             // Игнорируем все остальные expired ключи (bull, другие сервисы и т.д.)
         });
 
-        expiredSubscriber.on('error', (error) => {
+        expiredSubscriber.on('error', error => {
             console.error('❌ Redis expired subscriber error:', error);
         });
     }
@@ -106,9 +106,7 @@ export class PresenceService implements OnModuleInit {
         userIds.forEach(id => pipeline.exists(this.key(id)));
         const result = await pipeline.exec();
 
-        return new Set(
-            userIds.filter((_, i) => result?.[i]?.[1] === 1),
-        );
+        return new Set(userIds.filter((_, i) => result?.[i]?.[1] === 1));
     }
 
     /**

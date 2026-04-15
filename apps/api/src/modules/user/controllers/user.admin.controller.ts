@@ -1,15 +1,12 @@
-import { Controller, Delete, Get, Param } from "@nestjs/common";
-import { UserService } from "../services/user.service";
-import { UserDto } from "../dto/user.dto";
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
-
+import { Controller, Delete, Get, Param } from '@nestjs/common';
+import { UserService } from '../services/user.service';
+import { UserDto } from '../dto/user.dto';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('User Admin')
 @Controller('admin/user')
 export class UserAdminController {
-    constructor(
-        private readonly service: UserService,
-    ) { }
+    constructor(private readonly service: UserService) {}
 
     @ApiOperation({ summary: 'Get all users' })
     @ApiResponse({ status: 200, description: 'Users list', type: [UserDto] })

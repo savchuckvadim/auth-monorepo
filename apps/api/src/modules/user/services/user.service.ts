@@ -1,30 +1,32 @@
-import { Injectable } from "@nestjs/common";
-import { UserRepository } from "../repositories/user.repository";
-import { CreateUserDto, UserDto } from "../dto/user.dto";
-import { User } from "generated/prisma";
-import { compare } from "bcrypt";
-import { UserWithFollowStatusType } from "../type/user.type";
+import { Injectable } from '@nestjs/common';
+import { UserRepository } from '../repositories/user.repository';
+import { CreateUserDto, UserDto } from '../dto/user.dto';
+import { User } from 'generated/prisma';
+import { compare } from 'bcrypt';
 @Injectable()
 export class UserService {
-    constructor(
-        private readonly repo: UserRepository,
-    ) { }
+    constructor(private readonly repo: UserRepository) {}
 
     public async getUser(id: string): Promise<UserDto> {
         const user = await this.repo.findById(id);
-      
+
         return new UserDto(user);
     }
     public async getUserByEmail(email: string): Promise<User> {
         return await this.repo.findByEmail(email);
     }
 
-    public comparePassword(password: string, hashedPassword: string): Promise<boolean> {
+    public comparePassword(
+        password: string,
+        hashedPassword: string,
+    ): Promise<boolean> {
         return compare(password, hashedPassword);
     }
 
     public async getAllUsers(currentUserId: string): Promise<UserDto[]> {
-        return (await this.repo.getAll(currentUserId)).map(user => new UserDto(user));
+        return (await this.repo.getAll(currentUserId)).map(
+            user => new UserDto(user),
+        );
     }
 
     public async createUser(user: CreateUserDto): Promise<UserDto> {
@@ -41,6 +43,4 @@ export class UserService {
     public async deleteUser(id: string): Promise<void> {
         return await this.repo.delete(id);
     }
-
-
 }

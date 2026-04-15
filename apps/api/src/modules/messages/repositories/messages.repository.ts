@@ -17,7 +17,11 @@ export type MessageWithRelations = Message & {
 
 export abstract class MessagesRepository {
     abstract findById(id: string): Promise<MessageWithRelations>;
-    abstract findByChatId(chatId: string, limit?: number, offset?: number): Promise<MessageWithRelations[]>;
+    abstract findByChatId(
+        chatId: string,
+        limit?: number,
+        offset?: number,
+    ): Promise<MessageWithRelations[]>;
     abstract create(data: {
         chatId: string;
         senderId: string;
@@ -31,7 +35,9 @@ export abstract class MessagesRepository {
     abstract update(id: string, content: string): Promise<Message>;
     abstract delete(id: string): Promise<Message>;
     abstract markAsRead(messageId: string, userId: string): Promise<void>;
-    abstract markChatMessagesAsRead(chatId: string, userId: string): Promise<void>;
+    abstract markChatMessagesAsRead(
+        chatId: string,
+        userId: string,
+    ): Promise<void>;
     abstract getUnreadCount(chatId: string, userId: string): Promise<number>;
 }
-

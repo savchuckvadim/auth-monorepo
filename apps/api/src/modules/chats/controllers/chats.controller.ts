@@ -2,7 +2,6 @@ import {
     Controller,
     Get,
     Post,
-    Put,
     Delete,
     Body,
     Param,
@@ -20,7 +19,7 @@ import { TokenPayloadDto } from '../../token';
 @Controller('chats')
 @UseGuards(AccessTokenGuard)
 export class ChatsController {
-    constructor(private readonly chatsService: ChatsService) { }
+    constructor(private readonly chatsService: ChatsService) {}
 
     @ApiOperation({ summary: 'Create a new chat' })
     @ApiBody({ type: CreateChatDto })
@@ -52,7 +51,11 @@ export class ChatsController {
     @ApiOperation({ summary: 'Add a member to a chat' })
     @ApiParam({ name: 'id', description: 'Chat ID', example: '1' })
     @ApiBody({ type: AddMemberDto })
-    @ApiResponse({ status: 200, description: 'Member added successfully', type: ChatDto })
+    @ApiResponse({
+        status: 200,
+        description: 'Member added successfully',
+        type: ChatDto,
+    })
     @Post(':id/members')
     async addMember(
         @Param('id') chatId: string,
@@ -66,7 +69,11 @@ export class ChatsController {
     @ApiOperation({ summary: 'Remove a member from a chat' })
     @ApiParam({ name: 'id', description: 'Chat ID', example: '1' })
     @ApiParam({ name: 'memberId', description: 'Member ID', example: '1' })
-    @ApiResponse({ status: 200, description: 'Member removed successfully', type: ChatDto })
+    @ApiResponse({
+        status: 200,
+        description: 'Member removed successfully',
+        type: ChatDto,
+    })
     @Delete(':id/members/:memberId')
     async removeMember(
         @Param('id') chatId: string,
@@ -79,7 +86,11 @@ export class ChatsController {
     @ApiOperation({ summary: 'Update a chat' })
     @ApiParam({ name: 'id', description: 'Chat ID', example: '1' })
     @ApiBody({ type: UpdateChatDto })
-    @ApiResponse({ status: 200, description: 'Chat updated successfully', type: ChatDto })
+    @ApiResponse({
+        status: 200,
+        description: 'Chat updated successfully',
+        type: ChatDto,
+    })
     @Patch(':id')
     async updateChat(
         @Param('id') chatId: string,
@@ -91,7 +102,11 @@ export class ChatsController {
 
     @ApiOperation({ summary: 'Mark a chat as read' })
     @ApiParam({ name: 'id', description: 'Chat ID', example: '1' })
-    @ApiResponse({ status: 200, description: 'Chat marked as read', type: ChatDto })
+    @ApiResponse({
+        status: 200,
+        description: 'Chat marked as read',
+        type: ChatDto,
+    })
     @Post(':id/read')
     async markAsRead(
         @Param('id') chatId: string,
@@ -103,7 +118,11 @@ export class ChatsController {
 
     @ApiOperation({ summary: 'Delete a chat' })
     @ApiParam({ name: 'id', description: 'Chat ID', example: '1' })
-    @ApiResponse({ status: 200, description: 'Chat deleted successfully', type: ChatDto })
+    @ApiResponse({
+        status: 200,
+        description: 'Chat deleted successfully',
+        type: ChatDto,
+    })
     @Delete(':id')
     async deleteChat(
         @Param('id') chatId: string,
@@ -113,4 +132,3 @@ export class ChatsController {
         return { message: 'Chat deleted successfully' };
     }
 }
-

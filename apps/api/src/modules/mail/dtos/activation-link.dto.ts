@@ -1,5 +1,5 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsNotEmpty, IsString } from "class-validator";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 
 export class SendMailActivationLinkDto {
     @ApiProperty({ description: 'Email', example: 'test@example.com' })
@@ -13,7 +13,10 @@ export class SendMailActivationLinkDto {
     @IsNotEmpty()
     name: string;
 
-    @ApiProperty({ description: 'Activation Link', example: 'https://example.com/activation-link' })
+    @ApiProperty({
+        description: 'Activation Link',
+        example: 'https://example.com/activation-link',
+    })
     @IsString()
     @IsNotEmpty()
     activationLink: string;

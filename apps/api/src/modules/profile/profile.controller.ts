@@ -1,12 +1,29 @@
-import { BadRequestException, Body, Controller, Get, Param, Patch, Post, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
-import { FileInterceptor } from "@nestjs/platform-express";
-import { ApiConsumes, ApiOperation, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { ProfileService } from "./profile.service";
-import { AccessTokenGuard } from "@/core/guards/access-token.guard";
-import { ProfileDto, UpdateProfileDto } from "./profile.dto";
-import { CurrentUser } from "@/core/decorators/auth/current-user.decorator";
-import { TokenPayloadDto } from "../token";
-import { S3Service } from "@/core/s3";
+import {
+    BadRequestException,
+    Body,
+    Controller,
+    Get,
+    Param,
+    Patch,
+    Post,
+    UploadedFile,
+    UseGuards,
+    UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import {
+    ApiConsumes,
+    ApiOperation,
+    ApiParam,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger';
+import { ProfileService } from './profile.service';
+import { AccessTokenGuard } from '@/core/guards/access-token.guard';
+import { ProfileDto, UpdateProfileDto } from './profile.dto';
+import { CurrentUser } from '@/core/decorators/auth/current-user.decorator';
+import { TokenPayloadDto } from '../token';
+import { S3Service } from '@/core/s3';
 
 @UseGuards(AccessTokenGuard)
 @ApiTags('Profile')
@@ -15,7 +32,7 @@ export class ProfileController {
     constructor(
         private readonly service: ProfileService,
         private readonly s3Service: S3Service,
-    ) { }
+    ) {}
 
     @ApiOperation({ summary: 'Get current user profile' })
     @ApiResponse({ status: 200, description: 'Profile', type: ProfileDto })
@@ -41,7 +58,11 @@ export class ProfileController {
     }
 
     @ApiOperation({ summary: 'Update current user profile' })
-    @ApiResponse({ status: 200, description: 'Updated profile', type: ProfileDto })
+    @ApiResponse({
+        status: 200,
+        description: 'Updated profile',
+        type: ProfileDto,
+    })
     @Patch('me')
     async updateMyProfile(
         @CurrentUser() user: TokenPayloadDto,
@@ -52,7 +73,11 @@ export class ProfileController {
 
     @ApiOperation({ summary: 'Upload avatar image' })
     @ApiConsumes('multipart/form-data')
-    @ApiResponse({ status: 200, description: 'Avatar uploaded', type: ProfileDto })
+    @ApiResponse({
+        status: 200,
+        description: 'Avatar uploaded',
+        type: ProfileDto,
+    })
     @Post('me/avatar')
     @UseInterceptors(FileInterceptor('file'))
     async uploadAvatar(
@@ -69,7 +94,11 @@ export class ProfileController {
 
     @ApiOperation({ summary: 'Upload hero image' })
     @ApiConsumes('multipart/form-data')
-    @ApiResponse({ status: 200, description: 'Hero image uploaded', type: ProfileDto })
+    @ApiResponse({
+        status: 200,
+        description: 'Hero image uploaded',
+        type: ProfileDto,
+    })
     @Post('me/hero')
     @UseInterceptors(FileInterceptor('file'))
     async uploadHero(
@@ -84,4 +113,3 @@ export class ProfileController {
         return await this.service.updateProfile(user.userId, { hero: url });
     }
 }
-

@@ -22,7 +22,17 @@ export class MessageDto {
     replyTo?: MessageDto;
     readBy?: string[];
 
-    constructor(message: Message & { sender?: any; replyTo?: Message; readBy?: string[] }) {
+    constructor(
+        message: Message & {
+            sender?: {
+                id: string;
+                name: string;
+                email: string;
+            };
+            replyTo?: Message;
+            readBy?: string[];
+        },
+    ) {
         this.id = message.id;
         this.chatId = message.chatId;
         this.senderId = message.senderId;
@@ -37,8 +47,9 @@ export class MessageDto {
         this.createdAt = message.createdAt;
         this.updatedAt = message.updatedAt;
         this.sender = message.sender;
-        this.replyTo = message.replyTo ? new MessageDto(message.replyTo) : undefined;
+        this.replyTo = message.replyTo
+            ? new MessageDto(message.replyTo)
+            : undefined;
         this.readBy = message.readBy || [];
     }
 }
-

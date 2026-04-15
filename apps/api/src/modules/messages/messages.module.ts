@@ -12,7 +12,13 @@ import { NotificationsModule } from '@/modules/notifications/notifications.modul
 import { RedisModule } from '@/core/redis';
 
 @Module({
-    imports: [PrismaModule, ChatsModule, TokenModule, NotificationsModule, RedisModule],
+    imports: [
+        PrismaModule,
+        ChatsModule,
+        TokenModule,
+        NotificationsModule,
+        RedisModule,
+    ],
     controllers: [MessagesController],
     providers: [
         MessagesService,
@@ -25,5 +31,4 @@ import { RedisModule } from '@/core/redis';
     ],
     exports: [MessagesService, MessagesRepository],
 })
-export class MessagesModule { }
-
+export class MessagesModule {}

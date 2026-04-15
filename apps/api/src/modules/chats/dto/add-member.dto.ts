@@ -9,4 +9,3 @@ export class AddMemberDto {
     @IsEnum(ChatMemberRole)
     role?: ChatMemberRole;
 }
-

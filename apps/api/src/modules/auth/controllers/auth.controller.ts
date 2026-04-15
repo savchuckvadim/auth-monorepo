@@ -1,15 +1,32 @@
-import { Body, Controller, Get, HttpStatus, Param, Post, Req, Res, UnauthorizedException, UseInterceptors } from "@nestjs/common";
+import {
+    Body,
+    Controller,
+    Get,
+    HttpStatus,
+    Param,
+    Post,
+    Req,
+    Res,
+    UnauthorizedException,
+    UseInterceptors,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
-import { ApiBadRequestResponse, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { AuthService } from "../services//auth.service";
-import { CreateUserDto } from "@/modules/user";
-import { ConfigService } from "@nestjs/config";
-import { AuthenticatedUserDto, LoginDto } from "../dtos/login.dto";
-import { CookieService } from "@/core/cookie";
-import { AuthCookieInterceptor } from "@/core/interceptors/auth-cookie.interceptor";
-import { SetAuthCookie } from "@/core/decorators/auth/set-auth-cookie.decorator";
-import { ErrorResponseDto } from "@/core";
-
+import {
+    ApiBadRequestResponse,
+    ApiBody,
+    ApiOperation,
+    ApiParam,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger';
+import { AuthService } from '../services//auth.service';
+import { CreateUserDto } from '@/modules/user';
+import { ConfigService } from '@nestjs/config';
+import { AuthenticatedUserDto, LoginDto } from '../dtos/login.dto';
+import { CookieService } from '@/core/cookie';
+import { AuthCookieInterceptor } from '@/core/interceptors/auth-cookie.interceptor';
+import { SetAuthCookie } from '@/core/decorators/auth/set-auth-cookie.decorator';
+import { ErrorResponseDto } from '@/core';
 
 /**
  * AuthController
@@ -20,56 +37,66 @@ import { ErrorResponseDto } from "@/core";
  * 3. вставляем куку вручную без декоратора и interceptor - Refresh endpoint
  */
 
-
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-    clientUrl: string
+    clientUrl: string;
     constructor(
         private readonly authService: AuthService,
         private readonly configService: ConfigService,
         private readonly cookieService: CookieService,
     ) {
-        this.clientUrl = this.configService.getOrThrow<string>('CLIENT_URL')
+        this.clientUrl = this.configService.getOrThrow<string>('CLIENT_URL');
     }
 
     @ApiOperation({ summary: 'Registration' })
     @ApiBody({ type: CreateUserDto, description: 'Registration' })
-    @ApiResponse({ status: 200, description: 'User', type: AuthenticatedUserDto })
+    @ApiResponse({
+        status: 200,
+        description: 'User',
+        type: AuthenticatedUserDto,
+    })
     @ApiBadRequestResponse({
         description: 'Validation failed',
         type: ErrorResponseDto,
     })
     @Post('registration')
-    async registration(@Body() registerDto: CreateUserDto): Promise<AuthenticatedUserDto> {
+    async registration(
+        @Body() registerDto: CreateUserDto,
+    ): Promise<AuthenticatedUserDto> {
         return await this.authService.registration(registerDto);
     }
 
-
     @ApiOperation({ summary: 'Login' })
     @ApiBody({ type: LoginDto, description: 'Login' })
-    @ApiResponse({ status: 200, description: 'User', type: AuthenticatedUserDto })
+    @ApiResponse({
+        status: 200,
+        description: 'User',
+        type: AuthenticatedUserDto,
+    })
     @UseInterceptors(AuthCookieInterceptor) // вызов interceptor без декоратора напрямую. interceptor вставляет куку в ответ
     @Post('login')
     async login(@Body() loginDto: LoginDto): Promise<AuthenticatedUserDto> {
-
         const user = await this.authService.login(loginDto);
         console.log('login', user);
         return user;
-
     }
 
     @ApiOperation({ summary: 'Login for mobile app' })
     @ApiBody({ type: LoginDto, description: 'Login for mobile app' })
-    @ApiResponse({ status: 200, description: 'User with tokens', type: AuthenticatedUserDto })
+    @ApiResponse({
+        status: 200,
+        description: 'User with tokens',
+        type: AuthenticatedUserDto,
+    })
     // @UseInterceptors(AuthCookieInterceptor) // убираем interceptor для мобильного приложения так как он отрезает токены от ответа и вставляет в куки
     @Post('mobile/login')
-    async mobileLogin(@Body() loginDto: LoginDto): Promise<AuthenticatedUserDto> {
-
+    async mobileLogin(
+        @Body() loginDto: LoginDto,
+    ): Promise<AuthenticatedUserDto> {
         const user = await this.authService.login(loginDto);
         console.log('login', user);
         return user;
-
     }
 
     @ApiOperation({ summary: 'Activate' })
@@ -93,18 +120,26 @@ export class AuthController {
     ): Promise<boolean> {
         // @Res - берем обработку полностью на себя. без автоматического отправки ответа NEST
         const refreshToken = this.cookieService.getRefreshToken(req);
+        if (!refreshToken) {
+            throw new UnauthorizedException('Refresh token not found');
+        }
         await this.authService.logout(refreshToken);
         this.cookieService.clearAuthCookies(res);
         return true;
     }
 
-
-
     @ApiOperation({ summary: 'Refresh token' })
-    @ApiResponse({ status: 200, description: 'User', type: AuthenticatedUserDto })
+    @ApiResponse({
+        status: 200,
+        description: 'User',
+        type: AuthenticatedUserDto,
+    })
     @SetAuthCookie() // вызов interceptor через декоратор. декоратор просто обертка для UseInterceptors(AuthCookieInterceptor)
     @Post('refresh')
-    async refreshToken(@Req() req: Request, @Res({ passthrough: true }) res: Response): Promise<AuthenticatedUserDto> {
+    async refreshToken(
+        @Req() req: Request,
+        @Res({ passthrough: true }) res: Response,
+    ): Promise<AuthenticatedUserDto> {
         const refreshToken = this.cookieService.getRefreshToken(req);
 
         if (!refreshToken) {
@@ -114,5 +149,4 @@ export class AuthController {
         const user = await this.authService.refreshToken(refreshToken, res);
         return user;
     }
-
 }

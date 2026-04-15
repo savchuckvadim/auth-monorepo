@@ -12,7 +12,6 @@ import { Button } from "@workspace/ui/components/button";
 import { PhoneOff } from "lucide-react";
 import { CallIncoming } from "./components/CallIncoming";
 import { useUser } from "@/modules/entities/user/lib/hook/user.hook";
-
 import { LoadingScreen } from "@/modules/shared";
 import { useLivekitToken } from "@/modules/features/call/lib/hook/livekit.hook";
 

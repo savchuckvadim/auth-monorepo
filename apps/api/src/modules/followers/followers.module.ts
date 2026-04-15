@@ -8,11 +8,7 @@ import { PrismaModule } from '@/core/prisma';
 import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-    imports: [
-        PrismaModule,
-        TokenModule,
-        forwardRef(() => NotificationsModule),
-    ],
+    imports: [PrismaModule, TokenModule, forwardRef(() => NotificationsModule)],
     controllers: [FollowersController],
     providers: [
         FollowersService,
@@ -23,5 +19,4 @@ import { NotificationsModule } from '../notifications/notifications.module';
     ],
     exports: [FollowersService, FollowersRepository],
 })
-export class FollowersModule { }
-
+export class FollowersModule {}
