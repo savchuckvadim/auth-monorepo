@@ -14,4 +14,3 @@ export class CallInitiateDto {
     @IsEnum(CallType)
     type?: CallType;
 }
-

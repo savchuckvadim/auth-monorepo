@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+    Injectable,
+    BadRequestException,
+    NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '@/core';
 import { FollowersRepository } from './followers.repository';
 import { Follow, User } from 'generated/prisma';
@@ -11,11 +15,16 @@ type UserBasic = {
 
 @Injectable()
 export class FollowersPrismaRepository implements FollowersRepository {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
-    async follow(followerId: string, followingId: string): Promise<Follow & { following?: UserBasic }> {
+    async follow(
+        followerId: string,
+        followingId: string,
+    ): Promise<Follow & { following?: UserBasic }> {
         if (!followerId || !followingId) {
-            throw new BadRequestException('followerId and followingId are required');
+            throw new BadRequestException(
+                'followerId and followingId are required',
+            );
         }
 
         if (followerId === followingId) {
@@ -63,7 +72,9 @@ export class FollowersPrismaRepository implements FollowersRepository {
 
     async unfollow(followerId: string, followingId: string): Promise<void> {
         if (!followerId || !followingId) {
-            throw new BadRequestException('followerId and followingId are required');
+            throw new BadRequestException(
+                'followerId and followingId are required',
+            );
         }
 
         const follow = await this.prisma.follow.findFirst({
@@ -84,7 +95,9 @@ export class FollowersPrismaRepository implements FollowersRepository {
         });
     }
 
-    async getFollowers(userId: string): Promise<(Follow & { follower?: UserBasic })[]> {
+    async getFollowers(
+        userId: string,
+    ): Promise<(Follow & { follower?: UserBasic })[]> {
         const result = await this.prisma.follow.findMany({
             where: {
                 followingId: userId,
@@ -105,7 +118,9 @@ export class FollowersPrismaRepository implements FollowersRepository {
         return result as (Follow & { follower?: UserBasic })[];
     }
 
-    async getFollowing(userId: string): Promise<(Follow & { following?: UserBasic })[]> {
+    async getFollowing(
+        userId: string,
+    ): Promise<(Follow & { following?: UserBasic })[]> {
         const result = await this.prisma.follow.findMany({
             where: {
                 followerId: userId,
@@ -173,7 +188,10 @@ export class FollowersPrismaRepository implements FollowersRepository {
         }));
     }
 
-    async isFollowing(followerId: string, followingId: string): Promise<boolean> {
+    async isFollowing(
+        followerId: string,
+        followingId: string,
+    ): Promise<boolean> {
         if (!followerId || !followingId) {
             return false;
         }
@@ -213,7 +231,9 @@ export class FollowersPrismaRepository implements FollowersRepository {
     async getUsersWithFollowStatus(
         currentUserId: string,
         userIds: string[],
-    ): Promise<(UserBasic & { isFollowing?: boolean; isFollower?: boolean })[]> {
+    ): Promise<
+        (UserBasic & { isFollowing?: boolean; isFollower?: boolean })[]
+    > {
         if (userIds.length === 0) {
             return [];
         }
@@ -288,4 +308,3 @@ export class FollowersPrismaRepository implements FollowersRepository {
         return user;
     }
 }
-

@@ -1,8 +1,8 @@
-# Сквозное шифрование для чатов и звонков (Next.js Frontend)
+# Сквозное шифрование для чатов и звонков (React Native)
 
 ## Назначение
 
-Реализовать сквозное шифрование (End-to-End Encryption, E2EE) для чатов и звонков по типу протокола Signal в Next.js приложении. Обеспечить полную конфиденциальность сообщений и звонков, чтобы только участники могли видеть содержимое.
+Реализовать сквозное шифрование (End-to-End Encryption, E2EE) для чатов и звонков по типу протокола Signal в React Native приложении. Обеспечить полную конфиденциальность сообщений и звонков, чтобы только участники могли видеть содержимое.
 
 ## ⚠️ КРИТИЧЕСКИ ВАЖНО: Multi-Device архитектура
 
@@ -14,7 +14,7 @@
 - Если получатель имеет 3 устройства, сообщение должно быть зашифровано 3 раза
 - **Сообщения видны только на том устройстве, на котором они были расшифрованы**
 - При потере устройства все сессии с этим устройством становятся недействительными
-- **Если вы отправили сообщение с веб-версии, оно будет видно только на том устройстве получателя, где оно было расшифровано**
+- **Если вы отправили сообщение с мобильного приложения, оно будет видно только на том устройстве получателя, где оно было расшифровано**
 
 ## Справочная информация
 
@@ -46,7 +46,7 @@
 3. **Управление ключами**:
    - Генерация ключевых пар для каждого устройства
    - Обмен ключами через сервер (prekeys)
-   - Хранение ключей на клиенте (IndexedDB)
+   - Хранение ключей в Secure Storage (НЕ AsyncStorage)
    - Ротация ключей (Double Ratchet)
    - **Управление deviceId**: генерация и хранение
 
@@ -61,87 +61,165 @@
 ### Шаг 1: Установка libsignal
 
 ```bash
-cd apps/front
+cd apps/mobile  # или путь к вашему React Native проекту
 npm install @privacyresearch/libsignal-protocol-typescript
 ```
 
 **Альтернативные библиотеки**:
-- `libsignal-client` (через WASM) - более производительная, но сложнее в настройке
-- `libsodium` - низкоуровневая, требует больше работы
+- `libsignal-client` (через WASM) - более производительная, но требует настройки для React Native
+- `react-native-libsodium` - нативная библиотека, но требует дополнительной настройки
 
 **Рекомендация**: Использовать `@privacyresearch/libsignal-protocol-typescript` для начала, так как она:
 - Полностью на TypeScript
 - Хорошо документирована
 - Поддерживает все необходимые функции Signal Protocol
+- Работает в React Native без дополнительных настроек
 
-### Шаг 2: Установка дополнительных зависимостей
+### Шаг 2: Установка Secure Storage
+
+**ВАЖНО**: В React Native НЕЛЬЗЯ хранить приватные ключи в AsyncStorage. Используем Secure Storage.
+
+#### Для Expo:
+
+```bash
+npx expo install expo-secure-store
+```
+
+#### Для React Native CLI:
+
+```bash
+npm install react-native-encrypted-storage
+# или
+npm install @react-native-async-storage/async-storage react-native-keychain
+```
+
+**Рекомендация**: Использовать `expo-secure-store` для Expo или `react-native-encrypted-storage` для React Native CLI.
+
+### Шаг 3: Установка дополнительных зависимостей
 
 ```bash
 npm install uuid
 npm install --save-dev @types/uuid
 ```
 
-Для работы с IndexedDB (опционально, если библиотека не включает):
+Для работы с AsyncStorage (только для несекретных данных):
 
 ```bash
-npm install idb
+# Для Expo
+npx expo install @react-native-async-storage/async-storage
+
+# Для React Native CLI
+npm install @react-native-async-storage/async-storage
 ```
 
-## Архитектура FSD
+### Шаг 4: Установка полифиллов (если нужно)
 
-### Entity: `modules/entities/encryption/`
+Если библиотека libsignal использует Node.js API, может потребоваться полифилл:
 
-**Структура**:
-```
-entities/encryption/
-├── index.ts
-├── ui/
-│   └── EncryptionStatus/
-│       └── EncryptionStatus.tsx        # Индикатор статуса шифрования
-├── lib/
-│   ├── api/
-│   │   └── encryption.service.ts       # API для обмена ключами
-│   ├── hook/
-│   │   ├── useEncryption.hook.ts       # Хук для работы с шифрованием
-│   │   ├── useKeyExchange.hook.ts      # Хук для обмена ключами
-│   │   ├── useEncryptedMessage.hook.ts # Хук для шифрования/расшифровки сообщений
-│   │   └── useDevice.hook.ts           # Хук для управления deviceId
-│   ├── crypto/
-│   │   ├── signal-protocol.ts          # Обёртка над libsignal
-│   │   ├── signal-store.ts             # Signal Protocol Store (IndexedDB)
-│   │   ├── device-manager.ts            # Управление deviceId
-│   │   └── storage.ts                   # Хранение ключей (IndexedDB)
-│   └── utils/
-│       └── encryption.utils.ts         # Утилиты шифрования
-└── model/
-    └── types.ts                         # Типы для шифрования
+```bash
+npm install react-native-get-random-values
 ```
 
-### Feature: `modules/features/encrypted-chat/`
+В `index.js` или `App.tsx` (в самом начале):
 
-**Структура**:
+```typescript
+import 'react-native-get-random-values';
 ```
-features/encrypted-chat/
-├── index.ts
-├── ui/
-│   ├── EncryptedChatIndicator/
-│   │   └── EncryptedChatIndicator.tsx  # Индикатор зашифрованного чата
-│   └── KeyExchangeDialog/
-│       └── KeyExchangeDialog.tsx       # Диалог обмена ключами
-└── lib/
-    └── hook/
-        └── useEncryptedChat.hook.ts    # Хук для зашифрованного чата
+
+## Архитектура
+
+### Структура модулей
+
+```
+src/
+├── modules/
+│   ├── encryption/
+│   │   ├── index.ts
+│   │   ├── components/
+│   │   │   └── EncryptionStatus.tsx
+│   │   ├── hooks/
+│   │   │   ├── useEncryption.ts
+│   │   │   ├── useKeyExchange.ts
+│   │   │   ├── useEncryptedMessage.ts
+│   │   │   └── useDevice.ts
+│   │   ├── services/
+│   │   │   ├── encryption.service.ts
+│   │   │   └── signal-protocol.service.ts
+│   │   ├── storage/
+│   │   │   ├── secure-storage.ts
+│   │   │   ├── signal-store.ts
+│   │   │   └── device-manager.ts
+│   │   └── types/
+│   │       └── encryption.types.ts
+│   └── messages/
+│       └── hooks/
+│           └── useSendMessage.ts (обновить)
 ```
 
 ## Детальная реализация
 
-### 1. Управление deviceId
-
-**ВАЖНО**: deviceId генерируется клиентом и хранится локально.
+### 1. Secure Storage обёртка
 
 ```typescript
-// lib/crypto/device-manager.ts
+// storage/secure-storage.ts
+import * as SecureStore from 'expo-secure-store';
+// или для React Native CLI:
+// import EncryptedStorage from 'react-native-encrypted-storage';
+
+export class SecureStorage {
+    /**
+     * Сохранить значение в Secure Storage
+     */
+    static async setItem(key: string, value: string): Promise<void> {
+        try {
+            await SecureStore.setItemAsync(key, value);
+        } catch (error) {
+            console.error('Failed to save to secure storage:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Получить значение из Secure Storage
+     */
+    static async getItem(key: string): Promise<string | null> {
+        try {
+            return await SecureStore.getItemAsync(key);
+        } catch (error) {
+            console.error('Failed to get from secure storage:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Удалить значение из Secure Storage
+     */
+    static async removeItem(key: string): Promise<void> {
+        try {
+            await SecureStore.deleteItemAsync(key);
+        } catch (error) {
+            console.error('Failed to remove from secure storage:', error);
+        }
+    }
+
+    /**
+     * Очистить все значения
+     */
+    static async clear(): Promise<void> {
+        // SecureStore не имеет метода clear, удаляем по ключам
+        // В production нужно хранить список ключей
+    }
+}
+```
+
+### 2. Управление deviceId
+
+```typescript
+// storage/device-manager.ts
 import { v4 as uuidv4 } from 'uuid';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
+import DeviceInfo from 'react-native-device-info'; // опционально
 
 const DEVICE_ID_KEY = 'signal_device_id';
 const DEVICE_NAME_KEY = 'signal_device_name';
@@ -149,80 +227,71 @@ const DEVICE_NAME_KEY = 'signal_device_name';
 export class DeviceManager {
     /**
      * Получить или создать deviceId
+     *
+     * ВАЖНО: deviceId НЕ должен быть:
+     * - MAC address
+     * - hardware id
+     * - IMEI
+     *
+     * Только случайный UUID v4
      */
     static async getDeviceId(): Promise<string> {
-        if (typeof window === 'undefined') {
-            throw new Error('DeviceManager can only be used in browser');
+        try {
+            let deviceId = await AsyncStorage.getItem(DEVICE_ID_KEY);
+
+            if (!deviceId) {
+                // Генерируем новый UUID v4
+                deviceId = uuidv4();
+                await AsyncStorage.setItem(DEVICE_ID_KEY, deviceId);
+            }
+
+            return deviceId;
+        } catch (error) {
+            console.error('Failed to get device ID:', error);
+            throw error;
         }
-
-        let deviceId = localStorage.getItem(DEVICE_ID_KEY);
-
-        if (!deviceId) {
-            // Генерируем новый UUID v4
-            deviceId = uuidv4();
-            localStorage.setItem(DEVICE_ID_KEY, deviceId);
-        }
-
-        return deviceId;
     }
 
     /**
      * Получить имя устройства
      */
-    static getDeviceName(): string {
-        if (typeof window === 'undefined') {
-            return 'Unknown Device';
-        }
+    static async getDeviceName(): Promise<string> {
+        try {
+            let deviceName = await AsyncStorage.getItem(DEVICE_NAME_KEY);
 
-        let deviceName = localStorage.getItem(DEVICE_NAME_KEY);
+            if (!deviceName) {
+                // Определяем тип устройства
+                const deviceType = Platform.OS === 'ios' ? 'iOS' : 'Android';
+                const deviceModel = await DeviceInfo.getModel(); // опционально
 
-        if (!deviceName) {
-            // Определяем тип устройства
-            const userAgent = navigator.userAgent;
-            let name = 'Web Browser';
+                deviceName = `${deviceType} Device`;
+                if (deviceModel) {
+                    deviceName = `${deviceType} ${deviceModel}`;
+                }
 
-            if (/Mobile|Android|iPhone|iPad/.test(userAgent)) {
-                name = 'Mobile Browser';
-            } else if (/Chrome/.test(userAgent)) {
-                name = 'Chrome Browser';
-            } else if (/Firefox/.test(userAgent)) {
-                name = 'Firefox Browser';
-            } else if (/Safari/.test(userAgent)) {
-                name = 'Safari Browser';
-            } else if (/Edge/.test(userAgent)) {
-                name = 'Edge Browser';
+                await AsyncStorage.setItem(DEVICE_NAME_KEY, deviceName);
             }
 
-            deviceName = name;
-            localStorage.setItem(DEVICE_NAME_KEY, deviceName);
+            return deviceName;
+        } catch (error) {
+            console.error('Failed to get device name:', error);
+            return 'Mobile Device';
         }
-
-        return deviceName;
     }
 
     /**
      * Получить тип устройства
      */
     static getDeviceType(): 'mobile' | 'web' | 'desktop' {
-        if (typeof window === 'undefined') {
-            return 'web';
-        }
-
-        const userAgent = navigator.userAgent;
-
-        if (/Mobile|Android|iPhone|iPad/.test(userAgent)) {
-            return 'mobile';
-        }
-
-        return 'web';
+        return 'mobile';
     }
 }
 ```
 
-### 2. Signal Protocol Store (IndexedDB)
+### 3. Signal Store для React Native
 
 ```typescript
-// lib/crypto/signal-store.ts
+// storage/signal-store.ts
 import {
     IdentityKeyPair,
     PreKeyBundle,
@@ -230,149 +299,134 @@ import {
     SignedPreKeyPair,
     SessionRecord,
 } from '@privacyresearch/libsignal-protocol-typescript';
-import { openDB, DBSchema, IDBPDatabase } from 'idb';
+import { SecureStorage } from './secure-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-interface SignalDB extends DBSchema {
-    identity: {
-        key: string;
-        value: IdentityKeyPair;
-    };
-    prekeys: {
-        key: number;
-        value: PreKeyPair;
-    };
-    signedPreKeys: {
-        key: number;
-        value: SignedPreKeyPair;
-    };
-    sessions: {
-        key: string; // `${userId}:${deviceId}`
-        value: SessionRecord;
-    };
-    senderKeys: {
-        key: string; // `${groupId}:${senderId}:${deviceId}`
-        value: any; // Для групповых чатов
-    };
-}
+// Ключи для хранения в Secure Storage
+const IDENTITY_KEY_KEY = 'signal_identity_key';
+const REGISTRATION_ID_KEY = 'signal_registration_id';
+
+// Ключи для хранения в AsyncStorage (несекретные данные)
+const PREKEYS_KEY = 'signal_prekeys';
+const SIGNED_PREKEYS_KEY = 'signal_signed_prekeys';
+const SESSIONS_KEY = 'signal_sessions';
 
 export class SignalStore {
-    private db: IDBPDatabase<SignalDB> | null = null;
-    private dbName = 'signal_protocol_db';
-    private version = 1;
-
-    async init(): Promise<void> {
-        if (typeof window === 'undefined') {
-            throw new Error('SignalStore can only be used in browser');
-        }
-
-        this.db = await openDB<SignalDB>(this.dbName, this.version, {
-            upgrade(db) {
-                // Identity key
-                if (!db.objectStoreNames.contains('identity')) {
-                    db.createObjectStore('identity');
-                }
-
-                // Prekeys
-                if (!db.objectStoreNames.contains('prekeys')) {
-                    const prekeysStore = db.createObjectStore('prekeys');
-                    prekeysStore.createIndex('keyId', 'keyId', { unique: true });
-                }
-
-                // Signed prekeys
-                if (!db.objectStoreNames.contains('signedPreKeys')) {
-                    db.createObjectStore('signedPreKeys');
-                }
-
-                // Sessions
-                if (!db.objectStoreNames.contains('sessions')) {
-                    db.createObjectStore('sessions');
-                }
-
-                // Sender keys (для групповых чатов)
-                if (!db.objectStoreNames.contains('senderKeys')) {
-                    db.createObjectStore('senderKeys');
-                }
-            },
-        });
-    }
-
-    // Identity Key
+    /**
+     * Identity Key Pair
+     */
     async getIdentityKeyPair(): Promise<IdentityKeyPair | undefined> {
-        if (!this.db) await this.init();
-        return this.db!.get('identity', 'key');
+        const data = await SecureStorage.getItem(IDENTITY_KEY_KEY);
+        if (!data) return undefined;
+        return JSON.parse(data);
     }
 
     async saveIdentityKeyPair(keyPair: IdentityKeyPair): Promise<void> {
-        if (!this.db) await this.init();
-        await this.db!.put('identity', keyPair, 'key');
+        await SecureStorage.setItem(IDENTITY_KEY_KEY, JSON.stringify(keyPair));
     }
 
-    // Prekeys
+    /**
+     * Registration ID
+     */
+    async getRegistrationId(): Promise<number | undefined> {
+        const data = await SecureStorage.getItem(REGISTRATION_ID_KEY);
+        return data ? parseInt(data, 10) : undefined;
+    }
+
+    async saveRegistrationId(registrationId: number): Promise<void> {
+        await SecureStorage.setItem(REGISTRATION_ID_KEY, registrationId.toString());
+    }
+
+    /**
+     * Prekeys
+     */
     async getPreKey(keyId: number): Promise<PreKeyPair | undefined> {
-        if (!this.db) await this.init();
-        return this.db!.get('prekeys', keyId);
+        const data = await AsyncStorage.getItem(PREKEYS_KEY);
+        if (!data) return undefined;
+        const prekeys = JSON.parse(data);
+        return prekeys[keyId];
     }
 
     async savePreKey(keyId: number, preKey: PreKeyPair): Promise<void> {
-        if (!this.db) await this.init();
-        await this.db!.put('prekeys', preKey, keyId);
+        const data = await AsyncStorage.getItem(PREKEYS_KEY);
+        const prekeys = data ? JSON.parse(data) : {};
+        prekeys[keyId] = preKey;
+        await AsyncStorage.setItem(PREKEYS_KEY, JSON.stringify(prekeys));
     }
 
     async removePreKey(keyId: number): Promise<void> {
-        if (!this.db) await this.init();
-        await this.db!.delete('prekeys', keyId);
+        const data = await AsyncStorage.getItem(PREKEYS_KEY);
+        if (!data) return;
+        const prekeys = JSON.parse(data);
+        delete prekeys[keyId];
+        await AsyncStorage.setItem(PREKEYS_KEY, JSON.stringify(prekeys));
     }
 
-    // Signed Prekeys
+    /**
+     * Signed Prekeys
+     */
     async getSignedPreKey(keyId: number): Promise<SignedPreKeyPair | undefined> {
-        if (!this.db) await this.init();
-        return this.db!.get('signedPreKeys', keyId);
+        const data = await AsyncStorage.getItem(SIGNED_PREKEYS_KEY);
+        if (!data) return undefined;
+        const signedPreKeys = JSON.parse(data);
+        return signedPreKeys[keyId];
     }
 
     async saveSignedPreKey(keyId: number, signedPreKey: SignedPreKeyPair): Promise<void> {
-        if (!this.db) await this.init();
-        await this.db!.put('signedPreKeys', signedPreKey, keyId);
+        const data = await AsyncStorage.getItem(SIGNED_PREKEYS_KEY);
+        const signedPreKeys = data ? JSON.parse(data) : {};
+        signedPreKeys[keyId] = signedPreKey;
+        await AsyncStorage.setItem(SIGNED_PREKEYS_KEY, JSON.stringify(signedPreKeys));
     }
 
-    // Sessions
+    /**
+     * Sessions
+     */
     async getSession(userId: string, deviceId: string): Promise<SessionRecord | undefined> {
-        if (!this.db) await this.init();
         const key = `${userId}:${deviceId}`;
-        return this.db!.get('sessions', key);
+        const data = await AsyncStorage.getItem(SESSIONS_KEY);
+        if (!data) return undefined;
+        const sessions = JSON.parse(data);
+        return sessions[key];
     }
 
     async saveSession(userId: string, deviceId: string, session: SessionRecord): Promise<void> {
-        if (!this.db) await this.init();
         const key = `${userId}:${deviceId}`;
-        await this.db!.put('sessions', session, key);
+        const data = await AsyncStorage.getItem(SESSIONS_KEY);
+        const sessions = data ? JSON.parse(data) : {};
+        sessions[key] = session;
+        await AsyncStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
     }
 
     async removeSession(userId: string, deviceId: string): Promise<void> {
-        if (!this.db) await this.init();
         const key = `${userId}:${deviceId}`;
-        await this.db!.delete('sessions', key);
+        const data = await AsyncStorage.getItem(SESSIONS_KEY);
+        if (!data) return;
+        const sessions = JSON.parse(data);
+        delete sessions[key];
+        await AsyncStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
     }
 
     async removeAllSessions(userId: string): Promise<void> {
-        if (!this.db) await this.init();
-        const tx = this.db!.transaction('sessions', 'readwrite');
-        const store = tx.objectStore('sessions');
+        const data = await AsyncStorage.getItem(SESSIONS_KEY);
+        if (!data) return;
+        const sessions = JSON.parse(data);
 
-        for await (const cursor of store.iterate()) {
-            if (cursor.key.startsWith(`${userId}:`)) {
-                await cursor.delete();
+        Object.keys(sessions).forEach(key => {
+            if (key.startsWith(`${userId}:`)) {
+                delete sessions[key];
             }
-        }
+        });
 
-        await tx.done;
+        await AsyncStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions));
     }
 }
 ```
 
-### 3. Signal Protocol обёртка
+### 4. Signal Protocol Service
 
 ```typescript
-// lib/crypto/signal-protocol.ts
+// services/signal-protocol.service.ts
 import {
     KeyHelper,
     SessionBuilder,
@@ -383,10 +437,11 @@ import {
     SignedPreKeyPair,
     IdentityKeyPair,
 } from '@privacyresearch/libsignal-protocol-typescript';
-import { SignalStore } from './signal-store';
-import { DeviceManager } from './device-manager';
+import { SignalStore } from '../storage/signal-store';
+import { DeviceManager } from '../storage/device-manager';
+import { EncryptionService } from './encryption.service';
 
-export class SignalProtocolManager {
+export class SignalProtocolService {
     private store: SignalStore;
     private registrationId: number | null = null;
     private deviceId: string | null = null;
@@ -399,8 +454,6 @@ export class SignalProtocolManager {
      * Инициализация: получение deviceId и регистрация на сервере
      */
     async initialize(): Promise<void> {
-        await this.store.init();
-
         // Получаем deviceId
         this.deviceId = await DeviceManager.getDeviceId();
 
@@ -429,6 +482,7 @@ export class SignalProtocolManager {
         // Registration ID
         const registrationId = await KeyHelper.generateRegistrationId();
         this.registrationId = registrationId;
+        await this.store.saveRegistrationId(registrationId);
 
         // Signed PreKey
         const signedPreKeyId = 1;
@@ -482,7 +536,7 @@ export class SignalProtocolManager {
         const encryptionService = new EncryptionService();
         await encryptionService.registerDevice({
             deviceId: this.deviceId!,
-            name: DeviceManager.getDeviceName(),
+            name: await DeviceManager.getDeviceName(),
             type: DeviceManager.getDeviceType(),
             registrationId: keys.registrationId,
             identityKey: this.serializeKey(keys.identityKeyPair.pubKey),
@@ -597,6 +651,7 @@ export class SignalProtocolManager {
 
     // Утилиты для сериализации/десериализации ключей
     private serializeKey(key: Uint8Array): string {
+        // В React Native используем base64
         return Buffer.from(key).toString('base64');
     }
 
@@ -614,11 +669,11 @@ export class SignalProtocolManager {
 }
 ```
 
-### 4. API Service
+### 5. API Service
 
 ```typescript
-// lib/api/encryption.service.ts
-import { apiClient } from '@/modules/shared/lib/api';
+// services/encryption.service.ts
+import { apiClient } from '../api'; // ваш API клиент
 
 export interface RegisterDeviceDto {
     deviceId: string;
@@ -668,52 +723,57 @@ export class EncryptionService {
 }
 ```
 
-### 5. React Hooks
+### 6. React Hooks
 
 ```typescript
-// lib/hook/useEncryption.hook.ts
+// hooks/useEncryption.ts
 import { useEffect, useState } from 'react';
-import { SignalProtocolManager } from '../crypto/signal-protocol';
+import { SignalProtocolService } from '../services/signal-protocol.service';
 
 export const useEncryption = () => {
-    const [signalManager, setSignalManager] = useState<SignalProtocolManager | null>(null);
+    const [signalService, setSignalService] = useState<SignalProtocolService | null>(null);
     const [isInitialized, setIsInitialized] = useState(false);
 
     useEffect(() => {
         const init = async () => {
-            const manager = new SignalProtocolManager();
-            await manager.initialize();
+            try {
+                const service = new SignalProtocolService();
+                await service.initialize();
 
-            // Проверяем, зарегистрировано ли устройство
-            const encryptionService = new EncryptionService();
-            const devices = await encryptionService.getDevices();
-            const deviceId = await DeviceManager.getDeviceId();
+                // Проверяем, зарегистрировано ли устройство
+                const encryptionService = new EncryptionService();
+                const devices = await encryptionService.getDevices();
+                const deviceId = await DeviceManager.getDeviceId();
 
-            const isRegistered = devices.some(d => d.deviceId === deviceId);
+                const isRegistered = devices.some(d => d.deviceId === deviceId);
 
-            if (!isRegistered) {
-                await manager.registerDevice();
+                if (!isRegistered) {
+                    await service.registerDevice();
+                }
+
+                setSignalService(service);
+                setIsInitialized(true);
+            } catch (error) {
+                console.error('Failed to initialize encryption:', error);
             }
-
-            setSignalManager(manager);
-            setIsInitialized(true);
         };
 
         init();
     }, []);
 
-    return { signalManager, isInitialized };
+    return { signalService, isInitialized };
 };
 ```
 
 ```typescript
-// lib/hook/useEncryptedMessage.hook.ts
+// hooks/useEncryptedMessage.ts
 import { useEncryption } from './useEncryption';
-import { SignalProtocolManager } from '../crypto/signal-protocol';
-import { EncryptionService } from '../api/encryption.service';
+import { SignalProtocolService } from '../services/signal-protocol.service';
+import { EncryptionService } from '../services/encryption.service';
+import { DeviceManager } from '../storage/device-manager';
 
 export const useEncryptedMessage = (chatId: string, recipientId: string) => {
-    const { signalManager, isInitialized } = useEncryption();
+    const { signalService, isInitialized } = useEncryption();
 
     const encryptMessage = async (content: string): Promise<Array<{
         toDeviceId: string;
@@ -721,24 +781,24 @@ export const useEncryptedMessage = (chatId: string, recipientId: string) => {
         messageType: 'prekey' | 'whisper';
         registrationId: number;
     }>> => {
-        if (!signalManager || !isInitialized) {
+        if (!signalService || !isInitialized) {
             throw new Error('Signal Protocol not initialized');
         }
 
         // Получаем все устройства получателя
-        const bundles = await signalManager.getPreKeyBundles(recipientId);
+        const bundles = await signalService.getPreKeyBundles(recipientId);
 
         const encryptedMessages = await Promise.all(
             bundles.map(async (bundle) => {
                 // Создаём сессию, если её нет
                 try {
-                    await signalManager.createSession(recipientId, bundle.deviceId, bundle);
+                    await signalService.createSession(recipientId, bundle.deviceId, bundle);
                 } catch (error) {
                     // Сессия уже существует - это нормально
                 }
 
                 // Шифруем сообщение
-                const encrypted = await signalManager.encryptMessage(
+                const encrypted = await signalService.encryptMessage(
                     recipientId,
                     bundle.deviceId,
                     content
@@ -763,7 +823,7 @@ export const useEncryptedMessage = (chatId: string, recipientId: string) => {
         messageType: 'prekey' | 'whisper',
         registrationId?: number
     ): Promise<string> => {
-        if (!signalManager || !isInitialized) {
+        if (!signalService || !isInitialized) {
             throw new Error('Signal Protocol not initialized');
         }
 
@@ -774,11 +834,11 @@ export const useEncryptedMessage = (chatId: string, recipientId: string) => {
             const bundle = bundles.find(b => b.deviceId === deviceId);
 
             if (bundle) {
-                await signalManager.createSession(senderId, deviceId, bundle as any);
+                await signalService.createSession(senderId, deviceId, bundle as any);
             }
         }
 
-        return await signalManager.decryptMessage(senderId, deviceId, {
+        return await signalService.decryptMessage(senderId, deviceId, {
             type: messageType,
             body: encryptedContent,
             registrationId,
@@ -789,20 +849,19 @@ export const useEncryptedMessage = (chatId: string, recipientId: string) => {
 };
 ```
 
-### 6. Интеграция с сообщениями
+### 7. Интеграция с сообщениями
 
 **Обновление useSendMessage**:
 
 ```typescript
-// В entities/messages/lib/hook/useSendMessage.hook.ts
-import { useEncryptedMessage } from '@/modules/entities/encryption/lib/hook/useEncryptedMessage.hook';
-import { DeviceManager } from '@/modules/entities/encryption/lib/crypto/device-manager';
+// hooks/useSendMessage.ts
+import { useEncryptedMessage } from '../encryption/hooks/useEncryptedMessage';
+import { DeviceManager } from '../encryption/storage/device-manager';
 
-const useSendMessage = (chatId: string, recipientId: string) => {
+export const useSendMessage = (chatId: string, recipientId: string) => {
     const { encryptMessage } = useEncryptedMessage(chatId, recipientId);
     const chat = useChat(chatId);
     const isEncrypted = chat?.type === 'SECRET' || chat?.isEncrypted;
-    const currentDeviceId = await DeviceManager.getDeviceId();
 
     const sendMessage = async (content: string) => {
         if (isEncrypted) {
@@ -831,22 +890,26 @@ const useSendMessage = (chatId: string, recipientId: string) => {
 **Обновление useChatMessages**:
 
 ```typescript
-// В entities/messages/lib/hook/useChatMessages.hook.ts
-import { useEncryptedMessage } from '@/modules/entities/encryption/lib/hook/useEncryptedMessage.hook';
-import { DeviceManager } from '@/modules/entities/encryption/lib/crypto/device-manager';
+// hooks/useChatMessages.ts
+import { useEncryptedMessage } from '../encryption/hooks/useEncryptedMessage';
+import { DeviceManager } from '../encryption/storage/device-manager';
 
-const useChatMessages = (chatId: string) => {
+export const useChatMessages = (chatId: string) => {
     const { decryptMessage } = useEncryptedMessage(chatId, senderId);
     const chat = useChat(chatId);
     const isEncrypted = chat?.type === 'SECRET' || chat?.isEncrypted;
-    const currentDeviceId = await DeviceManager.getDeviceId();
+    const [currentDeviceId, setCurrentDeviceId] = useState<string | null>(null);
+
+    useEffect(() => {
+        DeviceManager.getDeviceId().then(setCurrentDeviceId);
+    }, []);
 
     const messages = useQuery({
         queryKey: ['messages', chatId],
         queryFn: async () => {
             const messages = await api.messagesGetByChatId(chatId);
 
-            if (isEncrypted) {
+            if (isEncrypted && currentDeviceId) {
                 // Расшифровываем только сообщения для текущего устройства
                 return Promise.all(
                     messages.map(async (msg) => {
@@ -878,47 +941,15 @@ const useChatMessages = (chatId: string) => {
 };
 ```
 
-### 7. Интеграция с LiveKit (звонки)
-
-**LiveKit уже поддерживает E2EE**:
-
-```typescript
-// В features/call/lib/hook/useLiveKitCall.hook.ts
-import { Room, createE2EEKeyProvider } from 'livekit-client';
-
-const useLiveKitCall = (roomName: string) => {
-    const { token } = useLivekitToken(roomName);
-
-    const connect = async () => {
-        // Создаём key provider для E2EE
-        const keyProvider = createE2EEKeyProvider();
-
-        const room = new Room({
-            // Включаем E2EE для звонков
-            e2ee: {
-                keyProvider: keyProvider,
-            },
-        });
-
-        await room.connect(LIVEKIT_URL, token);
-
-        // Настройка медиа с шифрованием
-        await room.localParticipant.enableCameraAndMicrophone({
-            videoCodec: 'vp9', // Поддержка E2EE
-        });
-    };
-
-    return { connect };
-};
-```
-
 ### 8. UI компоненты
 
 **EncryptionStatus**:
 
 ```typescript
-// ui/EncryptionStatus/EncryptionStatus.tsx
-import { Lock } from 'lucide-react';
+// components/EncryptionStatus.tsx
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { Lock } from 'lucide-react-native'; // или другая иконка
 
 export const EncryptionStatus = ({ chatId }: { chatId: string }) => {
     const { isEncrypted, encryptionStatus } = useEncryption(chatId);
@@ -926,15 +957,27 @@ export const EncryptionStatus = ({ chatId }: { chatId: string }) => {
     if (!isEncrypted) return null;
 
     return (
-        <div className="flex items-center gap-2 text-xs text-gray-500">
-            <Lock className="w-3 h-3" />
-            <span>
+        <View style={styles.container}>
+            <Lock size={12} color="#666" />
+            <Text style={styles.text}>
                 {encryptionStatus === 'verified' && 'Зашифровано и проверено'}
                 {encryptionStatus === 'unverified' && 'Зашифровано (не проверено)'}
-            </span>
-        </div>
+            </Text>
+        </View>
     );
 };
+
+const styles = StyleSheet.create({
+    container: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    text: {
+        fontSize: 12,
+        color: '#666',
+    },
+});
 ```
 
 ## Задачи
@@ -942,14 +985,17 @@ export const EncryptionStatus = ({ chatId }: { chatId: string }) => {
 ### Этап 1: Установка и базовая инфраструктура
 
 - [ ] Установить `@privacyresearch/libsignal-protocol-typescript`
-- [ ] Установить `uuid` и `idb`
-- [ ] Создать entity `encryption` с базовой структурой
+- [ ] Установить `expo-secure-store` или `react-native-encrypted-storage`
+- [ ] Установить `uuid` и `@react-native-async-storage/async-storage`
+- [ ] Установить `react-native-get-random-values` (если нужно)
+- [ ] Создать модуль `encryption` с базовой структурой
 - [ ] Реализовать `DeviceManager` для управления deviceId
-- [ ] Реализовать `SignalStore` для хранения ключей в IndexedDB
+- [ ] Реализовать `SecureStorage` обёртку
+- [ ] Реализовать `SignalStore` для хранения ключей
 
 ### Этап 2: Signal Protocol
 
-- [ ] Реализовать `SignalProtocolManager` (обёртка над libsignal)
+- [ ] Реализовать `SignalProtocolService` (обёртка над libsignal)
 - [ ] Реализовать регистрацию устройства на сервере
 - [ ] Реализовать создание сессий (X3DH)
 - [ ] Реализовать шифрование/расшифровку сообщений
@@ -988,37 +1034,39 @@ export const EncryptionStatus = ({ chatId }: { chatId: string }) => {
 
 ### Создать
 
-- `modules/entities/encryption/` - новый entity
-- `modules/entities/encryption/lib/crypto/device-manager.ts`
-- `modules/entities/encryption/lib/crypto/signal-store.ts`
-- `modules/entities/encryption/lib/crypto/signal-protocol.ts`
-- `modules/entities/encryption/lib/api/encryption.service.ts`
-- `modules/entities/encryption/lib/hook/useEncryption.hook.ts`
-- `modules/entities/encryption/lib/hook/useEncryptedMessage.hook.ts`
-- `modules/entities/encryption/lib/hook/useDevice.hook.ts`
-- `modules/features/encrypted-chat/` - новый feature
+- `src/modules/encryption/` - новый модуль
+- `src/modules/encryption/storage/device-manager.ts`
+- `src/modules/encryption/storage/secure-storage.ts`
+- `src/modules/encryption/storage/signal-store.ts`
+- `src/modules/encryption/services/signal-protocol.service.ts`
+- `src/modules/encryption/services/encryption.service.ts`
+- `src/modules/encryption/hooks/useEncryption.ts`
+- `src/modules/encryption/hooks/useEncryptedMessage.ts`
+- `src/modules/encryption/hooks/useDevice.ts`
+- `src/modules/encryption/components/EncryptionStatus.tsx`
 
 ### Обновить
 
-- `modules/entities/messages/lib/hook/useSendMessage.hook.ts`
-- `modules/entities/messages/lib/hook/useChatMessages.hook.ts`
-- `modules/features/call/lib/hook/useLiveKitCall.hook.ts`
-- `modules/widgetes/chat/` - добавить индикаторы шифрования
+- `src/modules/messages/hooks/useSendMessage.ts`
+- `src/modules/messages/hooks/useChatMessages.ts`
+- `src/modules/call/hooks/useLiveKitCall.ts`
 
 ## Связанные задачи
 
 - [Backend задача по сквозному шифрованию](../../backend/tasks/end-to-end-encryption.md) - связанная backend задача
-- [React Native задача по сквозному шифрованию](./end-to-end-encryption-react-native.md) - связанная React Native задача
+- [Next.js Frontend задача по сквозному шифрованию](./end-to-end-encryption.md) - связанная Next.js задача
 
 ## Примечания
 
 - **Сообщения видны только на том устройстве, на котором они были расшифрованы**
+- **НЕЛЬЗЯ хранить приватные ключи в AsyncStorage** - только в Secure Storage
 - Использовать проверенные криптографические библиотеки
 - Не изобретать собственные криптографические алгоритмы
 - Следовать принципам Signal Protocol
 - Обеспечить совместимость с существующими чатами (постепенное внедрение)
-- Тестировать на разных устройствах и браузерах
-- **deviceId генерируется клиентом и хранится в localStorage**
+- Тестировать на разных устройствах (iOS и Android)
+- **deviceId генерируется клиентом и хранится в AsyncStorage (это не секрет)**
+- **Приватные ключи хранятся в Secure Storage**
 - **Каждое устройство имеет свой набор ключей**
 - **При потере устройства все сессии с этим устройством становятся недействительными**
 
@@ -1026,9 +1074,32 @@ export const EncryptionStatus = ({ chatId }: { chatId: string }) => {
 
 - [ ] HTTPS only для всех API запросов
 - [ ] WSS only для WebSocket
-- [ ] IndexedDB для хранения ключей (не localStorage)
+- [ ] Secure Storage для приватных ключей (НЕ AsyncStorage)
+- [ ] AsyncStorage только для несекретных данных (deviceId, deviceName)
 - [ ] Автоматическая ротация signed prekeys
 - [ ] Мониторинг количества one-time prekeys
 - [ ] Уведомление пользователей о новых устройствах
 - [ ] Предупреждение при удалении устройства
 - [ ] Backup ключей (опционально, через encrypted backup)
+- [ ] Тестирование на iOS и Android
+
+## Дополнительные зависимости (опционально)
+
+Если нужна дополнительная информация об устройстве:
+
+```bash
+npm install react-native-device-info
+```
+
+Для работы с Buffer в React Native (если libsignal требует):
+
+```bash
+npm install buffer
+```
+
+В `index.js` или `App.tsx`:
+
+```typescript
+import { Buffer } from 'buffer';
+global.Buffer = Buffer;
+```

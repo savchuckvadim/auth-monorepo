@@ -1,71 +1,123 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsString, IsOptional, MaxLength, IsNumber, IsBoolean, IsEnum } from "class-validator";
-import { Post, PostLike } from "generated/prisma";
-import { FullPost, PostAuthor } from "../type/post.type";
+import { ApiProperty } from '@nestjs/swagger';
+import {
+    IsString,
+    IsOptional,
+    MaxLength,
+    IsNumber,
+    IsBoolean,
+    IsEnum,
+} from 'class-validator';
+import { Post, PostLike } from 'generated/prisma';
+import { FullPost, PostAuthor } from '../type/post.type';
 
 export class CreatePostDto {
-    @ApiProperty({ description: 'Text content', example: 'My post text', required: false })
+    @ApiProperty({
+        description: 'Text content',
+        example: 'My post text',
+        required: false,
+    })
     @IsOptional()
     @IsString()
     @MaxLength(2000, { message: 'Text must not exceed 2000 characters' })
     text?: string;
 
-    @ApiProperty({ description: 'Image URL', example: 'https://example.com/image.jpg', required: false })
+    @ApiProperty({
+        description: 'Image URL',
+        example: 'https://example.com/image.jpg',
+        required: false,
+    })
     @IsOptional()
     @IsString()
     @MaxLength(500, { message: 'Image URL must not exceed 500 characters' })
     image?: string;
 
-    @ApiProperty({ description: 'Audio URL', example: 'https://example.com/audio.mp3', required: false })
+    @ApiProperty({
+        description: 'Audio URL',
+        example: 'https://example.com/audio.mp3',
+        required: false,
+    })
     @IsOptional()
     @IsString()
     @MaxLength(500, { message: 'Audio URL must not exceed 500 characters' })
     audio?: string;
 
-    @ApiProperty({ description: 'Video URL', example: 'https://example.com/video.mp4', required: false })
+    @ApiProperty({
+        description: 'Video URL',
+        example: 'https://example.com/video.mp4',
+        required: false,
+    })
     @IsOptional()
     @IsString()
     @MaxLength(500, { message: 'Video URL must not exceed 500 characters' })
     video?: string;
 
-    @ApiProperty({ description: 'Link URL', example: 'https://example.com', required: false })
+    @ApiProperty({
+        description: 'Link URL',
+        example: 'https://example.com',
+        required: false,
+    })
     @IsOptional()
     @IsString()
     @MaxLength(500, { message: 'Link URL must not exceed 500 characters' })
     link?: string;
 
-    @ApiProperty({ description: 'Wall user ID (on whose wall to post). If not provided, post on own wall', example: 'user-id', required: false })
+    @ApiProperty({
+        description:
+            'Wall user ID (on whose wall to post). If not provided, post on own wall',
+        example: 'user-id',
+        required: false,
+    })
     @IsOptional()
     @IsString()
     wallUserId?: string;
 }
 
 export class UpdatePostDto {
-    @ApiProperty({ description: 'Text content', example: 'Updated post text', required: false })
+    @ApiProperty({
+        description: 'Text content',
+        example: 'Updated post text',
+        required: false,
+    })
     @IsOptional()
     @IsString()
     @MaxLength(2000, { message: 'Text must not exceed 2000 characters' })
     text?: string;
 
-    @ApiProperty({ description: 'Image URL', example: 'https://example.com/image.jpg', required: false })
+    @ApiProperty({
+        description: 'Image URL',
+        example: 'https://example.com/image.jpg',
+        required: false,
+    })
     @IsOptional()
     @IsString()
     @MaxLength(500, { message: 'Image URL must not exceed 500 characters' })
     image?: string;
 
-    @ApiProperty({ description: 'Audio URL', example: 'https://example.com/audio.mp3', required: false })
+    @ApiProperty({
+        description: 'Audio URL',
+        example: 'https://example.com/audio.mp3',
+        required: false,
+    })
     @IsOptional()
     @IsString()
     @MaxLength(500, { message: 'Audio URL must not exceed 500 characters' })
     audio?: string;
 
-    @ApiProperty({ description: 'Video URL', example: 'https://example.com/video.mp4', required: false })
+    @ApiProperty({
+        description: 'Video URL',
+        example: 'https://example.com/video.mp4',
+        required: false,
+    })
     @IsOptional()
     @IsString()
     @MaxLength(500, { message: 'Video URL must not exceed 500 characters' })
     video?: string;
 
-    @ApiProperty({ description: 'Link URL', example: 'https://example.com', required: false })
+    @ApiProperty({
+        description: 'Link URL',
+        example: 'https://example.com',
+        required: false,
+    })
     @IsOptional()
     @IsString()
     @MaxLength(500, { message: 'Link URL must not exceed 500 characters' })
@@ -73,26 +125,37 @@ export class UpdatePostDto {
 }
 
 export class RepostDto {
-    @ApiProperty({ description: 'Text comment for repost', example: 'Great post!', required: false })
+    @ApiProperty({
+        description: 'Text comment for repost',
+        example: 'Great post!',
+        required: false,
+    })
     @IsOptional()
     @IsString()
     @MaxLength(2000, { message: 'Text must not exceed 2000 characters' })
     text?: string;
 }
 export class PostAuthorDto {
-
     @ApiProperty({ description: 'ID', example: '1', type: String })
     @IsString()
     id: string;
     @ApiProperty({ description: 'Name', example: 'John Doe', type: String })
     @IsString()
     name: string;
-    @ApiProperty({ description: 'Email', example: 'john@example.com', type: String })
+    @ApiProperty({
+        description: 'Email',
+        example: 'john@example.com',
+        type: String,
+    })
     @IsString()
     email: string;
 
-
-    @ApiProperty({ description: 'Avatar URL', example: 'https://example.com/avatar.jpg', required: false, type: String })
+    @ApiProperty({
+        description: 'Avatar URL',
+        example: 'https://example.com/avatar.jpg',
+        required: false,
+        type: String,
+    })
     @IsOptional()
     @IsString()
     avatar?: string | null;
@@ -105,9 +168,7 @@ export class PostAuthorDto {
     }
 }
 export class PostDto {
-    constructor(
-        post: FullPost
-    ) {
+    constructor(post: FullPost) {
         this.id = post.id;
         this.userId = post.userId;
         this.authorId = post.authorId || undefined;
@@ -126,13 +187,11 @@ export class PostDto {
         this.repostsCount = post.repostsCount || 0;
         this.isLiked = post.userLike?.isLike === true;
         this.isDisliked = post.userLike?.isLike === false;
-        this.originalPost = post.originalPost ? new PostDto(post.originalPost as any) : null;
-
-
+        this.originalPost = post.originalPost
+            ? new PostDto(post.originalPost as any)
+            : null;
 
         this.author = new PostAuthorDto(post.author);
-
-
     }
 
     @ApiProperty({ description: 'ID', example: '1' })
@@ -143,36 +202,56 @@ export class PostDto {
     @IsString()
     userId: string;
 
-    @ApiProperty({ description: 'Author ID (who wrote the post)', example: '1', required: false })
+    @ApiProperty({
+        description: 'Author ID (who wrote the post)',
+        example: '1',
+        required: false,
+    })
     @IsOptional()
     @IsString()
     authorId?: string;
 
-
-
-
-
-    @ApiProperty({ description: 'Text content', example: 'My post text', required: false })
+    @ApiProperty({
+        description: 'Text content',
+        example: 'My post text',
+        required: false,
+    })
     @IsOptional()
     @IsString()
     text?: string;
 
-    @ApiProperty({ description: 'Image URL', example: 'https://example.com/image.jpg', required: false })
+    @ApiProperty({
+        description: 'Image URL',
+        example: 'https://example.com/image.jpg',
+        required: false,
+    })
     @IsOptional()
     @IsString()
     image?: string;
 
-    @ApiProperty({ description: 'Audio URL', example: 'https://example.com/audio.mp3', required: false })
+    @ApiProperty({
+        description: 'Audio URL',
+        example: 'https://example.com/audio.mp3',
+        required: false,
+    })
     @IsOptional()
     @IsString()
     audio?: string;
 
-    @ApiProperty({ description: 'Video URL', example: 'https://example.com/video.mp4', required: false })
+    @ApiProperty({
+        description: 'Video URL',
+        example: 'https://example.com/video.mp4',
+        required: false,
+    })
     @IsOptional()
     @IsString()
     video?: string;
 
-    @ApiProperty({ description: 'Link URL', example: 'https://example.com', required: false })
+    @ApiProperty({
+        description: 'Link URL',
+        example: 'https://example.com',
+        required: false,
+    })
     @IsOptional()
     @IsString()
     link?: string;
@@ -181,18 +260,32 @@ export class PostDto {
     @IsNumber()
     views: number;
 
-    @ApiProperty({ description: 'Original post ID for reposts', example: '1', required: false })
+    @ApiProperty({
+        description: 'Original post ID for reposts',
+        example: '1',
+        required: false,
+    })
     @IsOptional()
     @IsString()
     originalPostId?: string;
 
-    @ApiProperty({ description: 'Created at', example: '2024-01-01T00:00:00.000Z' })
+    @ApiProperty({
+        description: 'Created at',
+        example: '2024-01-01T00:00:00.000Z',
+    })
     createdAt: Date;
 
-    @ApiProperty({ description: 'Updated at', example: '2024-01-01T00:00:00.000Z' })
+    @ApiProperty({
+        description: 'Updated at',
+        example: '2024-01-01T00:00:00.000Z',
+    })
     updatedAt: Date;
 
-    @ApiProperty({ description: 'Deleted at', example: '2024-01-01T00:00:00.000Z', required: false })
+    @ApiProperty({
+        description: 'Deleted at',
+        example: '2024-01-01T00:00:00.000Z',
+        required: false,
+    })
     @IsOptional()
     deletedAt?: Date;
 
@@ -216,11 +309,19 @@ export class PostDto {
     @IsBoolean()
     isDisliked: boolean;
 
-    @ApiProperty({ description: 'Original post if this is a repost', type: () => PostDto, required: false })
+    @ApiProperty({
+        description: 'Original post if this is a repost',
+        type: () => PostDto,
+        required: false,
+    })
     @IsOptional()
     originalPost?: PostDto | null;
 
-    @ApiProperty({ description: 'Author information', required: false, type: PostAuthorDto })
+    @ApiProperty({
+        description: 'Author information',
+        required: false,
+        type: PostAuthorDto,
+    })
     @IsOptional()
     author?: PostAuthorDto;
 }
@@ -230,17 +331,19 @@ export class PaginatedPostsDto {
     posts: PostDto[];
 
     @ApiProperty({
-        description: 'Cursor for next page (ISO date string). Use this value in the cursor query parameter for the next page.',
+        description:
+            'Cursor for next page (ISO date string). Use this value in the cursor query parameter for the next page.',
         example: '2024-01-01T00:00:00.000Z',
-        required: false
+        required: false,
     })
     @IsOptional()
     @IsString()
     nextCursor?: string;
 
     @ApiProperty({
-        description: 'Indicates if there are more posts available. If true, use nextCursor to fetch the next page.',
-        example: true
+        description:
+            'Indicates if there are more posts available. If true, use nextCursor to fetch the next page.',
+        example: true,
     })
     @IsBoolean()
     hasNext: boolean;
@@ -259,12 +362,18 @@ export class PostRepostUserDto {
     @IsString()
     email: string;
 
-    @ApiProperty({ description: 'Avatar URL', example: 'https://example.com/avatar.jpg', required: false })
+    @ApiProperty({
+        description: 'Avatar URL',
+        example: 'https://example.com/avatar.jpg',
+        required: false,
+    })
     @IsOptional()
     @IsString()
     avatar?: string;
 
-    @ApiProperty({ description: 'Repost date', example: '2024-01-01T00:00:00.000Z' })
+    @ApiProperty({
+        description: 'Repost date',
+        example: '2024-01-01T00:00:00.000Z',
+    })
     repostedAt: Date;
 }
-

@@ -1,17 +1,30 @@
-import { PrismaService } from "@/core";
-import { Injectable, NotFoundException, ForbiddenException } from "@nestjs/common";
-import { Post, Prisma } from "generated/prisma";
-import { CreatePostDto, UpdatePostDto, RepostDto } from "../dto/post.dto";
-import { PostRepository, } from "./post.repository";
-import { FullPost } from "../type/post.type";
+import { PrismaService } from '@/core';
+import {
+    Injectable,
+    NotFoundException,
+    ForbiddenException,
+} from '@nestjs/common';
+import { Post, Prisma } from 'generated/prisma';
+import { CreatePostDto, UpdatePostDto, RepostDto } from '../dto/post.dto';
+import { PostRepository } from './post.repository';
+import { FullPost } from '../type/post.type';
 
 @Injectable()
 export class PostPrismaRepository implements PostRepository {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
-    private async enrichPost(post: any, currentUserId?: string): Promise<FullPost> {
+    private async enrichPost(
+        post: any,
+        currentUserId?: string,
+    ): Promise<FullPost> {
         // Параллельно получаем все необходимые данные
-        const [likesCount, dislikesCount, repostsCount, userLike, originalPost] = await Promise.all([
+        const [
+            likesCount,
+            dislikesCount,
+            repostsCount,
+            userLike,
+            originalPost,
+        ] = await Promise.all([
             this.prisma.postLike.count({
                 where: { postId: post.id, isLike: true },
             }),
@@ -22,31 +35,35 @@ export class PostPrismaRepository implements PostRepository {
                 where: { originalPostId: post.id, deletedAt: null },
             }),
             currentUserId
-                ? this.prisma.postLike.findUnique({
-                    where: {
-                        postId_userId: {
-                            postId: post.id,
-                            userId: currentUserId,
-                        },
-                    },
-                }).catch(() => null)
+                ? this.prisma.postLike
+                      .findUnique({
+                          where: {
+                              postId_userId: {
+                                  postId: post.id,
+                                  userId: currentUserId,
+                              },
+                          },
+                      })
+                      .catch(() => null)
                 : Promise.resolve(null),
             post.originalPostId
-                ? this.prisma.post.findUnique({
-                    where: { id: post.originalPostId },
-                    include: {
-                        user: {
-                            include: {
-                                profile: true,
-                            },
-                        },
-                        author: {
-                            include: {
-                                profile: true,
-                            },
-                        },
-                    },
-                }).catch(() => null)
+                ? this.prisma.post
+                      .findUnique({
+                          where: { id: post.originalPostId },
+                          include: {
+                              user: {
+                                  include: {
+                                      profile: true,
+                                  },
+                              },
+                              author: {
+                                  include: {
+                                      profile: true,
+                                  },
+                              },
+                          },
+                      })
+                      .catch(() => null)
                 : Promise.resolve(null),
         ]);
 
@@ -59,7 +76,6 @@ export class PostPrismaRepository implements PostRepository {
             avatar: post.author.profile?.avatar || null,
         };
 
-
         return {
             ...post,
             likesCount,
@@ -71,7 +87,10 @@ export class PostPrismaRepository implements PostRepository {
         };
     }
 
-    public async create(authorId: string, data: CreatePostDto): Promise<FullPost> {
+    public async create(
+        authorId: string,
+        data: CreatePostDto,
+    ): Promise<FullPost> {
         // wallUserId - на чьей стене (если не указано - на своей)
         const wallUserId = data.wallUserId || authorId;
 
@@ -81,16 +100,18 @@ export class PostPrismaRepository implements PostRepository {
         const post = await this.prisma.post.create({
             data: {
                 ...postData,
-                userId: wallUserId,  // Владелец стены
-                authorId: authorId,  // Автор поста
+                userId: wallUserId, // Владелец стены
+                authorId: authorId, // Автор поста
             },
             include: {
-                user: {  // Владелец стены
+                user: {
+                    // Владелец стены
                     include: {
                         profile: true,
                     },
                 },
-                author: {  // Автор поста
+                author: {
+                    // Автор поста
                     include: {
                         profile: true,
                     },
@@ -101,16 +122,21 @@ export class PostPrismaRepository implements PostRepository {
         return this.enrichPost(post, authorId);
     }
 
-    public async findById(id: string, currentUserId?: string): Promise<FullPost> {
+    public async findById(
+        id: string,
+        currentUserId?: string,
+    ): Promise<FullPost> {
         const post = await this.prisma.post.findUnique({
             where: { id, deletedAt: null },
             include: {
-                user: {  // Владелец стены
+                user: {
+                    // Владелец стены
                     include: {
                         profile: true,
                     },
                 },
-                author: {  // Автор поста
+                author: {
+                    // Автор поста
                     include: {
                         profile: true,
                     },
@@ -125,7 +151,11 @@ export class PostPrismaRepository implements PostRepository {
         return this.enrichPost(post, currentUserId);
     }
 
-    public async update(id: string, userId: string, data: UpdatePostDto): Promise<FullPost> {
+    public async update(
+        id: string,
+        userId: string,
+        data: UpdatePostDto,
+    ): Promise<FullPost> {
         const post = await this.prisma.post.findUnique({
             where: { id, deletedAt: null },
         });
@@ -146,12 +176,14 @@ export class PostPrismaRepository implements PostRepository {
                 ...data,
             },
             include: {
-                user: {  // Владелец стены
+                user: {
+                    // Владелец стены
                     include: {
                         profile: true,
                     },
                 },
-                author: {  // Автор поста
+                author: {
+                    // Автор поста
                     include: {
                         profile: true,
                     },
@@ -177,7 +209,9 @@ export class PostPrismaRepository implements PostRepository {
         const isWallOwner = post.userId === userId;
 
         if (!isAuthor && !isWallOwner) {
-            throw new ForbiddenException('You can only delete your own posts or posts on your wall');
+            throw new ForbiddenException(
+                'You can only delete your own posts or posts on your wall',
+            );
         }
 
         await this.prisma.post.update({
@@ -188,7 +222,11 @@ export class PostPrismaRepository implements PostRepository {
         });
     }
 
-    public async getFeed(currentUserId: string, cursor?: string, limit: number = 20): Promise<{ posts: FullPost[]; nextCursor?: string; hasNext: boolean }> {
+    public async getFeed(
+        currentUserId: string,
+        cursor?: string,
+        limit: number = 20,
+    ): Promise<{ posts: FullPost[]; nextCursor?: string; hasNext: boolean }> {
         const take = limit + 1; // Берем на 1 больше, чтобы проверить есть ли следующая страница
 
         const where: any = {
@@ -220,12 +258,14 @@ export class PostPrismaRepository implements PostRepository {
                 createdAt: 'desc',
             },
             include: {
-                user: {  // Владелец стены
+                user: {
+                    // Владелец стены
                     include: {
                         profile: true,
                     },
                 },
-                author: {  // Автор поста
+                author: {
+                    // Автор поста
                     include: {
                         profile: true,
                     },
@@ -237,12 +277,15 @@ export class PostPrismaRepository implements PostRepository {
         const postsToReturn = hasNext ? posts.slice(0, limit) : posts;
 
         const enrichedPosts = await Promise.all(
-            postsToReturn.map(post => this.enrichPost(post, currentUserId))
+            postsToReturn.map(post => this.enrichPost(post, currentUserId)),
         );
 
-        const nextCursor = hasNext && enrichedPosts.length > 0
-            ? enrichedPosts[enrichedPosts.length - 1].createdAt.toISOString()
-            : undefined;
+        const nextCursor =
+            hasNext && enrichedPosts.length > 0
+                ? enrichedPosts[
+                      enrichedPosts.length - 1
+                  ].createdAt.toISOString()
+                : undefined;
 
         return {
             posts: enrichedPosts,
@@ -251,7 +294,12 @@ export class PostPrismaRepository implements PostRepository {
         };
     }
 
-    public async getByUserId(userId: string, currentUserId?: string, cursor?: string, limit: number = 20): Promise<{ posts: FullPost[]; nextCursor?: string; hasNext: boolean }> {
+    public async getByUserId(
+        userId: string,
+        currentUserId?: string,
+        cursor?: string,
+        limit: number = 20,
+    ): Promise<{ posts: FullPost[]; nextCursor?: string; hasNext: boolean }> {
         const take = limit + 1;
 
         const where: any = {
@@ -272,12 +320,14 @@ export class PostPrismaRepository implements PostRepository {
                 createdAt: 'desc',
             },
             include: {
-                user: {  // Владелец стены
+                user: {
+                    // Владелец стены
                     include: {
                         profile: true,
                     },
                 },
-                author: {  // Автор поста
+                author: {
+                    // Автор поста
                     include: {
                         profile: true,
                     },
@@ -285,19 +335,19 @@ export class PostPrismaRepository implements PostRepository {
             },
         });
 
-
-
-
         const hasNext = posts.length > limit;
         const postsToReturn = hasNext ? posts.slice(0, limit) : posts;
 
         const enrichedPosts = await Promise.all(
-            postsToReturn.map(post => this.enrichPost(post, currentUserId))
+            postsToReturn.map(post => this.enrichPost(post, currentUserId)),
         );
 
-        const nextCursor = hasNext && enrichedPosts.length > 0
-            ? enrichedPosts[enrichedPosts.length - 1].createdAt.toISOString()
-            : undefined;
+        const nextCursor =
+            hasNext && enrichedPosts.length > 0
+                ? enrichedPosts[
+                      enrichedPosts.length - 1
+                  ].createdAt.toISOString()
+                : undefined;
 
         return {
             posts: enrichedPosts,
@@ -306,7 +356,11 @@ export class PostPrismaRepository implements PostRepository {
         };
     }
 
-    public async getMyReposts(userId: string, cursor?: string, limit: number = 20): Promise<{ posts: FullPost[]; nextCursor?: string; hasNext: boolean }> {
+    public async getMyReposts(
+        userId: string,
+        cursor?: string,
+        limit: number = 20,
+    ): Promise<{ posts: FullPost[]; nextCursor?: string; hasNext: boolean }> {
         const take = limit + 1;
 
         const where: any = {
@@ -328,12 +382,14 @@ export class PostPrismaRepository implements PostRepository {
                 createdAt: 'desc',
             },
             include: {
-                user: {  // Владелец стены
+                user: {
+                    // Владелец стены
                     include: {
                         profile: true,
                     },
                 },
-                author: {  // Автор поста
+                author: {
+                    // Автор поста
                     include: {
                         profile: true,
                     },
@@ -345,12 +401,15 @@ export class PostPrismaRepository implements PostRepository {
         const postsToReturn = hasNext ? posts.slice(0, limit) : posts;
 
         const enrichedPosts = await Promise.all(
-            postsToReturn.map(post => this.enrichPost(post, userId))
+            postsToReturn.map(post => this.enrichPost(post, userId)),
         );
 
-        const nextCursor = hasNext && enrichedPosts.length > 0
-            ? enrichedPosts[enrichedPosts.length - 1].createdAt.toISOString()
-            : undefined;
+        const nextCursor =
+            hasNext && enrichedPosts.length > 0
+                ? enrichedPosts[
+                      enrichedPosts.length - 1
+                  ].createdAt.toISOString()
+                : undefined;
 
         return {
             posts: enrichedPosts,
@@ -359,7 +418,11 @@ export class PostPrismaRepository implements PostRepository {
         };
     }
 
-    public async likePost(postId: string, userId: string, isLike: boolean): Promise<void> {
+    public async likePost(
+        postId: string,
+        userId: string,
+        isLike: boolean,
+    ): Promise<void> {
         const post = await this.prisma.post.findUnique({
             where: { id: postId, deletedAt: null },
         });
@@ -388,7 +451,10 @@ export class PostPrismaRepository implements PostRepository {
         } catch (error) {
             // Обработка race condition: если запись уже существует (P2002 - unique constraint violation),
             // просто обновляем её
-            if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+            if (
+                error instanceof Prisma.PrismaClientKnownRequestError &&
+                error.code === 'P2002'
+            ) {
                 await this.prisma.postLike.update({
                     where: {
                         postId_userId: {
@@ -426,7 +492,11 @@ export class PostPrismaRepository implements PostRepository {
         });
     }
 
-    public async repost(postId: string, userId: string, data?: RepostDto): Promise<FullPost> {
+    public async repost(
+        postId: string,
+        userId: string,
+        data?: RepostDto,
+    ): Promise<FullPost> {
         const originalPost = await this.prisma.post.findUnique({
             where: { id: postId, deletedAt: null },
         });
@@ -451,17 +521,19 @@ export class PostPrismaRepository implements PostRepository {
         const repost = await this.prisma.post.create({
             data: {
                 userId,
-                authorId: userId,  // При репосте автор = владелец стены
+                authorId: userId, // При репосте автор = владелец стены
                 originalPostId: postId,
                 text: data?.text,
             },
             include: {
-                user: {  // Владелец стены
+                user: {
+                    // Владелец стены
                     include: {
                         profile: true,
                     },
                 },
-                author: {  // Автор поста
+                author: {
+                    // Автор поста
                     include: {
                         profile: true,
                     },
@@ -472,7 +544,15 @@ export class PostPrismaRepository implements PostRepository {
         return this.enrichPost(repost, userId);
     }
 
-    public async getRepostUsers(postId: string): Promise<Array<{ id: string; name: string; email: string; avatar?: string; repostedAt: Date }>> {
+    public async getRepostUsers(postId: string): Promise<
+        Array<{
+            id: string;
+            name: string;
+            email: string;
+            avatar?: string;
+            repostedAt: Date;
+        }>
+    > {
         const reposts = await this.prisma.post.findMany({
             where: {
                 originalPostId: postId,
@@ -499,4 +579,3 @@ export class PostPrismaRepository implements PostRepository {
         }));
     }
 }
-

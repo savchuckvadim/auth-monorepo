@@ -1,11 +1,15 @@
-import { IsPassword } from "@/core/decorators/dto/password.decorator";
-import { ApiProperty } from "@nestjs/swagger";
-import { IsBoolean, IsDate, IsEmail, IsEnum, IsString, IsNumber } from "class-validator";
-import { User, user_roles } from "generated/prisma";
-import { UserWithFollowStatusType } from "../type/user.type";
-
-
-
+import { IsPassword } from '@/core/decorators/dto/password.decorator';
+import { ApiProperty } from '@nestjs/swagger';
+import {
+    IsBoolean,
+    IsDate,
+    IsEmail,
+    IsEnum,
+    IsString,
+    IsNumber,
+} from 'class-validator';
+import { User, user_roles } from 'generated/prisma';
+import { UserWithFollowStatusType } from '../type/user.type';
 
 export class CreateUserDto {
     @ApiProperty({ description: 'Email', example: 'test@test.com' })
@@ -19,11 +23,7 @@ export class CreateUserDto {
     @ApiProperty({ description: 'Name', example: 'Test' })
     @IsString()
     name: string;
-
-
 }
-
-
 
 export class UserDto implements Partial<User> {
     constructor(user: UserWithFollowStatusType) {
@@ -50,12 +50,14 @@ export class UserDto implements Partial<User> {
     @IsEmail()
     email: string;
 
-
     @ApiProperty({ description: 'Name', example: 'Test' })
     @IsString()
     name: string;
 
-    @ApiProperty({ description: 'Activation Link', example: 'https://example.com/activate' })
+    @ApiProperty({
+        description: 'Activation Link',
+        example: 'https://example.com/activate',
+    })
     @IsString()
     activationLink: string;
 
@@ -67,11 +69,9 @@ export class UserDto implements Partial<User> {
     @IsBoolean({ message: 'IsActivated must be a boolean' })
     isAcivated: boolean;
 
-
     @ApiProperty({ description: 'Is Following', example: true, type: Boolean })
     @IsBoolean({ message: 'IsFollowing must be a boolean' })
     isFollowing: boolean;
-
 
     @ApiProperty({ description: 'Is Follower', example: true, type: Boolean })
     @IsBoolean({ message: 'IsFollower must be a boolean' })
@@ -93,10 +93,10 @@ export class UserDto implements Partial<User> {
     @IsNumber()
     postsCount: number;
 
-    @ApiProperty({ description: 'Avatar URL', example: 'https://example.com/avatar.jpg' })
+    @ApiProperty({
+        description: 'Avatar URL',
+        example: 'https://example.com/avatar.jpg',
+    })
     @IsString()
     avatarUrl: string;
-
 }
-
-

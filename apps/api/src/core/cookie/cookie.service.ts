@@ -3,14 +3,12 @@ import { Injectable } from '@nestjs/common';
 import { CookieOptions, Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 
-
 @Injectable()
 export class CookieService {
-    constructor(private configService: ConfigService) { }
+    constructor(private configService: ConfigService) {}
 
     private readonly REFRESH_COOKIE_NAME = 'refreshToken';
     private readonly ACCESS_COOKIE_NAME = 'accessToken';
-
 
     private isProd() {
         return this.configService.get('NODE_ENV') === 'production';
@@ -24,14 +22,13 @@ export class CookieService {
             secure: isProd,
             sameSite: isProd ? 'none' : 'lax',
             domain: isProd ? domain : 'localhost',
-            path: '/'
-
-
+            path: '/',
         };
         if (maxAge) {
-            options.maxAge = maxAge === 'access'
-                ? 15 * 60 * 1000  // 15 минут
-                : 30 * 24 * 60 * 60 * 1000 // 30 дней
+            options.maxAge =
+                maxAge === 'access'
+                    ? 15 * 60 * 1000 // 15 минут
+                    : 30 * 24 * 60 * 60 * 1000; // 30 дней
 
             //for test
             // options.maxAge = maxAge === 'access'
@@ -41,15 +38,22 @@ export class CookieService {
         return options;
     }
     setAccessToken(res: Response, token: string) {
-        res.cookie(this.ACCESS_COOKIE_NAME, token, this.getCookieOptions('access'));
+        res.cookie(
+            this.ACCESS_COOKIE_NAME,
+            token,
+            this.getCookieOptions('access'),
+        );
     }
 
     setRefreshToken(res: Response, token: string) {
-        res.cookie(this.REFRESH_COOKIE_NAME, token, this.getCookieOptions('refresh'));
+        res.cookie(
+            this.REFRESH_COOKIE_NAME,
+            token,
+            this.getCookieOptions('refresh'),
+        );
     }
 
     clearAuthCookies(res: Response) {
-
         const options = this.getCookieOptions(); // БЕЗ maxAge
 
         res.clearCookie(this.ACCESS_COOKIE_NAME, options);
@@ -63,5 +67,4 @@ export class CookieService {
     getAccessToken(req: Request) {
         return req.cookies?.[this.ACCESS_COOKIE_NAME];
     }
-
 }

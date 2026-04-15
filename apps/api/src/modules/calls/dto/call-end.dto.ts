@@ -12,4 +12,3 @@ export class CallEndDto {
     @IsNumber()
     duration?: number;
 }
-

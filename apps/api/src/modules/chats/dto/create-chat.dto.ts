@@ -14,9 +14,11 @@ export class CreateChatDto {
     @IsOptional()
     @IsString()
     description?: string;
-    @ApiProperty({ description: 'Avatar', example: 'https://example.com/avatar.jpg' })
+    @ApiProperty({
+        description: 'Avatar',
+        example: 'https://example.com/avatar.jpg',
+    })
     @IsArray()
     @IsUUID('4', { each: true })
     memberIds: string[];
 }
-

@@ -13,7 +13,9 @@ import { Server, Socket } from 'socket.io';
         credentials: true,
     },
 })
-export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class NotificationsGateway
+    implements OnGatewayConnection, OnGatewayDisconnect
+{
     @WebSocketServer()
     server: Server;
 
@@ -39,7 +41,9 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
         // Подключаемся к комнате пользователя для уведомлений
         client.join(`user:${userId}`);
 
-        console.log(`Notification socket connected: ${client.id} (user: ${userId})`);
+        console.log(
+            `Notification socket connected: ${client.id} (user: ${userId})`,
+        );
     }
 
     handleDisconnect(client: Socket) {
@@ -60,7 +64,10 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
     }
 
     // Метод для отправки уведомления о новом подписчике
-    notifyNewFollower(userId: string, follower: { id: string; name: string; email: string }) {
+    notifyNewFollower(
+        userId: string,
+        follower: { id: string; name: string; email: string },
+    ) {
         this.server.to(`user:${userId}`).emit('notification:new-follower', {
             type: 'new-follower',
             follower,
@@ -69,7 +76,15 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
     }
 
     // Метод для отправки уведомления о новом сообщении (если чат не открыт)
-    notifyNewMessage(userId: string, message: { id: string; chatId: string; content: string; sender: { name: string } }) {
+    notifyNewMessage(
+        userId: string,
+        message: {
+            id: string;
+            chatId: string;
+            content: string;
+            sender: { name: string };
+        },
+    ) {
         this.server.to(`user:${userId}`).emit('notification:new-message', {
             type: 'new-message',
             message,
@@ -77,4 +92,3 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
         });
     }
 }
-

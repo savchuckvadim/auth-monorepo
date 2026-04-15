@@ -8,4 +8,3 @@ export enum CallEvent {
     PEER_NEGO_FINAL = 'peer:nego:final',
     PEER_ICE_CANDIDATE = 'peer:ice-candidate',
 }
-

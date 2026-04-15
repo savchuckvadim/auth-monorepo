@@ -23,7 +23,9 @@ import { SocketStorageService } from './socket-storage.service';
         credentials: true,
     },
 })
-export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class MessagesGateway
+    implements OnGatewayConnection, OnGatewayDisconnect
+{
     @WebSocketServer()
     server: Server;
 
@@ -33,7 +35,7 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
         private readonly chatsRepository: ChatsRepository,
         private readonly notificationsGateway: NotificationsGateway,
         private readonly socketStorage: SocketStorageService,
-    ) { }
+    ) {}
 
     async handleConnection(client: Socket) {
         // TODO: Получить userId из токена аутентификации
@@ -56,7 +58,9 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
             console.log(`✅ User ${userId} joined chat:${chat.id}`);
         });
 
-        console.log(`Socket connected: ${client.id} (user: ${userId}), joined ${chats.length} chats`);
+        console.log(
+            `Socket connected: ${client.id} (user: ${userId}), joined ${chats.length} chats`,
+        );
     }
 
     async handleDisconnect(client: Socket) {
@@ -74,10 +78,16 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
      * Отправляет сообщение всем участникам чата через WebSocket
      * Вызывается после создания сообщения (через REST API или WebSocket)
      */
-    async broadcastMessage(message: any, chatId: string, senderId: string): Promise<void> {
+    async broadcastMessage(
+        message: any,
+        chatId: string,
+        senderId: string,
+    ): Promise<void> {
         // Проверяем, что WebSocket сервер инициализирован
         if (!this.server || !this.server.sockets) {
-            console.warn('⚠️ WebSocket server is not initialized, skipping broadcast');
+            console.warn(
+                '⚠️ WebSocket server is not initialized, skipping broadcast',
+            );
             return;
         }
 
@@ -99,11 +109,15 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
         // Также отправляем напрямую всем участникам чата (на случай если они не в комнате)
         if (this.server.sockets.sockets) {
             for (const member of chatMembers) {
-                const memberSockets = await this.socketStorage.getUserSockets(member.userId);
+                const memberSockets = await this.socketStorage.getUserSockets(
+                    member.userId,
+                );
                 for (const socketId of memberSockets) {
                     const socket = this.server.sockets.sockets.get(socketId);
                     if (socket) {
-                        console.log(`📤 Sending directly to socket ${socketId} (user: ${member.userId})`);
+                        console.log(
+                            `📤 Sending directly to socket ${socketId} (user: ${member.userId})`,
+                        );
                         socket.emit('message:new', message);
                     }
                 }
@@ -135,7 +149,10 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
         }
 
         try {
-            const message = await this.messagesService.createMessage(userId, data);
+            const message = await this.messagesService.createMessage(
+                userId,
+                data,
+            );
 
             // Отправляем сообщение через WebSocket
             // Примечание: createMessage уже вызывает broadcastMessage, но это не проблема
@@ -160,17 +177,27 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
         }
 
         try {
-            const isMember = await this.chatsRepository.isMember(data.chatId, userId);
+            const isMember = await this.chatsRepository.isMember(
+                data.chatId,
+                userId,
+            );
             if (!isMember) {
                 return { error: 'You are not a member of this chat' };
             }
 
             client.join(`chat:${data.chatId}`);
-            console.log(`✅ User ${userId} (socket ${client.id}) joined chat:${data.chatId}`);
+            console.log(
+                `✅ User ${userId} (socket ${client.id}) joined chat:${data.chatId}`,
+            );
 
             // Проверяем, что клиент действительно в комнате
-            const room = this.server.sockets.adapter?.rooms?.get(`chat:${data.chatId}`);
-            console.log(`📊 Clients in room chat:${data.chatId} after join:`, room?.size || 0);
+            const room = this.server.sockets.adapter?.rooms?.get(
+                `chat:${data.chatId}`,
+            );
+            console.log(
+                `📊 Clients in room chat:${data.chatId} after join:`,
+                room?.size || 0,
+            );
 
             return { success: true, chatId: data.chatId };
         } catch (error) {
@@ -208,4 +235,3 @@ export class MessagesGateway implements OnGatewayConnection, OnGatewayDisconnect
         return { success: true };
     }
 }
-

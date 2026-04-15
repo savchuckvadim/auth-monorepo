@@ -5,9 +5,12 @@ import { ChatType } from 'generated/prisma';
 
 @Injectable()
 export class ChatsService {
-    constructor(private readonly repository: ChatsRepository) { }
+    constructor(private readonly repository: ChatsRepository) {}
 
-    async createChat(userId: string, createChatDto: CreateChatDto): Promise<ChatDto> {
+    async createChat(
+        userId: string,
+        createChatDto: CreateChatDto,
+    ): Promise<ChatDto> {
         // Добавляем текущего пользователя в список участников, если его там нет
         const memberIds = [...createChatDto.memberIds];
         if (!memberIds.includes(userId)) {
@@ -16,7 +19,9 @@ export class ChatsService {
 
         // Для приватного чата должно быть ровно 2 участника (включая создателя)
         if (createChatDto.type === ChatType.PRIVATE && memberIds.length !== 2) {
-            throw new ForbiddenException('Private chat must have exactly 2 members');
+            throw new ForbiddenException(
+                'Private chat must have exactly 2 members',
+            );
         }
 
         const chat = await this.repository.create({
@@ -38,17 +43,29 @@ export class ChatsService {
         return new ChatDto(chat);
     }
 
-    async addMember(chatId: string, userId: string, addMemberDto: AddMemberDto): Promise<void> {
+    async addMember(
+        chatId: string,
+        userId: string,
+        addMemberDto: AddMemberDto,
+    ): Promise<void> {
         // Проверяем, что пользователь является участником чата
         const isMember = await this.repository.isMember(chatId, userId);
         if (!isMember) {
             throw new ForbiddenException('You are not a member of this chat');
         }
 
-        await this.repository.addMember(chatId, addMemberDto.userId, addMemberDto.role);
+        await this.repository.addMember(
+            chatId,
+            addMemberDto.userId,
+            addMemberDto.role,
+        );
     }
 
-    async removeMember(chatId: string, userId: string, memberId: string): Promise<void> {
+    async removeMember(
+        chatId: string,
+        userId: string,
+        memberId: string,
+    ): Promise<void> {
         // Проверяем права доступа
         const isMember = await this.repository.isMember(chatId, userId);
         if (!isMember) {
@@ -63,7 +80,11 @@ export class ChatsService {
         await this.repository.removeMember(chatId, memberId);
     }
 
-    async updateChat(chatId: string, userId: string, data: Partial<{ name: string; description: string; avatar: string }>): Promise<ChatDto> {
+    async updateChat(
+        chatId: string,
+        userId: string,
+        data: Partial<{ name: string; description: string; avatar: string }>,
+    ): Promise<ChatDto> {
         const isMember = await this.repository.isMember(chatId, userId);
         if (!isMember) {
             throw new ForbiddenException('You are not a member of this chat');
@@ -87,10 +108,11 @@ export class ChatsService {
 
         // Только создатель может удалить чат
         if (chat.createdBy !== userId) {
-            throw new ForbiddenException('Only chat creator can delete the chat');
+            throw new ForbiddenException(
+                'Only chat creator can delete the chat',
+            );
         }
 
         await this.repository.delete(chatId);
     }
 }
-

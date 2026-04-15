@@ -1,9 +1,13 @@
 // src/core/interceptors/auth-cookie.interceptor.ts
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import {
+    CallHandler,
+    ExecutionContext,
+    Injectable,
+    NestInterceptor,
+} from '@nestjs/common';
 import { Observable, tap } from 'rxjs';
 import { Response } from 'express';
 import { CookieService } from '@/core/cookie/cookie.service';
-
 
 /**
  * Interceptor for setting auth cookie
@@ -11,15 +15,14 @@ import { CookieService } from '@/core/cookie/cookie.service';
  */
 @Injectable()
 export class AuthCookieInterceptor implements NestInterceptor {
-    constructor(private cookieService: CookieService) { }
+    constructor(private cookieService: CookieService) {}
 
     intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
         const ctx = context.switchToHttp();
         const res = ctx.getResponse<Response>();
 
         return next.handle().pipe(
-            tap((data) => {
-
+            tap(data => {
                 if (data?.tokens?.accessToken) {
                     this.cookieService.setAccessToken(
                         res,

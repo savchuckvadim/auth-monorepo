@@ -16,20 +16,17 @@ import { ApiResponse, EResultCode } from '../interfaces/response.interface';
 export class GlobalExceptionFilter implements ExceptionFilter {
     private readonly logger = new Logger(GlobalExceptionFilter.name);
 
-    constructor(private readonly telegram: TelegramService) { }
+    constructor(private readonly telegram: TelegramService) {}
 
     async catch(exception: unknown, host: ArgumentsHost) {
         const ctx = host.switchToHttp();
         const request = ctx.getRequest<Request>();
         const response = ctx.getResponse<Response>();
 
-
-
         const status =
             exception instanceof HttpException
                 ? exception.getStatus()
                 : HttpStatus.INTERNAL_SERVER_ERROR;
-
 
         // if (status === HttpStatus.UNAUTHORIZED) {
         //     return response.status(401).json({
@@ -37,7 +34,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         //         message: 'Пользователь не авторизован',
         //     });
         // }
-
 
         const error =
             exception instanceof Error
@@ -103,8 +99,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         response: Response,
     ) {
         const res = exception.getResponse();
-
-
 
         const messageArray =
             typeof res === 'object' && res !== null && 'message' in res

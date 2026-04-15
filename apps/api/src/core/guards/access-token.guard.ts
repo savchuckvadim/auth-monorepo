@@ -9,15 +9,12 @@ import { TokenPayloadDto, TokenService } from '@/modules/token';
 
 @Injectable()
 export class AccessTokenGuard implements CanActivate {
-    constructor(
-
-        private readonly tokenService: TokenService,
-    ) { }
+    constructor(private readonly tokenService: TokenService) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
-        const req = context.switchToHttp().getRequest<Request & { user?: TokenPayloadDto }>();
-
-
+        const req = context
+            .switchToHttp()
+            .getRequest<Request & { user?: TokenPayloadDto }>();
 
         let accessToken: string | undefined;
         // 1) Берём из заголовка Authorization
@@ -38,7 +35,5 @@ export class AccessTokenGuard implements CanActivate {
         req.user = user;
 
         return true;
-
-
     }
 }

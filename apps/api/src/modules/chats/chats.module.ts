@@ -17,5 +17,4 @@ import { TokenModule } from '../token';
     ],
     exports: [ChatsService, ChatsRepository],
 })
-export class ChatsModule { }
-
+export class ChatsModule {}

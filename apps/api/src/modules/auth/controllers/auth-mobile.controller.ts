@@ -1,16 +1,25 @@
-import { Body, Controller, Get, HttpStatus, Param, Post, Req, Res, UnauthorizedException, UseInterceptors } from "@nestjs/common";
-import { Request, Response } from 'express';
-import { ApiBadRequestResponse, ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { AuthService } from "../services/auth.service";
-import { CreateUserDto } from "@/modules/user";
-import { ConfigService } from "@nestjs/config";
-import { AuthenticatedUserDto, LoginDto } from "../dtos/login.dto";
-import { RefreshTokenDto } from "../dtos/refresh-token.dto";
-import { CookieService } from "@/core/cookie";
-import { AuthCookieInterceptor } from "@/core/interceptors/auth-cookie.interceptor";
-import { SetAuthCookie } from "@/core/decorators/auth/set-auth-cookie.decorator";
-import { ErrorResponseDto } from "@/core";
-
+import {
+    Body,
+    Controller,
+    Get,
+    HttpStatus,
+    Param,
+    Post,
+    Res,
+} from '@nestjs/common';
+import { Response } from 'express';
+import {
+    ApiBody,
+    ApiOperation,
+    ApiParam,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger';
+import { AuthService } from '../services/auth.service';
+import { ConfigService } from '@nestjs/config';
+import { AuthenticatedUserDto, LoginDto } from '../dtos/login.dto';
+import { RefreshTokenDto } from '../dtos/refresh-token.dto';
+import { CookieService } from '@/core/cookie';
 
 /**
  * AuthController для мобильного приложения
@@ -19,32 +28,32 @@ import { ErrorResponseDto } from "@/core";
  * Все токены отдаются в ответе на запрос.
  */
 
-
 @ApiTags('Auth Mobile')
 @Controller('auth-mobile')
 export class AuthMobileController {
-    clientUrl: string
+    clientUrl: string;
     constructor(
         private readonly authService: AuthService,
         private readonly configService: ConfigService,
         private readonly cookieService: CookieService,
     ) {
-        this.clientUrl = this.configService.getOrThrow<string>('CLIENT_URL')
+        this.clientUrl = this.configService.getOrThrow<string>('CLIENT_URL');
     }
-
-
-
 
     @ApiOperation({ summary: 'Login for mobile app' })
     @ApiBody({ type: LoginDto, description: 'Login for mobile app' })
-    @ApiResponse({ status: 200, description: 'User with tokens', type: AuthenticatedUserDto })
+    @ApiResponse({
+        status: 200,
+        description: 'User with tokens',
+        type: AuthenticatedUserDto,
+    })
     @Post('mobile/login')
-    async mobileLogin(@Body() loginDto: LoginDto): Promise<AuthenticatedUserDto> {
-
+    async mobileLogin(
+        @Body() loginDto: LoginDto,
+    ): Promise<AuthenticatedUserDto> {
         const user = await this.authService.login(loginDto);
         console.log('login', user);
         return user;
-
     }
 
     @ApiOperation({ summary: 'Activate' })
@@ -63,25 +72,31 @@ export class AuthMobileController {
     @ApiBody({ type: RefreshTokenDto, description: 'Logout for mobile app' })
     @ApiResponse({ status: 200, description: 'Logout success', type: Boolean })
     @Post('logout')
-    async logout(
-        @Body() refreshTokenDto: RefreshTokenDto,
-    ): Promise<boolean> {
+    async logout(@Body() refreshTokenDto: RefreshTokenDto): Promise<boolean> {
         // Для мобильного приложения токен приходит в body, а не в куках
         await this.authService.logout(refreshTokenDto.refreshToken);
         return true;
     }
 
-
-
     @ApiOperation({ summary: 'Refresh token for mobile app' })
-    @ApiBody({ type: RefreshTokenDto, description: 'Refresh token for mobile app' })
-    @ApiResponse({ status: 200, description: 'User with tokens', type: AuthenticatedUserDto })
+    @ApiBody({
+        type: RefreshTokenDto,
+        description: 'Refresh token for mobile app',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'User with tokens',
+        type: AuthenticatedUserDto,
+    })
     // @SetAuthCookie() // НЕ используем для мобильного приложения - токены возвращаются в ответе, а не в куках
     @Post('refresh')
-    async refreshToken(@Body() refreshTokenDto: RefreshTokenDto): Promise<AuthenticatedUserDto> {
+    async refreshToken(
+        @Body() refreshTokenDto: RefreshTokenDto,
+    ): Promise<AuthenticatedUserDto> {
         // Для мобильного приложения токен приходит в body, а не в куках
-        const user = await this.authService.refreshToken(refreshTokenDto.refreshToken);
+        const user = await this.authService.refreshToken(
+            refreshTokenDto.refreshToken,
+        );
         return user;
     }
-
 }

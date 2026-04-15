@@ -7,7 +7,6 @@ import { EmailVerificationTemplate } from '../templates/email-verification.templ
 import { ConfigService } from '@nestjs/config';
 import { SendMailActivationLinkDto } from '../dtos/activation-link.dto';
 
-
 @Injectable()
 export class MailService {
     private readonly logger = new Logger(MailService.name);
@@ -16,22 +15,18 @@ export class MailService {
         private readonly mailerService: MailerService,
         private readonly configService: ConfigService,
         // @InjectQueue('mail') private readonly queue: Queue,
+    ) {}
 
-    ) { }
-
-
-
-
-    public async sendActivationLink({ email, name, activationLink }: SendMailActivationLinkDto) {
-        const clientUrl = this.configService.getOrThrow<string>('CLIENT_URL')
-
+    public async sendActivationLink({
+        email,
+        name,
+        activationLink,
+    }: SendMailActivationLinkDto) {
+        const clientUrl = this.configService.getOrThrow<string>('CLIENT_URL');
 
         const html = await render(
-            EmailVerificationTemplate(
-                { name, activationLink,  clientUrl }
-            ))
-
-
+            EmailVerificationTemplate({ name, activationLink, clientUrl }),
+        );
 
         await this.sendEmail({
             subject: 'Активация аккаунта на сайте ' + clientUrl,
@@ -40,10 +35,9 @@ export class MailService {
             context: {
                 name: name,
             },
-        })
-        return true
+        });
+        return true;
     }
-
 
     async sendEmail(params: {
         subject: string;
@@ -58,8 +52,7 @@ export class MailService {
         }>;
     }) {
         try {
-            const from = `Sociopath. <${process.env.MAIL_LOGIN || 'manager@sociopath-network.ru'}>`
-
+            const from = `Sociopath. <${process.env.MAIL_LOGIN || 'manager@sociopath-network.ru'}>`;
 
             const emailsList: string[] = params.to;
 
@@ -97,5 +90,4 @@ export class MailService {
             );
         }
     }
-
 }

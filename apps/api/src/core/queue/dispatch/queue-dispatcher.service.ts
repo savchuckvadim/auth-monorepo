@@ -5,14 +5,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import { QueueNames } from '../consts/queue-names.enum';
 import { JobNames } from '../consts/job-names.enum';
 
-
 @Injectable()
 export class QueueDispatcherService {
     private readonly logger = new Logger(QueueDispatcherService.name);
 
     constructor(
         @InjectQueue(QueueNames.MAIL) private readonly mailQueue: Queue,
-
     ) {
         this.logger.log('QueueDispatcherService initialized');
     }

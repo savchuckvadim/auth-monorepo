@@ -1,5 +1,5 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsString } from "class-validator";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsString } from 'class-validator';
 
 export class TokensDto {
     constructor(accessToken: string, refreshToken: string) {
@@ -15,9 +15,11 @@ export class TokensDto {
     refreshToken: string;
 }
 
-
 export class TokenPayloadDto {
-    @ApiProperty({ description: 'User ID', example: '123e4567-e89b-12d3-a456-426614174000' })
+    @ApiProperty({
+        description: 'User ID',
+        example: '123e4567-e89b-12d3-a456-426614174000',
+    })
     @IsString()
     userId: string;
 }

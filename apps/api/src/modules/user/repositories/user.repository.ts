@@ -1,6 +1,6 @@
-import { User } from "generated/prisma";
-import { CreateUserDto } from "../dto/user.dto";
-import { UserWithFollowStatusType } from "../type/user.type";
+import { User } from 'generated/prisma';
+import { CreateUserDto } from '../dto/user.dto';
+import { UserWithFollowStatusType } from '../type/user.type';
 
 export abstract class UserRepository {
     abstract getAll(currentUserId: string): Promise<UserWithFollowStatusType[]>;
