@@ -10,11 +10,11 @@ export class CookieService {
     private readonly REFRESH_COOKIE_NAME = 'refreshToken';
     private readonly ACCESS_COOKIE_NAME = 'accessToken';
 
-    private isProd() {
-        return this.configService.get('NODE_ENV') === 'production';
+    private isProd(): boolean {
+        return this.configService.get<string>('NODE_ENV') === 'production';
     }
     private getCookieOptions(maxAge?: 'access' | 'refresh'): CookieOptions {
-        const domain = this.configService.get('CLIENT_DOMAIN');
+        const domain = this.configService.get<string>('CLIENT_DOMAIN');
         const isProd = this.isProd();
 
         const options: CookieOptions = {
@@ -53,18 +53,20 @@ export class CookieService {
         );
     }
 
-    clearAuthCookies(res: Response) {
+    clearAuthCookies(res: Response): void {
         const options = this.getCookieOptions(); // БЕЗ maxAge
 
         res.clearCookie(this.ACCESS_COOKIE_NAME, options);
         res.clearCookie(this.REFRESH_COOKIE_NAME, options);
     }
 
-    getRefreshToken(req: Request) {
-        return req.cookies?.[this.REFRESH_COOKIE_NAME];
+    getRefreshToken(req: Request): string | undefined {
+        const value = req.cookies?.[this.REFRESH_COOKIE_NAME] as unknown;
+        return typeof value === 'string' ? value : undefined;
     }
 
-    getAccessToken(req: Request) {
-        return req.cookies?.[this.ACCESS_COOKIE_NAME];
+    getAccessToken(req: Request): string | undefined {
+        const value = req.cookies?.[this.ACCESS_COOKIE_NAME] as unknown;
+        return typeof value === 'string' ? value : undefined;
     }
 }

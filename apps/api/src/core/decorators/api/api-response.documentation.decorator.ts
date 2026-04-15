@@ -1,7 +1,12 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
 
-export const ApiSuccessResponse = (type: any, description = 'Успешный ответ') =>
+type SwaggerDtoType = abstract new (...args: never[]) => unknown;
+
+export const ApiSuccessResponse = (
+    type: SwaggerDtoType,
+    description = 'Успешный ответ',
+) =>
     applyDecorators(
         ApiResponse({
             status: 200,
@@ -21,7 +26,7 @@ export const ApiSuccessResponse = (type: any, description = 'Успешный о
 
 export const ApiErrorResponse = (
     status: number,
-    type: any,
+    type: SwaggerDtoType,
     description: string,
 ) =>
     applyDecorators(

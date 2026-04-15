@@ -13,7 +13,7 @@ export function IsObjectOrStringOrNull(validationOptions?: ValidationOptions) {
             propertyName: propertyName,
             options: validationOptions,
             validator: {
-                validate(value: any, args: ValidationArguments) {
+                validate(value: unknown) {
                     if (value === null || value === undefined) {
                         return true;
                     }

@@ -52,14 +52,18 @@ export class TokenService {
     public async validateAccessToken(
         accessToken: string,
     ): Promise<TokenPayloadDto | null> {
-        const secret = this.configService.get(EnumAuthSecrets.ACCESS_TOKEN);
+        const secret = this.configService.getOrThrow<string>(
+            EnumAuthSecrets.ACCESS_TOKEN,
+        );
         return await this.verifyToken(accessToken, secret, 'ACCESS');
     }
 
     public async validateRefreshToken(
         refreshToken: string,
     ): Promise<TokenPayloadDto | null> {
-        const secret = this.configService.get(EnumAuthSecrets.REFRESH_TOKEN);
+        const secret = this.configService.getOrThrow<string>(
+            EnumAuthSecrets.REFRESH_TOKEN,
+        );
         return await this.verifyToken(refreshToken, secret, 'REFRESH');
     }
     private async verifyToken(

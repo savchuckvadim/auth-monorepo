@@ -5,7 +5,6 @@ import {
     OnGatewayConnection,
     OnGatewayDisconnect,
     MessageBody,
-    ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
@@ -25,7 +24,7 @@ export class LiveKitCallsGateway
         // private readonly onlineUsersService: OnlineUsersService,
     }
 
-    async handleConnection(client: Socket) {
+    handleConnection(client: Socket): void {
         // TODO: Получить userId из токена аутентификации
         // Пока используем query параметр для тестирования
         const userId = client.handshake.query.userId as string;
@@ -38,14 +37,14 @@ export class LiveKitCallsGateway
     }
 
     @SubscribeMessage('call:request')
-    async handleCallRequest(
+    handleCallRequest(
         @MessageBody()
         data: {
             toUserId: string;
             roomName: string;
             fromUserId: string;
         },
-    ) {
+    ): void {
         // Просто уведомляем второго пользователя, что его зовут в LiveKit комнату
 
         console.log('handleCallRequest', data);

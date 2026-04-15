@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '@/core';
 import { ChatsRepository } from './chats.repository';
-import { Chat, ChatMember, ChatType, ChatMemberRole } from 'generated/prisma';
+import { Chat, ChatType, ChatMemberRole } from 'generated/prisma';
 import { ChatMemberWithUser } from '../types/chat-member-with-user.type';
 
 @Injectable()
@@ -136,7 +136,7 @@ export class ChatsPrismaRepository implements ChatsRepository {
                 name: data.name,
                 description: data.description,
                 members: {
-                    create: data.memberIds.map((userId, index) => ({
+                    create: data.memberIds.map(userId => ({
                         userId,
                         role:
                             userId === data.createdBy

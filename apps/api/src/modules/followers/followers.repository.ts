@@ -1,4 +1,4 @@
-import { Follow, User } from 'generated/prisma';
+import { Follow } from 'generated/prisma';
 
 type UserBasic = {
     id: string;

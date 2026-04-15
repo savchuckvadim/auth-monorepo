@@ -2,7 +2,6 @@ import { IsPassword } from '@/core/decorators/dto/password.decorator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
     IsBoolean,
-    IsDate,
     IsEmail,
     IsEnum,
     IsString,

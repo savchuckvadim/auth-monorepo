@@ -1,4 +1,4 @@
-import { Chat, ChatMember, ChatType } from 'generated/prisma';
+import { Chat, ChatType } from 'generated/prisma';
 import { ChatMemberWithUser } from '../types/chat-member-with-user.type';
 
 export abstract class ChatsRepository {

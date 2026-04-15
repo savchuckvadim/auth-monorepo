@@ -5,7 +5,6 @@ import {
     Delete,
     Param,
     UseGuards,
-    Query,
     ForbiddenException,
 } from '@nestjs/common';
 import { FollowersService } from './followers.service';
@@ -13,7 +12,6 @@ import { AccessTokenGuard } from '@/core/guards/access-token.guard';
 import { CurrentUser } from '@/core/decorators/auth/current-user.decorator';
 import { ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { FollowDto, UserWithFollowStatusDto } from './dto/follow.dto';
-import { UserDto } from '../user';
 import { TokenPayloadDto } from '../token/token.dto';
 
 @Controller('followers')
@@ -124,6 +122,7 @@ export class FollowersController {
         @Param('userId') userId: string,
         @CurrentUser() user: TokenPayloadDto,
     ) {
+        void user;
         return this.followersService.getFriends(userId);
     }
 

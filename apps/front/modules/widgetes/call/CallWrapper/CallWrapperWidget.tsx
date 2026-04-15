@@ -12,8 +12,8 @@ import { Button } from "@workspace/ui/components/button";
 import { PhoneOff } from "lucide-react";
 import { CallIncoming } from "./components/CallIncoming";
 import { useUser } from "@/modules/entities/user/lib/hook/user.hook";
-import { useLivekitToken } from "@/app/network/calls/useLivekitToken";
 import { LoadingScreen } from "@/modules/shared";
+import { useLivekitToken } from "@/modules/features/call/lib/hook/livekit.hook";
 
 const LIVEKIT_URL = process.env.NEXT_PUBLIC_LIVEKIT_URL || 'https://ws.sociopath-network.ru';
 

@@ -1,6 +1,6 @@
 import { JobNames, QueueNames } from '@/core/queue';
 import { Process, Processor } from '@nestjs/bull';
-import { Job, Queue } from 'bull';
+import { Job } from 'bull';
 import { MailService } from '../services/mail.service';
 import { SendMailActivationLinkDto } from '../dtos/activation-link.dto';
 import { Injectable } from '@nestjs/common';

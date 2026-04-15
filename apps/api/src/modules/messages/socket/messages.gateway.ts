@@ -15,6 +15,15 @@ import { NotificationsGateway } from '../../notifications/notifications.gateway'
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { SocketStorageService } from './socket-storage.service';
 
+type MessageSender = { name: string };
+type BroadcastMessage = {
+    id: string;
+    content: string;
+    sender?: MessageSender;
+};
+const getErrorMessage = (error: unknown): string =>
+    error instanceof Error ? error.message : String(error);
+
 @Injectable()
 @WebSocketGateway({
     namespace: '/messages',
@@ -54,7 +63,7 @@ export class MessagesGateway
         // Подключаемся ко всем чатам пользователя
         const chats = await this.chatsRepository.findByUserId(userId);
         chats.forEach(chat => {
-            client.join(`chat:${chat.id}`);
+            void client.join(`chat:${chat.id}`);
             console.log(`✅ User ${userId} joined chat:${chat.id}`);
         });
 
@@ -79,7 +88,7 @@ export class MessagesGateway
      * Вызывается после создания сообщения (через REST API или WebSocket)
      */
     async broadcastMessage(
-        message: any,
+        message: BroadcastMessage,
         chatId: string,
         senderId: string,
     ): Promise<void> {
@@ -161,7 +170,7 @@ export class MessagesGateway
 
             return { success: true, message };
         } catch (error) {
-            return { error: error.message };
+            return { error: getErrorMessage(error) };
         }
     }
 
@@ -185,7 +194,7 @@ export class MessagesGateway
                 return { error: 'You are not a member of this chat' };
             }
 
-            client.join(`chat:${data.chatId}`);
+            void client.join(`chat:${data.chatId}`);
             console.log(
                 `✅ User ${userId} (socket ${client.id}) joined chat:${data.chatId}`,
             );
@@ -201,16 +210,16 @@ export class MessagesGateway
 
             return { success: true, chatId: data.chatId };
         } catch (error) {
-            return { error: error.message };
+            return { error: getErrorMessage(error) };
         }
     }
 
     @SubscribeMessage('chat:leave')
-    async handleChatLeave(
+    handleChatLeave(
         @MessageBody() data: { chatId: string },
         @ConnectedSocket() client: Socket,
     ) {
-        client.leave(`chat:${data.chatId}`);
+        void client.leave(`chat:${data.chatId}`);
         return { success: true, chatId: data.chatId };
     }
 

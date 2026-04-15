@@ -120,6 +120,9 @@ export class AuthController {
     ): Promise<boolean> {
         // @Res - берем обработку полностью на себя. без автоматического отправки ответа NEST
         const refreshToken = this.cookieService.getRefreshToken(req);
+        if (!refreshToken) {
+            throw new UnauthorizedException('Refresh token not found');
+        }
         await this.authService.logout(refreshToken);
         this.cookieService.clearAuthCookies(res);
         return true;

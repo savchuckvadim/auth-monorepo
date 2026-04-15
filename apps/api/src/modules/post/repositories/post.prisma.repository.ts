@@ -4,17 +4,24 @@ import {
     NotFoundException,
     ForbiddenException,
 } from '@nestjs/common';
-import { Post, Prisma } from 'generated/prisma';
+import { Prisma } from 'generated/prisma';
 import { CreatePostDto, UpdatePostDto, RepostDto } from '../dto/post.dto';
 import { PostRepository } from './post.repository';
 import { FullPost } from '../type/post.type';
+
+type PostWithRelations = Prisma.PostGetPayload<{
+    include: {
+        user: { include: { profile: true } };
+        author: { include: { profile: true } };
+    };
+}>;
 
 @Injectable()
 export class PostPrismaRepository implements PostRepository {
     constructor(private readonly prisma: PrismaService) {}
 
     private async enrichPost(
-        post: any,
+        post: PostWithRelations,
         currentUserId?: string,
     ): Promise<FullPost> {
         // Параллельно получаем все необходимые данные
@@ -69,11 +76,12 @@ export class PostPrismaRepository implements PostRepository {
 
         // Определяем автора поста
 
+        const authorEntity = post.author ?? post.user;
         const author = {
-            id: post.author.id,
-            name: post.author.name,
-            email: post.author.email,
-            avatar: post.author.profile?.avatar || null,
+            id: authorEntity.id,
+            name: authorEntity.name,
+            email: authorEntity.email,
+            avatar: authorEntity.profile?.avatar || null,
         };
 
         return {
@@ -82,7 +90,7 @@ export class PostPrismaRepository implements PostRepository {
             dislikesCount,
             repostsCount,
             userLike: userLike ? { isLike: userLike.isLike } : null,
-            originalPost: originalPost as any,
+            originalPost: (originalPost as FullPost | null) ?? null,
             author,
         };
     }
@@ -95,7 +103,8 @@ export class PostPrismaRepository implements PostRepository {
         const wallUserId = data.wallUserId || authorId;
 
         // Удаляем wallUserId из data, так как это не поле в БД
-        const { wallUserId: _, ...postData } = data;
+        const { ...postData } = data;
+        void wallUserId;
 
         const post = await this.prisma.post.create({
             data: {
@@ -229,7 +238,7 @@ export class PostPrismaRepository implements PostRepository {
     ): Promise<{ posts: FullPost[]; nextCursor?: string; hasNext: boolean }> {
         const take = limit + 1; // Берем на 1 больше, чтобы проверить есть ли следующая страница
 
-        const where: any = {
+        const where: Prisma.PostWhereInput = {
             deletedAt: null,
             OR: [
                 { userId: currentUserId },
@@ -302,7 +311,7 @@ export class PostPrismaRepository implements PostRepository {
     ): Promise<{ posts: FullPost[]; nextCursor?: string; hasNext: boolean }> {
         const take = limit + 1;
 
-        const where: any = {
+        const where: Prisma.PostWhereInput = {
             userId,
             deletedAt: null,
         };
@@ -363,7 +372,7 @@ export class PostPrismaRepository implements PostRepository {
     ): Promise<{ posts: FullPost[]; nextCursor?: string; hasNext: boolean }> {
         const take = limit + 1;
 
-        const where: any = {
+        const where: Prisma.PostWhereInput = {
             userId,
             originalPostId: { not: null },
             deletedAt: null,

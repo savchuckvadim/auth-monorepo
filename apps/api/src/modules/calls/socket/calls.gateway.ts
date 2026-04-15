@@ -18,6 +18,9 @@ import { CallInitiatedDto } from '../dto/call-initiated.dto';
 import { CallType, CallStatus } from 'generated/prisma';
 import { CallEvent } from '../type/call-event.type';
 
+const getErrorMessage = (error: unknown): string =>
+    error instanceof Error ? error.message : String(error);
+
 @WebSocketGateway({
     cors: {
         origin: '*',
@@ -35,7 +38,7 @@ export class CallsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         private readonly callsService: CallsService,
     ) {}
 
-    async handleConnection(client: Socket) {
+    handleConnection(client: Socket): void {
         // TODO: Получить userId из токена аутентификации
         // Пока используем query параметр для тестирования
         const userId = client.handshake.query.userId as string;
@@ -50,7 +53,7 @@ export class CallsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
         // Добавляем в персональную комнату (как в PostGateway)
         if (userId) {
-            client.join(`user:${userId}`);
+            void client.join(`user:${userId}`);
         }
 
         console.log(`Socket Connected: ${client.id} (user: ${userId})`);
@@ -107,7 +110,7 @@ export class CallsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
             return { success: true, callId: call.id };
         } catch (error) {
-            return { error: error.message };
+            return { error: getErrorMessage(error) };
         }
     }
 
@@ -150,7 +153,7 @@ export class CallsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
             return { success: true };
         } catch (error) {
-            return { error: error.message };
+            return { error: getErrorMessage(error) };
         }
     }
 
@@ -206,7 +209,7 @@ export class CallsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
             return { success: true };
         } catch (error) {
-            return { error: error.message };
+            return { error: getErrorMessage(error) };
         }
     }
 

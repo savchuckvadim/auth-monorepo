@@ -18,7 +18,7 @@ export class QueueDispatcherService {
     async dispatch<T>(
         queueName: QueueNames,
         jobName: JobNames,
-        data: any,
+        data: unknown,
         jobId?: string,
     ): Promise<Job<T>> {
         const queue = this.getQueue(queueName);
@@ -37,10 +37,11 @@ export class QueueDispatcherService {
             case QueueNames.MAIL:
                 return this.mailQueue;
 
-            default:
-                const error = `Unknown queue name: ${name}`;
+            default: {
+                const error = `Unknown queue name: ${String(name)}`;
                 this.logger.error(error);
                 throw new Error(error);
+            }
         }
     }
 

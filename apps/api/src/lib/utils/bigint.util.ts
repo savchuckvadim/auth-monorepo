@@ -5,7 +5,7 @@ export class BigIntUtil {
     /**
      * Replacer функция для JSON.stringify для обработки BigInt
      */
-    static replacer(key: string, value: any): any {
+    static replacer(_key: string, value: unknown): unknown {
         if (typeof value === 'bigint') {
             return value.toString();
         }
@@ -15,7 +15,7 @@ export class BigIntUtil {
     /**
      * Рекурсивная функция для сериализации объекта с BigInt значениями
      */
-    static serializeBigInt(obj: any): any {
+    static serializeBigInt(obj: unknown): unknown {
         if (obj === null || obj === undefined) {
             return obj;
         }
@@ -29,8 +29,10 @@ export class BigIntUtil {
         }
 
         if (typeof obj === 'object') {
-            const result: any = {};
-            for (const [key, value] of Object.entries(obj)) {
+            const result: Record<string, unknown> = {};
+            for (const [key, value] of Object.entries(
+                obj as Record<string, unknown>,
+            )) {
                 result[key] = this.serializeBigInt(value);
             }
             return result;

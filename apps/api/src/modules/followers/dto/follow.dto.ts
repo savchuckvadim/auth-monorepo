@@ -5,6 +5,14 @@ type UserBasic = {
     name: string;
     email: string;
 };
+type FollowModel = {
+    id: string;
+    followerId: string;
+    followingId: string;
+    createdAt: Date;
+    follower?: UserBasicDto;
+    following?: UserBasicDto;
+};
 
 export class UserBasicDto implements UserBasic {
     @ApiProperty({ description: 'ID', example: '1', type: String })
@@ -45,7 +53,7 @@ export class FollowDto {
     })
     following?: UserBasicDto;
 
-    constructor(follow: any) {
+    constructor(follow: FollowModel) {
         this.id = follow.id;
         this.followerId = follow.followerId;
         this.followingId = follow.followingId;

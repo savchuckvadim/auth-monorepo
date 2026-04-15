@@ -25,7 +25,9 @@ export class AccessTokenGuard implements CanActivate {
 
         // 2) fallback: берём из Cookies
         if (!accessToken && req.cookies?.accessToken) {
-            accessToken = req.cookies.accessToken;
+            const cookieToken = req.cookies.accessToken as unknown;
+            accessToken =
+                typeof cookieToken === 'string' ? cookieToken : undefined;
         }
         if (!accessToken) {
             throw new UnauthorizedException('ACCESS_TOKEN_MISSING'); // Требуется авторизация

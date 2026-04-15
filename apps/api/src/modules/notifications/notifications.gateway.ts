@@ -22,7 +22,7 @@ export class NotificationsGateway
     private readonly socketToUserId = new Map<string, string>();
     private readonly userIdToSockets = new Map<string, Set<string>>();
 
-    async handleConnection(client: Socket) {
+    handleConnection(client: Socket): void {
         // TODO: Получить userId из токена аутентификации
         const userId = client.handshake.query.userId as string;
 
@@ -39,7 +39,7 @@ export class NotificationsGateway
         this.userIdToSockets.get(userId)!.add(client.id);
 
         // Подключаемся к комнате пользователя для уведомлений
-        client.join(`user:${userId}`);
+        void client.join(`user:${userId}`);
 
         console.log(
             `Notification socket connected: ${client.id} (user: ${userId})`,

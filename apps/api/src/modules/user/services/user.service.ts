@@ -3,7 +3,6 @@ import { UserRepository } from '../repositories/user.repository';
 import { CreateUserDto, UserDto } from '../dto/user.dto';
 import { User } from 'generated/prisma';
 import { compare } from 'bcrypt';
-import { UserWithFollowStatusType } from '../type/user.type';
 @Injectable()
 export class UserService {
     constructor(private readonly repo: UserRepository) {}

@@ -5,9 +5,7 @@ import {
     MaxLength,
     IsNumber,
     IsBoolean,
-    IsEnum,
 } from 'class-validator';
-import { Post, PostLike } from 'generated/prisma';
 import { FullPost, PostAuthor } from '../type/post.type';
 
 export class CreatePostDto {
@@ -188,7 +186,7 @@ export class PostDto {
         this.isLiked = post.userLike?.isLike === true;
         this.isDisliked = post.userLike?.isLike === false;
         this.originalPost = post.originalPost
-            ? new PostDto(post.originalPost as any)
+            ? new PostDto(post.originalPost)
             : null;
 
         this.author = new PostAuthorDto(post.author);

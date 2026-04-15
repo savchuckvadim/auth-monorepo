@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '@/core';
 import { FollowersRepository } from './followers.repository';
-import { Follow, User } from 'generated/prisma';
+import { Follow } from 'generated/prisma';
 
 type UserBasic = {
     id: string;

@@ -24,7 +24,11 @@ export class MessageDto {
 
     constructor(
         message: Message & {
-            sender?: any;
+            sender?: {
+                id: string;
+                name: string;
+                email: string;
+            };
             replyTo?: Message;
             readBy?: string[];
         },

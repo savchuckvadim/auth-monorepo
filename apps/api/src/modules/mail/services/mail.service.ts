@@ -69,12 +69,14 @@ export class MailService {
                 html: params.html,
                 attachments: params.attachments,
             };
-            const response = await this.mailerService.sendMail(sendMailParams);
+            const response = (await this.mailerService.sendMail(
+                sendMailParams,
+            )) as Record<string, unknown>;
             this.logger.log(
                 `Email sent successfully to recipients with the following parameters : ${JSON.stringify(
                     sendMailParams,
                 )}`,
-                response,
+                JSON.stringify(response),
             );
             return {
                 ...response,
@@ -86,7 +88,7 @@ export class MailService {
                 `Error while sending mail with the following parameters : ${JSON.stringify(
                     params,
                 )}`,
-                error,
+                error instanceof Error ? error.stack : JSON.stringify(error),
             );
         }
     }

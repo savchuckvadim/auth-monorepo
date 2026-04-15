@@ -12,7 +12,6 @@ import {
 } from 'class-validator';
 import {
     Chat,
-    ChatMember,
     ChatMemberRole,
     ChatType,
     User,

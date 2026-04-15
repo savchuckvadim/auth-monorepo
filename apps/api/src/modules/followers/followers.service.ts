@@ -39,6 +39,7 @@ export class FollowersService {
         userId: string,
         currentUserId?: string,
     ): Promise<FollowDto[]> {
+        void currentUserId;
         const followers = await this.repository.getFollowers(userId);
         return followers.map(f => new FollowDto(f));
     }
@@ -47,6 +48,7 @@ export class FollowersService {
         userId: string,
         currentUserId?: string,
     ): Promise<FollowDto[]> {
+        void currentUserId;
         const following = await this.repository.getFollowing(userId);
         return following.map(f => new FollowDto(f));
     }

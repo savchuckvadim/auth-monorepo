@@ -7,6 +7,7 @@ import {
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiResponse, EResultCode } from '../interfaces/response.interface';
+import { Request } from 'express';
 
 @Injectable()
 export class ResponseInterceptor<T> implements NestInterceptor<
@@ -15,21 +16,19 @@ export class ResponseInterceptor<T> implements NestInterceptor<
 > {
     intercept(
         context: ExecutionContext,
-        next: CallHandler,
+        next: CallHandler<T>,
     ): Observable<ApiResponse<T>> {
-        const req = context.switchToHttp().getRequest();
+        const req = context.switchToHttp().getRequest<Request>();
         // 🔥 Пропускаем без обертки, если это /metrics
         if (req.url === '/api/metrics') {
-            return next.handle();
+            return next.handle() as Observable<ApiResponse<T>>;
         }
 
         return next.handle().pipe(
-            map(data => {
-                return {
-                    resultCode: EResultCode.SUCCESS,
-                    data: data,
-                };
-            }),
+            map(data => ({
+                resultCode: EResultCode.SUCCESS,
+                data,
+            })),
         );
     }
 }
