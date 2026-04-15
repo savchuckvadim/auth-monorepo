@@ -1,12 +1,11 @@
-import { Token } from "generated/prisma";
-import { TokenRepository } from "./token.repository";
-import { PrismaService } from "@/core";
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Token } from 'generated/prisma';
+import { TokenRepository } from './token.repository';
+import { PrismaService } from '@/core';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class TokenPrismaRepository implements TokenRepository {
-    constructor(private readonly prisma: PrismaService) { }
-
+    constructor(private readonly prisma: PrismaService) {}
 
     async saveToken(userId: string, refreshToken: string): Promise<Token> {
         const tokenData = await this.prisma.token.findFirst({
@@ -29,7 +28,6 @@ export class TokenPrismaRepository implements TokenRepository {
     }
 
     async findToken(userId: string): Promise<Token | null> {
-
         const token = await this.prisma.token.findFirst({
             where: { userId },
         });
@@ -37,6 +35,13 @@ export class TokenPrismaRepository implements TokenRepository {
         // if (!token) {
         //     throw new NotFoundException('Token not found');
         // }
+        return token || null;
+    }
+
+    async findTokenByRefreshToken(refreshToken: string): Promise<Token | null> {
+        const token = await this.prisma.token.findFirst({
+            where: { refreshToken },
+        });
         return token || null;
     }
 
@@ -51,5 +56,4 @@ export class TokenPrismaRepository implements TokenRepository {
             where: { id: token.id },
         });
     }
-
 }

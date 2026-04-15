@@ -5,14 +5,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import { QueueNames } from '../consts/queue-names.enum';
 import { JobNames } from '../consts/job-names.enum';
 
-
 @Injectable()
 export class QueueDispatcherService {
     private readonly logger = new Logger(QueueDispatcherService.name);
 
     constructor(
         @InjectQueue(QueueNames.MAIL) private readonly mailQueue: Queue,
-
     ) {
         this.logger.log('QueueDispatcherService initialized');
     }
@@ -20,7 +18,7 @@ export class QueueDispatcherService {
     async dispatch<T>(
         queueName: QueueNames,
         jobName: JobNames,
-        data: any,
+        data: unknown,
         jobId?: string,
     ): Promise<Job<T>> {
         const queue = this.getQueue(queueName);
@@ -39,10 +37,11 @@ export class QueueDispatcherService {
             case QueueNames.MAIL:
                 return this.mailQueue;
 
-            default:
-                const error = `Unknown queue name: ${name}`;
+            default: {
+                const error = `Unknown queue name: ${String(name)}`;
                 this.logger.error(error);
                 throw new Error(error);
+            }
         }
     }
 

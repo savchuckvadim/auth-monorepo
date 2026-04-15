@@ -1,13 +1,12 @@
-import { CreateUserDto, UserDto, UserService } from "@/modules/user";
-import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { SendMailActivationLinkUseCase } from "@/modules/mail";
-import { TokenService } from "@/modules/token";
-import { ConfigService } from "@nestjs/config";
-import { LoginDto } from "../dtos/login.dto";
-import { AuthenticatedUserDto } from "../dtos/login.dto";
-import { CookieService } from "@/core/cookie";
+import { CreateUserDto, UserDto, UserService } from '@/modules/user';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { SendMailActivationLinkUseCase } from '@/modules/mail';
+import { TokenService } from '@/modules/token';
+import { ConfigService } from '@nestjs/config';
+import { LoginDto } from '../dtos/login.dto';
+import { AuthenticatedUserDto } from '../dtos/login.dto';
+import { CookieService } from '@/core/cookie';
 import { Response } from 'express';
-
 
 @Injectable()
 export class AuthService {
@@ -17,28 +16,26 @@ export class AuthService {
         private readonly tokenService: TokenService,
         private readonly configService: ConfigService,
         private readonly cookieService: CookieService,
+    ) {}
 
-    ) { }
-
-    public async registration(registerDto: CreateUserDto): Promise<AuthenticatedUserDto> {
+    public async registration(
+        registerDto: CreateUserDto,
+    ): Promise<AuthenticatedUserDto> {
         const user = await this.userService.createUser(registerDto);
-        const baseUrl = this.configService.getOrThrow<string>('APP_URL')
-        const activationLink = `${baseUrl}/api/auth/activate/${user.activationLink}`
+        const baseUrl = this.configService.getOrThrow<string>('APP_URL');
+        const activationLink = `${baseUrl}/api/auth/activate/${user.activationLink}`;
 
-
-        await this.mailService.activationLink({  //отправка в очередь для отправки письма
+        await this.mailService.activationLink({
+            //отправка в очередь для отправки письма
             email: user.email,
             name: user.name,
-            activationLink: activationLink
+            activationLink: activationLink,
         });
 
-
         return await this.generateTokens(user);
-
     }
 
     public async login(loginDto: LoginDto) {
-
         const user = await this.userService.getUserByEmail(loginDto.email);
         if (!user) {
             throw new UnauthorizedException('User not found');
@@ -47,15 +44,16 @@ export class AuthService {
             throw new UnauthorizedException('User not activated');
         }
 
-
-        const isPasswordValid = await this.userService.comparePassword(loginDto.password, user.password);
+        const isPasswordValid = await this.userService.comparePassword(
+            loginDto.password,
+            user.password,
+        );
         if (!isPasswordValid) {
             throw new UnauthorizedException('Invalid password');
         }
 
         return await this.generateTokens(new UserDto(user));
     }
-
 
     public async logout(refreshToken: string) {
         await this.tokenService.removeToken(refreshToken);
@@ -64,37 +62,47 @@ export class AuthService {
     public async activate(link: string) {
         const user = await this.userService.activateUser(link);
         return await this.generateTokens(user);
-
     }
-    public async refreshToken(refreshToken: string, res: Response) {
+    public async refreshToken(refreshToken: string, res?: Response) {
         if (!refreshToken) {
-            this.cookieService.clearAuthCookies(res as Response);
+            if (res) {
+                this.cookieService.clearAuthCookies(res);
+            }
             throw new UnauthorizedException('Refresh token not found');
         }
-        const userData = await this.tokenService.validateRefreshToken(refreshToken);
+        const userData =
+            await this.tokenService.validateRefreshToken(refreshToken);
 
-        const tokenFromDb = await this.tokenService.findToken(userData?.userId || '');
+        // КРИТИЧНО: Проверяем, что токен из БД совпадает с переданным токеном
+        // Это предотвращает использование старых/отозванных токенов
+        const tokenFromDb =
+            await this.tokenService.findTokenByRefreshToken(refreshToken);
         if (!tokenFromDb || !userData?.userId) {
-            this.cookieService.clearAuthCookies(res as Response);
+            if (res) {
+                this.cookieService.clearAuthCookies(res);
+            }
             throw new UnauthorizedException('Invalid refresh token');
         }
 
+        // Дополнительная проверка: userId из токена должен совпадать с userId из БД
+        if (tokenFromDb.userId !== userData.userId) {
+            if (res) {
+                this.cookieService.clearAuthCookies(res);
+            }
+            throw new UnauthorizedException('Invalid refresh token');
+        }
 
         const user = await this.userService.getUser(userData.userId);
         return await this.generateTokens(user);
     }
     private async generateTokens(user: UserDto): Promise<AuthenticatedUserDto> {
-
         const tokens = this.tokenService.generateTokens({ userId: user.id });
         await this.tokenService.saveToken(user.id, tokens.refreshToken);
 
         const result: AuthenticatedUserDto = {
             tokens,
-            user: user
-        }
+            user: user,
+        };
         return result;
     }
-
-
-
 }

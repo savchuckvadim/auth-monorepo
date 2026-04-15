@@ -3,20 +3,18 @@ import { Injectable } from '@nestjs/common';
 import { CookieOptions, Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 
-
 @Injectable()
 export class CookieService {
-    constructor(private configService: ConfigService) { }
+    constructor(private configService: ConfigService) {}
 
     private readonly REFRESH_COOKIE_NAME = 'refreshToken';
     private readonly ACCESS_COOKIE_NAME = 'accessToken';
 
-
-    private isProd() {
-        return this.configService.get('NODE_ENV') === 'production';
+    private isProd(): boolean {
+        return this.configService.get<string>('NODE_ENV') === 'production';
     }
     private getCookieOptions(maxAge?: 'access' | 'refresh'): CookieOptions {
-        const domain = this.configService.get('CLIENT_DOMAIN');
+        const domain = this.configService.get<string>('CLIENT_DOMAIN');
         const isProd = this.isProd();
 
         const options: CookieOptions = {
@@ -24,14 +22,13 @@ export class CookieService {
             secure: isProd,
             sameSite: isProd ? 'none' : 'lax',
             domain: isProd ? domain : 'localhost',
-            path: '/'
-
-
+            path: '/',
         };
         if (maxAge) {
-            options.maxAge = maxAge === 'access'
-                ? 15 * 60 * 1000  // 15 минут
-                : 30 * 24 * 60 * 60 * 1000 // 30 дней
+            options.maxAge =
+                maxAge === 'access'
+                    ? 15 * 60 * 1000 // 15 минут
+                    : 30 * 24 * 60 * 60 * 1000; // 30 дней
 
             //for test
             // options.maxAge = maxAge === 'access'
@@ -41,27 +38,35 @@ export class CookieService {
         return options;
     }
     setAccessToken(res: Response, token: string) {
-        res.cookie(this.ACCESS_COOKIE_NAME, token, this.getCookieOptions('access'));
+        res.cookie(
+            this.ACCESS_COOKIE_NAME,
+            token,
+            this.getCookieOptions('access'),
+        );
     }
 
     setRefreshToken(res: Response, token: string) {
-        res.cookie(this.REFRESH_COOKIE_NAME, token, this.getCookieOptions('refresh'));
+        res.cookie(
+            this.REFRESH_COOKIE_NAME,
+            token,
+            this.getCookieOptions('refresh'),
+        );
     }
 
-    clearAuthCookies(res: Response) {
-
+    clearAuthCookies(res: Response): void {
         const options = this.getCookieOptions(); // БЕЗ maxAge
 
         res.clearCookie(this.ACCESS_COOKIE_NAME, options);
         res.clearCookie(this.REFRESH_COOKIE_NAME, options);
     }
 
-    getRefreshToken(req: Request) {
-        return req.cookies?.[this.REFRESH_COOKIE_NAME];
+    getRefreshToken(req: Request): string | undefined {
+        const value = req.cookies?.[this.REFRESH_COOKIE_NAME] as unknown;
+        return typeof value === 'string' ? value : undefined;
     }
 
-    getAccessToken(req: Request) {
-        return req.cookies?.[this.ACCESS_COOKIE_NAME];
+    getAccessToken(req: Request): string | undefined {
+        const value = req.cookies?.[this.ACCESS_COOKIE_NAME] as unknown;
+        return typeof value === 'string' ? value : undefined;
     }
-
 }

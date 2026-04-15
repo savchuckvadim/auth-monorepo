@@ -1,12 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-
-
-
 type UserBasic = {
     id: string;
     name: string;
     email: string;
+};
+type FollowModel = {
+    id: string;
+    followerId: string;
+    followingId: string;
+    createdAt: Date;
+    follower?: UserBasicDto;
+    following?: UserBasicDto;
 };
 
 export class UserBasicDto implements UserBasic {
@@ -14,7 +19,11 @@ export class UserBasicDto implements UserBasic {
     id: string;
     @ApiProperty({ description: 'Name', example: 'John Doe', type: String })
     name: string;
-    @ApiProperty({ description: 'Email', example: 'john.doe@example.com', type: String })
+    @ApiProperty({
+        description: 'Email',
+        example: 'john.doe@example.com',
+        type: String,
+    })
     email: string;
 }
 
@@ -25,14 +34,26 @@ export class FollowDto {
     followerId: string;
     @ApiProperty({ description: 'Following ID', example: '1', type: String })
     followingId: string;
-    @ApiProperty({ description: 'Created At', example: '2021-01-01', type: Date })
+    @ApiProperty({
+        description: 'Created At',
+        example: '2021-01-01',
+        type: Date,
+    })
     createdAt: Date;
-    @ApiProperty({ description: 'Follower', example: { id: '1', name: 'John Doe', email: 'john.doe@example.com' }, type: UserBasicDto })
+    @ApiProperty({
+        description: 'Follower',
+        example: { id: '1', name: 'John Doe', email: 'john.doe@example.com' },
+        type: UserBasicDto,
+    })
     follower?: UserBasicDto;
-    @ApiProperty({ description: 'Following', example: { id: '1', name: 'John Doe', email: 'john.doe@example.com' }, type: UserBasicDto })
+    @ApiProperty({
+        description: 'Following',
+        example: { id: '1', name: 'John Doe', email: 'john.doe@example.com' },
+        type: UserBasicDto,
+    })
     following?: UserBasicDto;
 
-    constructor(follow: any) {
+    constructor(follow: FollowModel) {
         this.id = follow.id;
         this.followerId = follow.followerId;
         this.followingId = follow.followingId;
@@ -47,7 +68,11 @@ export class UserWithFollowStatusDto {
     id: string;
     @ApiProperty({ description: 'Name', example: 'John Doe', type: String })
     name: string;
-    @ApiProperty({ description: 'Email', example: 'john.doe@example.com', type: String })
+    @ApiProperty({
+        description: 'Email',
+        example: 'john.doe@example.com',
+        type: String,
+    })
     email: string;
     @ApiProperty({ description: 'Is Following', example: true, type: Boolean })
     isFollowing: boolean;
@@ -56,7 +81,9 @@ export class UserWithFollowStatusDto {
     @ApiProperty({ description: 'Is Friend', example: true, type: Boolean })
     isFriend: boolean; // взаимная подписка
 
-    constructor(user: UserBasic & { isFollowing?: boolean; isFollower?: boolean }) {
+    constructor(
+        user: UserBasic & { isFollowing?: boolean; isFollower?: boolean },
+    ) {
         this.id = user.id;
         this.name = user.name;
         this.email = user.email;
@@ -65,4 +92,3 @@ export class UserWithFollowStatusDto {
         this.isFriend = (user.isFollowing && user.isFollower) || false;
     }
 }
-

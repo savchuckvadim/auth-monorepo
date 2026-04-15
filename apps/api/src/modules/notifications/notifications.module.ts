@@ -7,5 +7,4 @@ import { FollowersModule } from '../followers/followers.module';
     providers: [NotificationsGateway],
     exports: [NotificationsGateway],
 })
-export class NotificationsModule { }
-
+export class NotificationsModule {}

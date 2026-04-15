@@ -1,8 +1,22 @@
 import { MessageDto } from '@/modules/messages/dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsDate, IsEnum, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { Chat, ChatMember, ChatMemberRole, ChatType, User, user_roles } from 'generated/prisma';
+import {
+    IsArray,
+    IsDate,
+    IsEnum,
+    IsNumber,
+    IsOptional,
+    IsString,
+    ValidateNested,
+} from 'class-validator';
+import {
+    Chat,
+    ChatMemberRole,
+    ChatType,
+    User,
+    user_roles,
+} from 'generated/prisma';
 import { ChatMemberWithUser } from '../types/chat-member-with-user.type';
 import { UserDto } from '@/modules/user';
 
@@ -31,7 +45,16 @@ export class ChatMemberDto {
     @IsDate()
     lastReadAt?: Date;
 
-    @ApiProperty({ description: 'User', example: { id: '1', email: 'test@test.com', name: 'Test', role: 'user', isAcivated: true } })
+    @ApiProperty({
+        description: 'User',
+        example: {
+            id: '1',
+            email: 'test@test.com',
+            name: 'Test',
+            role: 'user',
+            isAcivated: true,
+        },
+    })
     @ValidateNested()
     @Type(() => UserDto)
     user: UserDto;
@@ -54,10 +77,6 @@ export class ChatMemberDto {
     }
 }
 
-
-
-
-
 export class UpdateChatDto {
     @ApiProperty({ description: 'Name', example: 'Test' })
     @IsOptional()
@@ -67,7 +86,10 @@ export class UpdateChatDto {
     @IsOptional()
     @IsString()
     description?: string;
-    @ApiProperty({ description: 'Avatar', example: 'https://example.com/avatar.jpg' })
+    @ApiProperty({
+        description: 'Avatar',
+        example: 'https://example.com/avatar.jpg',
+    })
     @IsOptional()
     @IsString()
     avatar?: string;
@@ -88,7 +110,10 @@ export class ChatDto {
     @IsOptional()
     @IsString()
     description?: string;
-    @ApiProperty({ description: 'Avatar', example: 'https://example.com/avatar.jpg' })
+    @ApiProperty({
+        description: 'Avatar',
+        example: 'https://example.com/avatar.jpg',
+    })
     @IsOptional()
     @IsString()
     avatar?: string;
@@ -101,7 +126,21 @@ export class ChatDto {
     @ApiProperty({ description: 'Updated At', example: '2021-01-01' })
     @IsDate()
     updatedAt: Date;
-    @ApiProperty({ description: 'Members', example: [{ id: '1', chatId: '1', userId: '1', role: 'MEMBER', joinedAt: '2021-01-01', leftAt: '2021-01-01', lastReadAt: '2021-01-01' }], type: [ChatMemberDto] })
+    @ApiProperty({
+        description: 'Members',
+        example: [
+            {
+                id: '1',
+                chatId: '1',
+                userId: '1',
+                role: 'MEMBER',
+                joinedAt: '2021-01-01',
+                leftAt: '2021-01-01',
+                lastReadAt: '2021-01-01',
+            },
+        ],
+        type: [ChatMemberDto],
+    })
     @IsOptional()
     @IsArray()
     @ValidateNested({ each: true })
@@ -111,7 +150,15 @@ export class ChatDto {
     @IsOptional()
     @IsNumber()
     unreadCount?: number;
-    @ApiProperty({ description: 'Last Message', example: { id: '1', content: 'Test', createdAt: '2021-01-01', senderId: '1' } })
+    @ApiProperty({
+        description: 'Last Message',
+        example: {
+            id: '1',
+            content: 'Test',
+            createdAt: '2021-01-01',
+            senderId: '1',
+        },
+    })
     @IsOptional()
     @ValidateNested()
     @Type(() => MessageDto)
@@ -123,7 +170,13 @@ export class ChatDto {
     //     senderId: string;
     // };
 
-    constructor(chat: Chat & { members?: ChatMemberWithUser[]; unreadCount?: number; lastMessage?: MessageDto }) {
+    constructor(
+        chat: Chat & {
+            members?: ChatMemberWithUser[];
+            unreadCount?: number;
+            lastMessage?: MessageDto;
+        },
+    ) {
         this.id = chat.id;
         this.type = chat.type;
         this.name = chat.name || undefined;

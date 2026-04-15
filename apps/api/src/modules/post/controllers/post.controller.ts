@@ -8,15 +8,28 @@ import {
     Param,
     Query,
     UseGuards,
-    Patch,
     UploadedFile,
     UseInterceptors,
     BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags, ApiConsumes } from '@nestjs/swagger';
+import {
+    ApiOperation,
+    ApiParam,
+    ApiQuery,
+    ApiResponse,
+    ApiTags,
+    ApiConsumes,
+} from '@nestjs/swagger';
 import { PostService } from '../services/post.service';
-import { CreatePostDto, UpdatePostDto, PostDto, PaginatedPostsDto, RepostDto, PostRepostUserDto } from '../dto/post.dto';
+import {
+    CreatePostDto,
+    UpdatePostDto,
+    PostDto,
+    PaginatedPostsDto,
+    RepostDto,
+    PostRepostUserDto,
+} from '../dto/post.dto';
 import { AccessTokenGuard } from '@/core/guards/access-token.guard';
 import { CurrentUser } from '@/core/decorators/auth/current-user.decorator';
 import { TokenPayloadDto } from '../../token';
@@ -29,7 +42,7 @@ export class PostController {
     constructor(
         private readonly postService: PostService,
         private readonly s3Service: S3Service,
-    ) { }
+    ) {}
 
     @ApiOperation({ summary: 'Create a new post' })
     @ApiResponse({ status: 201, description: 'Post created', type: PostDto })
@@ -42,9 +55,23 @@ export class PostController {
     }
 
     @ApiOperation({ summary: 'Get post feed (scroll pagination)' })
-    @ApiQuery({ name: 'cursor', required: false, description: 'Cursor for pagination (ISO date string)', example: '2024-01-01T00:00:00.000Z' })
-    @ApiQuery({ name: 'limit', required: false, description: 'Number of posts to return', example: 20 })
-    @ApiResponse({ status: 200, description: 'Posts feed', type: PaginatedPostsDto })
+    @ApiQuery({
+        name: 'cursor',
+        required: false,
+        description: 'Cursor for pagination (ISO date string)',
+        example: '2024-01-01T00:00:00.000Z',
+    })
+    @ApiQuery({
+        name: 'limit',
+        required: false,
+        description: 'Number of posts to return',
+        example: 20,
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Posts feed',
+        type: PaginatedPostsDto,
+    })
     @Get('feed')
     async getFeed(
         @CurrentUser() user: TokenPayloadDto,
@@ -60,9 +87,23 @@ export class PostController {
 
     @ApiOperation({ summary: 'Get posts by user ID (scroll pagination)' })
     @ApiParam({ name: 'userId', description: 'User ID', example: '1' })
-    @ApiQuery({ name: 'cursor', required: false, description: 'Cursor for pagination (ISO date string)', example: '2024-01-01T00:00:00.000Z' })
-    @ApiQuery({ name: 'limit', required: false, description: 'Number of posts to return', example: 20 })
-    @ApiResponse({ status: 200, description: 'User posts', type: PaginatedPostsDto })
+    @ApiQuery({
+        name: 'cursor',
+        required: false,
+        description: 'Cursor for pagination (ISO date string)',
+        example: '2024-01-01T00:00:00.000Z',
+    })
+    @ApiQuery({
+        name: 'limit',
+        required: false,
+        description: 'Number of posts to return',
+        example: 20,
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'User posts',
+        type: PaginatedPostsDto,
+    })
     @Get('user/:userId')
     async getPostsByUserId(
         @Param('userId') userId: string,
@@ -79,9 +120,23 @@ export class PostController {
     }
 
     @ApiOperation({ summary: 'Get my reposts (scroll pagination)' })
-    @ApiQuery({ name: 'cursor', required: false, description: 'Cursor for pagination (ISO date string)', example: '2024-01-01T00:00:00.000Z' })
-    @ApiQuery({ name: 'limit', required: false, description: 'Number of posts to return', example: 20 })
-    @ApiResponse({ status: 200, description: 'My reposts', type: PaginatedPostsDto })
+    @ApiQuery({
+        name: 'cursor',
+        required: false,
+        description: 'Cursor for pagination (ISO date string)',
+        example: '2024-01-01T00:00:00.000Z',
+    })
+    @ApiQuery({
+        name: 'limit',
+        required: false,
+        description: 'Number of posts to return',
+        example: 20,
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'My reposts',
+        type: PaginatedPostsDto,
+    })
     @Get('reposts/me')
     async getMyReposts(
         @CurrentUser() user: TokenPayloadDto,
@@ -183,7 +238,11 @@ export class PostController {
 
     @ApiOperation({ summary: 'Get users who reposted a post' })
     @ApiParam({ name: 'id', description: 'Post ID', example: '1' })
-    @ApiResponse({ status: 200, description: 'Users who reposted', type: [PostRepostUserDto] })
+    @ApiResponse({
+        status: 200,
+        description: 'Users who reposted',
+        type: [PostRepostUserDto],
+    })
     @Get(':id/reposts')
     async getRepostUsers(
         @Param('id') id: string,
@@ -193,7 +252,11 @@ export class PostController {
 
     @ApiOperation({ summary: 'Upload media file for post (image or video)' })
     @ApiConsumes('multipart/form-data')
-    @ApiResponse({ status: 200, description: 'Media uploaded', schema: { type: 'object', properties: { url: { type: 'string' } } } })
+    @ApiResponse({
+        status: 200,
+        description: 'Media uploaded',
+        schema: { type: 'object', properties: { url: { type: 'string' } } },
+    })
     @Post('media')
     @UseInterceptors(FileInterceptor('file'))
     async uploadMedia(
@@ -205,7 +268,10 @@ export class PostController {
         }
 
         // Проверяем тип файла (только изображения и видео)
-        if (!file.mimetype.startsWith('image/') && !file.mimetype.startsWith('video/')) {
+        if (
+            !file.mimetype.startsWith('image/') &&
+            !file.mimetype.startsWith('video/')
+        ) {
             throw new BadRequestException('File must be an image or video');
         }
 
@@ -213,11 +279,12 @@ export class PostController {
         // Здесь проверяем только размер файла (например, максимум 100MB)
         const maxSize = 100 * 1024 * 1024; // 100MB
         if (file.size > maxSize) {
-            throw new BadRequestException('File size exceeds maximum allowed size');
+            throw new BadRequestException(
+                'File size exceeds maximum allowed size',
+            );
         }
 
         const { url } = await this.s3Service.uploadPostMedia(file, user.userId);
         return { url };
     }
 }
-

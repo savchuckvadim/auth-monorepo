@@ -1,5 +1,9 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import {
+    S3Client,
+    PutObjectCommand,
+    DeleteObjectCommand,
+} from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
 
 @Injectable()
@@ -16,8 +20,12 @@ export class S3Service {
         const bucket = process.env.AWS_BUCKET_NAME;
 
         if (!region || !accessKeyId || !secretAccessKey || !bucket) {
-            console.warn('⚠️ AWS S3 credentials not configured. File uploads will fail.');
-            console.warn('Required environment variables: AWS_REGION, AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_BUCKET_NAME');
+            console.warn(
+                '⚠️ AWS S3 credentials not configured. File uploads will fail.',
+            );
+            console.warn(
+                'Required environment variables: AWS_REGION, AWS_ACCESS_KEY, AWS_SECRET_KEY, AWS_BUCKET_NAME',
+            );
             return;
         }
 
@@ -41,7 +49,7 @@ export class S3Service {
     private validateS3Config(): void {
         if (!this.s3 || !this.bucket || !this.region) {
             throw new BadRequestException(
-                'S3 storage is not configured. Please set AWS_REGION, AWS_ACCESS_KEY, AWS_SECRET_KEY, and AWS_BUCKET_NAME environment variables.'
+                'S3 storage is not configured. Please set AWS_REGION, AWS_ACCESS_KEY, AWS_SECRET_KEY, and AWS_BUCKET_NAME environment variables.',
             );
         }
     }
@@ -52,7 +60,10 @@ export class S3Service {
      * @param folder - папка для организации файлов (например, 'avatars', 'hero', 'posts')
      * @returns URL загруженного файла
      */
-    async uploadFile(file: Express.Multer.File, folder?: string): Promise<{ url: string }> {
+    async uploadFile(
+        file: Express.Multer.File,
+        folder?: string,
+    ): Promise<{ url: string }> {
         this.validateS3Config();
 
         // Генерируем уникальное имя файла
@@ -78,7 +89,10 @@ export class S3Service {
     /**
      * Загружает аватар пользователя
      */
-    async uploadAvatar(file: Express.Multer.File, userId: string): Promise<{ url: string }> {
+    async uploadAvatar(
+        file: Express.Multer.File,
+        userId: string,
+    ): Promise<{ url: string }> {
         this.validateS3Config();
 
         const fileExtension = file.originalname.split('.').pop();
@@ -102,7 +116,10 @@ export class S3Service {
     /**
      * Загружает hero изображение пользователя
      */
-    async uploadHero(file: Express.Multer.File, userId: string): Promise<{ url: string }> {
+    async uploadHero(
+        file: Express.Multer.File,
+        userId: string,
+    ): Promise<{ url: string }> {
         this.validateS3Config();
 
         const fileExtension = file.originalname.split('.').pop();
@@ -126,12 +143,17 @@ export class S3Service {
     /**
      * Загружает медиа файл для поста (изображение или видео)
      */
-    async uploadPostMedia(file: Express.Multer.File, userId: string): Promise<{ url: string }> {
+    async uploadPostMedia(
+        file: Express.Multer.File,
+        userId: string,
+    ): Promise<{ url: string }> {
         this.validateS3Config();
 
         const fileExtension = file.originalname.split('.').pop();
         const fileName = `${userId}-${randomUUID()}.${fileExtension}`;
-        const folder = file.mimetype.startsWith('video/') ? 'posts/videos' : 'posts/images';
+        const folder = file.mimetype.startsWith('video/')
+            ? 'posts/videos'
+            : 'posts/images';
         const key = `${folder}/${fileName}`;
 
         const command = new PutObjectCommand({

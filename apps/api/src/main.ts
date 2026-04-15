@@ -25,8 +25,6 @@ async function bootstrap() {
             transform: true,
             transformOptions: { enableImplicitConversion: true },
         }),
-
-
     );
 
     app.setGlobalPrefix('api');
@@ -36,15 +34,12 @@ async function bootstrap() {
     app.useGlobalFilters(app.get(GlobalExceptionFilter));
     app.enableCors(cors);
 
-
-
     //documentation
     getSwaggerConfig(app);
-
 
     app.useLogger(['error', 'warn', 'log', 'debug', 'verbose']);
     app.use(cookieParser());
 
     await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+void bootstrap().catch(console.error);

@@ -5,7 +5,7 @@ import { Message, MessageType } from 'generated/prisma';
 
 @Injectable()
 export class MessagesPrismaRepository implements MessagesRepository {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     async findById(id: string) {
         const message = await this.prisma.message.findUnique({
@@ -43,11 +43,7 @@ export class MessagesPrismaRepository implements MessagesRepository {
         };
     }
 
-    async findByChatId(
-        chatId: string,
-        limit: number = 50,
-        offset: number = 0,
-    ) {
+    async findByChatId(chatId: string, limit: number = 50, offset: number = 0) {
         const messages = await this.prisma.message.findMany({
             where: {
                 chatId,
@@ -155,7 +151,10 @@ export class MessagesPrismaRepository implements MessagesRepository {
         });
     }
 
-    async markChatMessagesAsRead(chatId: string, userId: string): Promise<void> {
+    async markChatMessagesAsRead(
+        chatId: string,
+        userId: string,
+    ): Promise<void> {
         // Получаем все непрочитанные сообщения в чате
         const unreadMessages = await this.prisma.message.findMany({
             where: {
@@ -216,4 +215,3 @@ export class MessagesPrismaRepository implements MessagesRepository {
         });
     }
 }
-

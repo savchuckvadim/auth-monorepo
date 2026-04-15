@@ -4,7 +4,7 @@ import { CallType, CallStatus } from 'generated/prisma';
 
 @Injectable()
 export class CallsService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     async createCall(data: {
         chatId: string; // Обязательный - звонок всегда из чата
@@ -23,7 +23,11 @@ export class CallsService {
         });
     }
 
-    async updateCallStatus(callId: string, status: CallStatus, startedAt?: Date) {
+    async updateCallStatus(
+        callId: string,
+        status: CallStatus,
+        startedAt?: Date,
+    ) {
         return this.prisma.call.update({
             where: { id: callId },
             data: {
@@ -44,4 +48,3 @@ export class CallsService {
         });
     }
 }
-

@@ -11,14 +11,13 @@ import { RedisOptions } from 'ioredis';
     imports: [
         BullModule.forRootAsync({
             useFactory: (configService: ConfigService) => {
-
                 const redisOptions = createRedisOptions(configService);
                 return {
                     redis: redisOptions.url
                         ? redisOptions.url
-                        : {
-                            ...redisOptions
-                        } as RedisOptions,
+                        : ({
+                              ...redisOptions,
+                          } as RedisOptions),
                 };
             },
             inject: [ConfigService],
@@ -28,16 +27,12 @@ import { RedisOptions } from 'ioredis';
         ),
 
         RedisModule,
-
     ],
-    providers: [
-        QueueDispatcherService,
-    ],
+    providers: [QueueDispatcherService],
     exports: [
         // QueueService,
         QueueDispatcherService,
         BullModule,
-
     ],
 })
-export class QueueModule { }
+export class QueueModule {}

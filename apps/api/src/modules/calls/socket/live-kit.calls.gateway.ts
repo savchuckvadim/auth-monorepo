@@ -5,10 +5,8 @@ import {
     OnGatewayConnection,
     OnGatewayDisconnect,
     MessageBody,
-    ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-
 
 @WebSocketGateway({
     cors: {
@@ -17,33 +15,36 @@ import { Server, Socket } from 'socket.io';
     },
 })
 export class LiveKitCallsGateway
-    implements OnGatewayConnection, OnGatewayDisconnect {
+    implements OnGatewayConnection, OnGatewayDisconnect
+{
     @WebSocketServer()
     server: Server;
 
-
-
-    constructor(
+    constructor() {
         // private readonly onlineUsersService: OnlineUsersService,
+    }
 
-    ) { }
-
-    async handleConnection(client: Socket) {
+    handleConnection(client: Socket): void {
         // TODO: Получить userId из токена аутентификации
         // Пока используем query параметр для тестирования
         const userId = client.handshake.query.userId as string;
-
 
         console.log(`Socket Connected: ${client.id} (user: ${userId})`);
     }
 
     handleDisconnect(client: Socket) {
         console.log(`Socket Disconnected: ${client.id}`);
-
     }
 
     @SubscribeMessage('call:request')
-    async handleCallRequest(@MessageBody() data: { toUserId: string; roomName: string, fromUserId: string }) {
+    handleCallRequest(
+        @MessageBody()
+        data: {
+            toUserId: string;
+            roomName: string;
+            fromUserId: string;
+        },
+    ): void {
         // Просто уведомляем второго пользователя, что его зовут в LiveKit комнату
 
         console.log('handleCallRequest', data);
@@ -54,4 +55,3 @@ export class LiveKitCallsGateway
         });
     }
 }
-

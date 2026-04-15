@@ -1,9 +1,13 @@
 // src/core/interceptors/auth-cookie.interceptor.ts
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import {
+    CallHandler,
+    ExecutionContext,
+    Injectable,
+    NestInterceptor,
+} from '@nestjs/common';
 import { Observable, tap } from 'rxjs';
 import { Response } from 'express';
 import { CookieService } from '@/core/cookie/cookie.service';
-
 
 /**
  * Interceptor for setting auth cookie
@@ -11,31 +15,37 @@ import { CookieService } from '@/core/cookie/cookie.service';
  */
 @Injectable()
 export class AuthCookieInterceptor implements NestInterceptor {
-    constructor(private cookieService: CookieService) { }
+    constructor(private cookieService: CookieService) {}
 
-    intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    intercept(
+        context: ExecutionContext,
+        next: CallHandler<unknown>,
+    ): Observable<unknown> {
         const ctx = context.switchToHttp();
         const res = ctx.getResponse<Response>();
 
         return next.handle().pipe(
-            tap((data) => {
+            tap(data => {
+                const payload = data as {
+                    tokens?: { accessToken?: string; refreshToken?: string };
+                };
 
-                if (data?.tokens?.accessToken) {
+                if (payload.tokens?.accessToken) {
                     this.cookieService.setAccessToken(
                         res,
-                        data.tokens.accessToken,
+                        payload.tokens.accessToken,
                     );
                 }
 
-                if (data?.tokens?.refreshToken) {
+                if (payload.tokens?.refreshToken) {
                     this.cookieService.setRefreshToken(
                         res,
-                        data.tokens.refreshToken,
+                        payload.tokens.refreshToken,
                     );
                 }
 
-                if (data?.tokens) {
-                    delete data.tokens;
+                if (payload.tokens) {
+                    delete payload.tokens;
                 }
             }),
         );

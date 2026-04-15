@@ -7,8 +7,8 @@ import axios, { Method } from 'axios';
 // ХАРДКОД
 // В браузере Next.js заменяет process.env.NEXT_PUBLIC_API_URL на строковое значение
 // Если переменная не установлена, используется дефолт
-const url = 'https://api.sociopath-network.ru';
-// const url = 'http://localhost:3000';
+// const url = 'https://api.sociopath-network.ru';
+const url = 'http://localhost:3000';
 
 const AUTH_TOKEN_NAME = 'accessToken';
 
@@ -64,7 +64,7 @@ $api.interceptors.response.use((response) => {
 
         } catch (e) {
 
-           
+
             console.log('НЕ АВТОРИЗОВАН');
         }
 

@@ -1,7 +1,13 @@
-import { Injectable, OnModuleInit } from "@nestjs/common";
-import { OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
-import { Server, Socket } from "socket.io";
-import { PresenceService } from "../service/presence.service";
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import {
+    OnGatewayConnection,
+    OnGatewayDisconnect,
+    SubscribeMessage,
+    WebSocketGateway,
+    WebSocketServer,
+} from '@nestjs/websockets';
+import { Server, Socket } from 'socket.io';
+import { PresenceService } from '../service/presence.service';
 
 @WebSocketGateway({
     cors: {
@@ -10,16 +16,20 @@ import { PresenceService } from "../service/presence.service";
     },
 })
 @Injectable()
-export class PresenceGateway implements OnGatewayConnection, OnGatewayDisconnect, OnModuleInit {
+export class PresenceGateway
+    implements OnGatewayConnection, OnGatewayDisconnect, OnModuleInit
+{
     @WebSocketServer()
     server: Server;
 
-    constructor(private readonly service: PresenceService) { }
+    constructor(private readonly service: PresenceService) {}
 
     onModuleInit() {
         // Настраиваем callback для обработки истечения TTL
         this.service.setExpiredCallback((userId: string) => {
-            console.log(`🔴 Presence key expired for user: ${userId}, sending offline event`);
+            console.log(
+                `🔴 Presence key expired for user: ${userId}, sending offline event`,
+            );
             // Когда ключ истекает в Redis, отправляем событие offline
             this.server.emit('presence:offline', { userId });
         });
@@ -39,7 +49,9 @@ export class PresenceGateway implements OnGatewayConnection, OnGatewayDisconnect
         // Это важно для случаев, когда ключ истек, но пользователь все еще подключен
         const isOnlineNow = await this.service.isOnline(userId);
         if (isOnlineNow && !wasOnline) {
-            console.log(`🟢 User ${userId} became online after ping (key was expired)`);
+            console.log(
+                `🟢 User ${userId} became online after ping (key was expired)`,
+            );
             this.server.emit('presence:online', { userId });
         }
     }
@@ -56,21 +68,27 @@ export class PresenceGateway implements OnGatewayConnection, OnGatewayDisconnect
 
         // Всегда отправляем событие online при подключении
         // Это гарантирует, что все клиенты получат актуальное состояние
-        console.log(`📤 Sending presence:online event for user: ${userId} to all clients`);
+        console.log(
+            `📤 Sending presence:online event for user: ${userId} to all clients`,
+        );
         this.server.emit('presence:online', { userId });
 
         // Отправляем новому клиенту список всех онлайн пользователей
         // Это гарантирует, что новый клиент получит актуальное состояние всех пользователей
         const allOnlineUsers = await this.service.getAllOnlineUsers();
         if (allOnlineUsers.length > 0) {
-            console.log(`📤 Sending ${allOnlineUsers.length} online users to new client: ${userId}`);
+            console.log(
+                `📤 Sending ${allOnlineUsers.length} online users to new client: ${userId}`,
+            );
             client.emit('presence:bulk-online', { users: allOnlineUsers });
         }
 
         if (becameOnline) {
             console.log(`🟢 User ${userId} became online (was offline)`);
         } else {
-            console.log(`🟢 User ${userId} is already online, refreshing connection`);
+            console.log(
+                `🟢 User ${userId} is already online, refreshing connection`,
+            );
         }
     }
 

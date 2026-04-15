@@ -10,5 +10,4 @@ import { CallsController } from './controllers/calls.controller';
     providers: [CallsGateway, OnlineUsersService, CallsService, LiveKitService],
     exports: [CallsService],
 })
-export class CallsModule { }
-
+export class CallsModule {}

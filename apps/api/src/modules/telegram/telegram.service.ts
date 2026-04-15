@@ -4,6 +4,9 @@ import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 import { TelegramSendMessageDto } from './telegram.dto';
 
+const getErrorMessage = (error: unknown): string =>
+    error instanceof Error ? error.message : String(error);
+
 @Global()
 @Injectable()
 export class TelegramService {
@@ -35,7 +38,7 @@ export class TelegramService {
         try {
             await firstValueFrom(this.httpService.post(url, payload));
         } catch (error) {
-            console.error('Telegram error:', error.message);
+            console.error('Telegram error:', getErrorMessage(error));
         }
         return cleanText;
     }
@@ -53,7 +56,7 @@ export class TelegramService {
         try {
             await firstValueFrom(this.httpService.post(url, payload));
         } catch (error) {
-            console.error('Telegram error:', error.message);
+            console.error('Telegram error:', getErrorMessage(error));
         }
     }
     async sendMessageAdminError(message: string) {
@@ -69,7 +72,7 @@ export class TelegramService {
         try {
             await firstValueFrom(this.httpService.post(url, payload));
         } catch (error) {
-            console.error('Telegram error:', error.message);
+            console.error('Telegram error:', getErrorMessage(error));
         }
     }
 

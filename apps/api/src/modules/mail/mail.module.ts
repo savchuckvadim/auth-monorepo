@@ -15,11 +15,8 @@ import { MailProcessor } from './queue/mail.processor';
             useFactory: getMailerConfig,
             inject: [ConfigService],
         }),
-
     ],
     providers: [MailService, SendMailActivationLinkUseCase, MailProcessor],
     exports: [SendMailActivationLinkUseCase],
-
-
 })
-export class MailModule { }
+export class MailModule {}
