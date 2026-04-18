@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { connectMessagesSocket } from '@/modules/shared/lib/socket/messages-socket';
 import { Message, useMarkChatAsRead } from '@/modules/entities/messages';
-import { scrollToBottom } from '@/modules/entities/messages/lib/utils/scroll-to-bottom.util';
+import { scrollToBottomDeferred } from '@/modules/entities/messages/lib/utils/scroll-to-bottom.util';
 import {
     MessagesWsClientEvent,
     MessagesWsServerEvent,
@@ -46,9 +46,7 @@ export const useChatSocket = ({
                     userId,
                     newMessage.senderId,
                 );
-                setTimeout(() => {
-                    scrollToBottom(messagesEndRef, 'auto');
-                }, 50);
+                scrollToBottomDeferred(messagesEndRef, 'auto');
             } else {
                 void queryClient.invalidateQueries({ queryKey: ['chats', 'user'] });
                 invalidateChatsAndUnreadIfNotSelf(

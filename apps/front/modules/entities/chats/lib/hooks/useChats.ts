@@ -45,11 +45,8 @@ export const useUpdateChat = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async ({ id, data }: { id: string; data: UpdateChatDto }) =>{
-            debugger
-            return await chatsApi.chatsUpdateChat(id, data)
-
-        },
+        mutationFn: ({ id, data }: { id: string; data: UpdateChatDto }) =>
+            chatsApi.chatsUpdateChat(id, data),
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ['chats', variables.id] });
             queryClient.invalidateQueries({ queryKey: ['chats', 'user'] });

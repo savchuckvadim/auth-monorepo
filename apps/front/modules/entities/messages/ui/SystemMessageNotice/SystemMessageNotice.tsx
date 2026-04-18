@@ -4,36 +4,23 @@ import { cn } from '@workspace/ui/lib/utils';
 
 interface SystemMessageNoticeProps {
     content: string;
-    createdAt: Date | string;
     className?: string;
 }
 
-/** Centered non-bubble row for `MessageType.SYSTEM` (chat policies, service text). */
+/** Системное сообщение: только текст по центру, без «карточки» и времени. */
 export function SystemMessageNotice({
     content,
-    createdAt,
     className,
 }: SystemMessageNoticeProps) {
-    const time =
-        typeof createdAt === 'string'
-            ? new Date(createdAt)
-            : createdAt;
-
     return (
         <div
             className={cn(
-                'flex flex-col items-center gap-1 my-3 px-4 text-center',
+                'my-2 flex w-full justify-center px-3 text-center',
                 className,
             )}
         >
-            <p className="text-xs text-muted-foreground max-w-md leading-relaxed">
+            <p className="max-w-[min(100%,28rem)] text-xs leading-snug text-muted-foreground">
                 {content}
-            </p>
-            <p className="text-[10px] text-muted-foreground/80">
-                {time.toLocaleTimeString('ru-RU', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                })}
             </p>
         </div>
     );

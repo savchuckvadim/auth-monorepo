@@ -1,1 +1,4 @@
-export { SecretChatSettingsMenu } from './SecretChatSettingsMenu';
+export {
+    SecretChatSettingsMenu,
+    type SecretChatSettingsMenuProps,
+} from './SecretChatSettingsMenu';

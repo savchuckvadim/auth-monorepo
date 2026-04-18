@@ -1,2 +1,0 @@
-export { CreateChatDialogWidget } from './CreateChatDialogWidget';
-

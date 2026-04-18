@@ -274,7 +274,7 @@ const RegularMessageBubble = ({
                                 {showDeliveryTicks ? (
                                     readByPeer ? (
                                         <CheckCheck
-                                            className="h-3.5 w-3.5 shrink-0 text-emerald-300 drop-shadow-sm"
+                                            className="h-3.5 w-3.5 shrink-0 text-white drop-shadow-sm"
                                             aria-hidden
                                             aria-label="Прочитано"
                                         />
@@ -298,10 +298,7 @@ const RegularMessageBubble = ({
 export const MessageItem = (props: MessageItemProps) => {
     if (props.message.type === MessageType.SYSTEM) {
         return (
-            <SystemMessageNotice
-                content={props.message.content}
-                createdAt={props.message.createdAt}
-            />
+            <SystemMessageNotice content={props.message.content} />
         );
     }
     return <RegularMessageBubble {...props} />;

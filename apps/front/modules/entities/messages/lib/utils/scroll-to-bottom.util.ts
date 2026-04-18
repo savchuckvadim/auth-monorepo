@@ -8,12 +8,15 @@ export const scrollToBottom = (
 ) => {
     if (!messagesEndRef.current) return;
 
-    const scrollContainer = messagesEndRef.current.closest('.overflow-y-auto');
+    const scrollContainer =
+        (messagesEndRef.current.closest(
+            '[data-messages-scroll-root]',
+        ) as HTMLElement | null) ??
+        (messagesEndRef.current.closest('.overflow-y-auto') as HTMLElement | null);
 
     if (scrollContainer) {
-        const container = scrollContainer as HTMLElement;
-        container.scrollTo({
-            top: container.scrollHeight,
+        scrollContainer.scrollTo({
+            top: scrollContainer.scrollHeight,
             behavior,
         });
     } else {
@@ -25,3 +28,17 @@ export const scrollToBottom = (
     }
 };
 
+/**
+ * После вставки DOM (картинки, шрифты) высота контейнера может измениться — один rAF не всегда хватает.
+ */
+export const scrollToBottomDeferred = (
+    messagesEndRef: React.RefObject<HTMLDivElement | null>,
+    behavior: ScrollBehavior = 'auto',
+) => {
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            scrollToBottom(messagesEndRef, behavior);
+            queueMicrotask(() => scrollToBottom(messagesEndRef, behavior));
+        });
+    });
+};

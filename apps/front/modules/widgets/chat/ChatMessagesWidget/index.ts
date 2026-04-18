@@ -1,2 +1,0 @@
-export { ChatMessagesWidget } from './ChatMessagesWidget';
-

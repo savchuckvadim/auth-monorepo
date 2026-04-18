@@ -13,7 +13,7 @@ export function CreateChatSecurePrivateOption({
     onCheckedChange,
 }: CreateChatSecurePrivateOptionProps) {
     return (
-        <div className="flex items-center gap-2 mb-4">
+        <div className="mb-4 flex items-center gap-2">
             <Checkbox
                 id="secure-private-chat"
                 checked={checked}
@@ -21,7 +21,7 @@ export function CreateChatSecurePrivateOption({
             />
             <Label
                 htmlFor="secure-private-chat"
-                className="text-sm font-normal cursor-pointer"
+                className="cursor-pointer text-sm font-normal"
             >
                 Защищённый диалог (Signal E2EE)
             </Label>

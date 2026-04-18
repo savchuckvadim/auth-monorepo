@@ -8,7 +8,7 @@ import {
     removeFailedMessageFromOutbox,
     saveFailedMessageToOutbox,
 } from '@/modules/entities/messages/lib/utils/failed-message-outbox';
-import { scrollToBottom } from '@/modules/entities/messages/lib/utils/scroll-to-bottom.util';
+import { scrollToBottomDeferred } from '@/modules/entities/messages/lib/utils/scroll-to-bottom.util';
 import type { Chat } from '../types/chats.types';
 import {
     encryptOutgoingForSignalChat,
@@ -99,7 +99,7 @@ export const useSendMessage = ({
                 },
             );
             setTimeout(() => {
-                scrollToBottom(messagesEndRef, 'auto');
+                scrollToBottomDeferred(messagesEndRef, 'auto');
             }, 50);
 
             setIsSending(true);
@@ -184,7 +184,7 @@ export const useSendMessage = ({
                 queryClient.invalidateQueries({ queryKey: ['chats', 'user'] });
 
                 setTimeout(() => {
-                    scrollToBottom(messagesEndRef, 'auto');
+                    scrollToBottomDeferred(messagesEndRef, 'auto');
                 }, 100);
             } catch (error) {
                 console.error('Failed to send message:', error);
