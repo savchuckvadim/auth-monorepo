@@ -22,6 +22,8 @@ import { PostModule } from '@/modules/post';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { PresenceModule } from './modules/presence';
 import { ScheduleModule } from '@nestjs/schedule';
+import { EncryptionModule } from './modules/encryption';
+import { InvitationsModule } from './modules/invitations';
 
 @Module({
     imports: [
@@ -57,6 +59,8 @@ import { ScheduleModule } from '@nestjs/schedule';
         ProfileModule,
         PostModule,
         PresenceModule,
+        EncryptionModule,
+        InvitationsModule,
     ],
 
     providers: [GlobalExceptionFilter],

@@ -21,6 +21,13 @@ export const authSlice = createSlice({
         clearError: (state: IAuthState) => {
             state.error = null;
         },
+        /** After invalid/expired refresh: drop client session (cookies cleared by API). */
+        resetSession: (state: IAuthState) => {
+            state.isAuthenticated = false;
+            state.currentUser = null;
+            state.isLoading = false;
+            state.error = null;
+        },
     },
     extraReducers: (builder) => {
         builder.addCase(loginThunk.fulfilled, (state: IAuthState, action: PayloadAction<UserDto>) => {
@@ -45,6 +52,10 @@ export const authSlice = createSlice({
             state.isAuthenticated = true;
             state.currentUser = action.payload;
 
+        });
+        builder.addCase(checkAuthThunk.rejected, (state: IAuthState) => {
+            state.isAuthenticated = false;
+            state.currentUser = null;
         });
 
 

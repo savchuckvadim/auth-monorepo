@@ -1,0 +1,1 @@
+export { SecretChatSettingsMenu } from './SecretChatSettingsMenu';

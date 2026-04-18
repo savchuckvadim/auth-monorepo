@@ -10,25 +10,41 @@ import {
 import { Server, Socket } from 'socket.io';
 import { MessagesService } from '../services/messages.service';
 import { ChatsRepository } from '../../chats/repositories/chats.repository';
-import { CreateMessageDto } from '../dto';
+import { CreateMessageDto, MessageDto } from '../dto';
 import { NotificationsGateway } from '../../notifications/notifications.gateway';
-import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { SocketStorageService } from './socket-storage.service';
+import {
+    MessagesWsClientEvent,
+    MessagesWsServerEvent,
+    chatRoomId,
+} from './messages-socket.constants';
+import { ChatReadEvent, MessageCreatedEvent } from '../events/message.events';
+import { MessageEvent } from '../type/message-event.type';
+import { getErrorMessage } from '../lib/get-error-message';
 
-type MessageSender = { name: string };
-type BroadcastMessage = {
-    id: string;
-    content: string;
-    sender?: MessageSender;
-};
-const getErrorMessage = (error: unknown): string =>
-    error instanceof Error ? error.message : String(error);
+/** Retransmit persisted message; clients decrypt when isEncrypted. */
+type BroadcastMessage = Pick<
+    MessageDto,
+    | 'id'
+    | 'content'
+    | 'sender'
+    | 'isEncrypted'
+    | 'toDeviceId'
+    | 'senderDeviceId'
+    | 'senderClientDeviceId'
+    | 'signalMessageType'
+    | 'registrationId'
+    | 'chatId'
+    | 'senderId'
+    | 'createdAt'
+>;
 
 @Injectable()
 @WebSocketGateway({
-    namespace: '/messages',
     cors: {
-        origin: '*',
+        origin: process.env.FRONTEND_URL || '*',
         credentials: true,
     },
 })
@@ -39,7 +55,6 @@ export class MessagesGateway
     server: Server;
 
     constructor(
-        @Inject(forwardRef(() => MessagesService))
         private readonly messagesService: MessagesService,
         private readonly chatsRepository: ChatsRepository,
         private readonly notificationsGateway: NotificationsGateway,
@@ -47,8 +62,6 @@ export class MessagesGateway
     ) {}
 
     async handleConnection(client: Socket) {
-        // TODO: Получить userId из токена аутентификации
-        // Пока используем query параметр для тестирования
         const userId = client.handshake.query.userId as string;
 
         if (!userId) {
@@ -56,66 +69,53 @@ export class MessagesGateway
             return;
         }
 
-        // Сохраняем маппинги в Redis
         await this.socketStorage.setSocketUser(client.id, userId);
         await this.socketStorage.addUserSocket(userId, client.id);
 
-        // Подключаемся ко всем чатам пользователя
         const chats = await this.chatsRepository.findByUserId(userId);
         chats.forEach(chat => {
-            void client.join(`chat:${chat.id}`);
-            console.log(`✅ User ${userId} joined chat:${chat.id}`);
+            void client.join(chatRoomId(chat.id));
         });
-
-        console.log(
-            `Socket connected: ${client.id} (user: ${userId}), joined ${chats.length} chats`,
-        );
     }
 
     async handleDisconnect(client: Socket) {
-        // Удаляем маппинги из Redis
-        const userId = await this.socketStorage.removeSocket(client.id);
-
-        if (userId) {
-            console.log(`Socket disconnected: ${client.id} (user: ${userId})`);
-        } else {
-            console.log(`Socket disconnected: ${client.id} (user not found)`);
-        }
+        await this.socketStorage.removeSocket(client.id);
     }
 
-    /**
-     * Отправляет сообщение всем участникам чата через WebSocket
-     * Вызывается после создания сообщения (через REST API или WebSocket)
-     */
-    async broadcastMessage(
+    @OnEvent(MessageEvent.CREATED)
+    async handleMessageCreated(event: MessageCreatedEvent): Promise<void> {
+        const { message, chatId, senderId } = event;
+        await this.broadcastMessage(message, chatId, senderId);
+    }
+
+    @OnEvent(MessageEvent.CHAT_READ)
+    handleChatRead(event: ChatReadEvent): void {
+        if (!this.server?.sockets) return;
+        this.server
+            .to(chatRoomId(event.chatId))
+            .emit(MessagesWsServerEvent.CHAT_READ, {
+                chatId: event.chatId,
+                readerUserId: event.readerUserId,
+            });
+    }
+
+    private async broadcastMessage(
         message: BroadcastMessage,
         chatId: string,
         senderId: string,
     ): Promise<void> {
-        // Проверяем, что WebSocket сервер инициализирован
-        if (!this.server || !this.server.sockets) {
-            console.warn(
-                '⚠️ WebSocket server is not initialized, skipping broadcast',
-            );
+        if (!this.server?.sockets) {
             return;
         }
 
-        // Получаем участников чата для отправки уведомлений
         const chat = await this.chatsRepository.findById(chatId);
         const chatMembers = chat.members || [];
+        const roomName = chatRoomId(chatId);
 
-        // Отправляем сообщение всем участникам чата
-        console.log(`📤 Sending message:new to room chat:${chatId}`);
-        console.log(`📤 Message data:`, JSON.stringify(message, null, 2));
+        this.server
+            .to(roomName)
+            .emit(MessagesWsServerEvent.NEW_MESSAGE, message);
 
-        // Получаем список сокетов в комнате для отладки
-        const room = this.server.sockets.adapter?.rooms?.get(`chat:${chatId}`);
-        console.log(`📤 Clients in room chat:${chatId}:`, room?.size || 0);
-
-        // Отправляем в комнату чата
-        this.server.to(`chat:${chatId}`).emit('message:new', message);
-
-        // Также отправляем напрямую всем участникам чата (на случай если они не в комнате)
         if (this.server.sockets.sockets) {
             for (const member of chatMembers) {
                 const memberSockets = await this.socketStorage.getUserSockets(
@@ -124,29 +124,27 @@ export class MessagesGateway
                 for (const socketId of memberSockets) {
                     const socket = this.server.sockets.sockets.get(socketId);
                     if (socket) {
-                        console.log(
-                            `📤 Sending directly to socket ${socketId} (user: ${member.userId})`,
-                        );
-                        socket.emit('message:new', message);
+                        socket.emit(MessagesWsServerEvent.NEW_MESSAGE, message);
                     }
                 }
             }
         }
 
-        // Отправляем уведомления участникам, которые не в чате
         chatMembers.forEach(member => {
             if (member.userId !== senderId) {
                 this.notificationsGateway.notifyNewMessage(member.userId, {
                     id: message.id,
-                    chatId: chatId,
-                    content: message.content,
+                    chatId,
+                    content: message.isEncrypted
+                        ? '[E2EE message]'
+                        : message.content,
                     sender: message.sender || { name: 'Пользователь' },
                 });
             }
         });
     }
 
-    @SubscribeMessage('message:send')
+    @SubscribeMessage(MessagesWsClientEvent.SEND)
     async handleMessage(
         @MessageBody() data: CreateMessageDto,
         @ConnectedSocket() client: Socket,
@@ -162,19 +160,13 @@ export class MessagesGateway
                 userId,
                 data,
             );
-
-            // Отправляем сообщение через WebSocket
-            // Примечание: createMessage уже вызывает broadcastMessage, но это не проблема
-            // так как мы проверяем дубликаты на клиенте
-            await this.broadcastMessage(message, data.chatId, userId);
-
             return { success: true, message };
         } catch (error) {
             return { error: getErrorMessage(error) };
         }
     }
 
-    @SubscribeMessage('chat:join')
+    @SubscribeMessage(MessagesWsClientEvent.CHAT_JOIN)
     async handleChatJoin(
         @MessageBody() data: { chatId: string },
         @ConnectedSocket() client: Socket,
@@ -194,36 +186,23 @@ export class MessagesGateway
                 return { error: 'You are not a member of this chat' };
             }
 
-            void client.join(`chat:${data.chatId}`);
-            console.log(
-                `✅ User ${userId} (socket ${client.id}) joined chat:${data.chatId}`,
-            );
-
-            // Проверяем, что клиент действительно в комнате
-            const room = this.server.sockets.adapter?.rooms?.get(
-                `chat:${data.chatId}`,
-            );
-            console.log(
-                `📊 Clients in room chat:${data.chatId} after join:`,
-                room?.size || 0,
-            );
-
+            void client.join(chatRoomId(data.chatId));
             return { success: true, chatId: data.chatId };
         } catch (error) {
             return { error: getErrorMessage(error) };
         }
     }
 
-    @SubscribeMessage('chat:leave')
+    @SubscribeMessage(MessagesWsClientEvent.CHAT_LEAVE)
     handleChatLeave(
         @MessageBody() data: { chatId: string },
         @ConnectedSocket() client: Socket,
     ) {
-        void client.leave(`chat:${data.chatId}`);
+        void client.leave(chatRoomId(data.chatId));
         return { success: true, chatId: data.chatId };
     }
 
-    @SubscribeMessage('message:typing')
+    @SubscribeMessage(MessagesWsClientEvent.MESSAGE_TYPING)
     async handleTyping(
         @MessageBody() data: { chatId: string; isTyping: boolean },
         @ConnectedSocket() client: Socket,
@@ -234,12 +213,13 @@ export class MessagesGateway
             return { error: 'Unauthorized' };
         }
 
-        // Отправляем событие всем участникам чата, кроме отправителя
-        client.to(`chat:${data.chatId}`).emit('user:typing', {
-            userId,
-            chatId: data.chatId,
-            isTyping: data.isTyping,
-        });
+        client
+            .to(chatRoomId(data.chatId))
+            .emit(MessagesWsServerEvent.USER_TYPING, {
+                userId,
+                chatId: data.chatId,
+                isTyping: data.isTyping,
+            });
 
         return { success: true };
     }

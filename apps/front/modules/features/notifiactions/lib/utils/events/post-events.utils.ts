@@ -11,7 +11,7 @@ export const postCreatedHandler = (post: PostDto, dispatch: AppDispatch) => {
         createdAt: new Date().toISOString(),
         type: EnumNotificationType.POST,
         contentType: EnumNotificationContentType.POST,
-        url: `people/${post.userId}`,
+        url: `/network/people/${post.userId}`,
     };
 
     dispatch(addNotification(notification));

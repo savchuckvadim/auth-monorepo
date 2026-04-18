@@ -64,31 +64,44 @@ export class AuthService {
         return await this.generateTokens(user);
     }
     public async refreshToken(refreshToken: string, res?: Response) {
-        if (!refreshToken) {
+        const clearClientAuth = () => {
             if (res) {
                 this.cookieService.clearAuthCookies(res);
             }
+        };
+
+        if (!refreshToken) {
+            clearClientAuth();
             throw new UnauthorizedException('Refresh token not found');
         }
-        const userData =
-            await this.tokenService.validateRefreshToken(refreshToken);
 
-        // КРИТИЧНО: Проверяем, что токен из БД совпадает с переданным токеном
-        // Это предотвращает использование старых/отозванных токенов
-        const tokenFromDb =
-            await this.tokenService.findTokenByRefreshToken(refreshToken);
-        if (!tokenFromDb || !userData?.userId) {
-            if (res) {
-                this.cookieService.clearAuthCookies(res);
-            }
+        let userData: { userId: string } | null = null;
+        try {
+            userData =
+                await this.tokenService.validateRefreshToken(refreshToken);
+        } catch {
+            clearClientAuth();
+            await this.tokenService
+                .removeToken(refreshToken)
+                .catch(() => undefined);
             throw new UnauthorizedException('Invalid refresh token');
         }
 
-        // Дополнительная проверка: userId из токена должен совпадать с userId из БД
+        const tokenFromDb =
+            await this.tokenService.findTokenByRefreshToken(refreshToken);
+        if (!tokenFromDb || !userData?.userId) {
+            clearClientAuth();
+            await this.tokenService
+                .removeToken(refreshToken)
+                .catch(() => undefined);
+            throw new UnauthorizedException('Invalid refresh token');
+        }
+
         if (tokenFromDb.userId !== userData.userId) {
-            if (res) {
-                this.cookieService.clearAuthCookies(res);
-            }
+            clearClientAuth();
+            await this.tokenService
+                .removeToken(refreshToken)
+                .catch(() => undefined);
             throw new UnauthorizedException('Invalid refresh token');
         }
 

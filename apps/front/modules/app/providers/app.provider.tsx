@@ -4,6 +4,7 @@ import { store } from '../model/store';
 import { ErrorBoundary } from './error-boundry.provider';
 import App from '../ui/App';
 import { NotificationsProvider } from '@/modules/features/notifiactions';
+import { AuthSessionListener } from '@/modules/processes/auth/ui/AuthSessionListener/AuthSessionListener';
 import { useEffect, useState } from 'react';
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
@@ -24,6 +25,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         <Provider store={store}>
             <ErrorBoundary>
                 <App>
+                    <AuthSessionListener />
                     <NotificationsProvider>
                         {children}
                     </NotificationsProvider>

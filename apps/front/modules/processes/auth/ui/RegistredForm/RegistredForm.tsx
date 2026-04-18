@@ -1,27 +1,43 @@
-'use client'
-import { Alert, AlertDescription } from "@workspace/ui/components/alert";
-import { Button } from "@workspace/ui/components/button";
-import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
-import { AlertTriangle, Eye, EyeOff, UserPlus } from "lucide-react";
-import { useState } from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { useAuth } from "../../lib/hooks/auth.hook";
-import { IRegisterForm } from "../../type/auth.type";
-import Link from "next/link";
+'use client';
+
+import { Alert, AlertDescription } from '@workspace/ui/components/alert';
+import { AppButton } from '@/modules/shared';
+import {
+    AlertTriangle,
+    Eye,
+    EyeOff,
+    Lock,
+    Mail,
+    User,
+    UserPlus,
+} from 'lucide-react';
+import { useState } from 'react';
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { useAuth } from '../../lib/hooks/auth.hook';
+import { IRegisterForm } from '../../type/auth.type';
+import { FormField } from '@/modules/shared/ui';
 
 export const RegistrationForm = () => {
-
     const [showPassword, setShowPassword] = useState(false);
     const { register: registerUser, isLoading, error } = useAuth();
 
-    const {
-        register,
-        handleSubmit,
-        watch,
-        formState: { errors },
-    } = useForm<IRegisterForm>()
-    const onSubmit: SubmitHandler<IRegisterForm> = (data) => registerUser(data);
+    const { control, handleSubmit } = useForm<IRegisterForm>();
+    const onSubmit: SubmitHandler<IRegisterForm> = (data) =>
+        registerUser(data);
+
+    const passwordToggle = (
+        <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent group-focus-within:text-primary"
+        >
+            {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+            ) : (
+                <Eye className="h-4 w-4" />
+            )}
+        </button>
+    );
 
     return (
         <form
@@ -30,92 +46,66 @@ export const RegistrationForm = () => {
             method="post"
             autoComplete="on"
         >
-            <div className="space-y-2">
-                <Label htmlFor="register-name">Имя</Label>
-                <Input
-                    id="register-name"
-                    type="text"
-                    placeholder="Имя"
-                    defaultValue={watch('name')}
-                    autoComplete="name"
-                    {...register("name")}
-                    required
-                />
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="register-email">Email</Label>
-                <Input
-                    id="register-email"
-                    type="email"
-                    placeholder="your@email.com"
-                    defaultValue={watch('email')}
-                    autoComplete="email"
-                    {...register("email")}
-                    required
-                />
-            </div>
-
-
-            <div className="space-y-2">
-                <Label htmlFor="register-password">Пароль</Label>
-                <div className="relative">
-                    <Input
-                        id="register-password"
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Введите пароль"
-                        defaultValue={watch('password')}
-                        autoComplete="new-password"
-                        {...register("password")}
-                        required
-                    />
-                    <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                </div>
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="register-confirm">Подтвердите пароль</Label>
-                <Input
-                    id="register-confirm"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="Подтвердите пароль"
-                    defaultValue={watch('confirmPassword')}
-                    autoComplete="new-password"
-                    {...register("confirmPassword")}
-                    required
-                />
-            </div>
-            {(error || errors.name || errors.email || errors.password || errors.confirmPassword)
-                && (
-                    <Alert variant="destructive">
-                        <AlertTriangle className="h-4 w-4" />
-                        <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                )}
-            <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
-                    <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                        Регистрация...
-                    </>
-                ) : (
-                    <>
-                        <UserPlus className="w-4 h-4 mr-2" />
-                        Зарегистрироваться
-                    </>
-                )}
-            </Button>
-
-            <div className="text-right mt-4 flex items-center justify-start">
-                <p className="text-sm text-gray-500">Уже есть аккаунт? </p>
-                <Link href="/auth/login" className="text-sm text-blue-500 hover:text-blue-700 ml-2">
-                    Войти
-                </Link>
-            </div>
+            <FormField
+                control={control}
+                name="name"
+                id="register-name"
+                type="text"
+                // label="Имя"
+                placeholder="Имя"
+                autoComplete="name"
+                required
+                startSlot={<User className="size-4 shrink-0" strokeWidth={2} />}
+            />
+            <FormField
+                control={control}
+                name="email"
+                id="register-email"
+                type="email"
+                // label="Email"
+                placeholder="your@email.com"
+                autoComplete="email"
+                required
+                startSlot={<Mail className="size-4 shrink-0" strokeWidth={2} />}
+            />
+            <FormField
+                control={control}
+                name="password"
+                id="register-password"
+                type={showPassword ? 'text' : 'password'}
+                // label="Пароль"
+                placeholder="Введите пароль"
+                autoComplete="new-password"
+                required
+                startSlot={<Lock className="size-4 shrink-0" strokeWidth={2} />}
+                endSlot={passwordToggle}
+            />
+            <FormField
+                control={control}
+                name="confirmPassword"
+                id="register-confirm"
+                type={showPassword ? 'text' : 'password'}
+                // label="Подтвердите пароль"
+                placeholder="Подтвердите пароль"
+                autoComplete="new-password"
+                required
+                startSlot={<Lock className="size-4 shrink-0" strokeWidth={2} />}
+            />
+            {error && (
+                <Alert variant="destructive">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                </Alert>
+            )}
+            <AppButton
+                type="submit"
+                appSize="auth"
+                isLoading={isLoading}
+                loadingLabel="Регистрация..."
+                leadIcon={<UserPlus />}
+            >
+                Зарегистрироваться
+            </AppButton>
         </form>
     );
 };

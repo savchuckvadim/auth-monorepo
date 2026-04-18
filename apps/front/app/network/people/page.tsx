@@ -17,8 +17,6 @@ export default function NetworkUsersage() {
 
 
 
-    return (
-        <Users userId={currentUser.id!} />
-    );
+    return <Users />;
 }
 

@@ -1,4 +1,4 @@
-import { Chat, ChatType } from 'generated/prisma';
+import { Chat, ChatEncryptionMode, ChatType } from 'generated/prisma';
 import { ChatMemberWithUser } from '../types/chat-member-with-user.type';
 
 export abstract class ChatsRepository {
@@ -12,9 +12,11 @@ export abstract class ChatsRepository {
     abstract findPrivateChat(
         userId1: string,
         userId2: string,
+        encryptionMode: ChatEncryptionMode,
     ): Promise<Chat | null>;
     abstract create(data: {
         type: ChatType;
+        encryptionMode?: ChatEncryptionMode;
         createdBy: string;
         name?: string;
         description?: string;
@@ -30,4 +32,6 @@ export abstract class ChatsRepository {
     abstract delete(chatId: string): Promise<void>;
     abstract isMember(chatId: string, userId: string): Promise<boolean>;
     abstract updateLastRead(chatId: string, userId: string): Promise<void>;
+    /** Bumps `Chat.updatedAt` so list order reflects last message activity. */
+    abstract touchActivity(chatId: string): Promise<void>;
 }

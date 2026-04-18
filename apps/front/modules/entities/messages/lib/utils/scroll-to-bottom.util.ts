@@ -1,29 +1,26 @@
 /**
- * Утилита для скролла к последнему сообщению
- * На мобильных скроллит только контейнер сообщений, а не всю страницу
+ * Скролл к последнему сообщению. По умолчанию `behavior: 'auto'` — без анимации «вжух»
+ * при открытии чата; для живого донабора можно передать `'smooth'`.
  */
-export const scrollToBottom = (messagesEndRef: React.RefObject<HTMLDivElement | null>) => {
+export const scrollToBottom = (
+    messagesEndRef: React.RefObject<HTMLDivElement | null>,
+    behavior: ScrollBehavior = 'auto',
+) => {
     if (!messagesEndRef.current) return;
 
-    // Находим скроллируемый контейнер сообщений
     const scrollContainer = messagesEndRef.current.closest('.overflow-y-auto');
 
     if (scrollContainer) {
-        // Скроллим внутри контейнера, а не всю страницу
         const container = scrollContainer as HTMLElement;
-
-        // Используем scrollTo для скролла внутри контейнера
         container.scrollTo({
             top: container.scrollHeight,
-            behavior: 'smooth'
+            behavior,
         });
     } else {
-        // Fallback: если контейнер не найден, используем стандартный scrollIntoView
-        // но с block: 'nearest' чтобы не скроллить если элемент уже виден
         messagesEndRef.current.scrollIntoView({
-            behavior: 'smooth',
+            behavior,
             block: 'nearest',
-            inline: 'nearest'
+            inline: 'nearest',
         });
     }
 };

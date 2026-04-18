@@ -144,12 +144,15 @@ exports.Prisma.TokenScalarFieldEnum = {
 exports.Prisma.ChatScalarFieldEnum = {
   id: 'id',
   type: 'type',
+  encryptionMode: 'encryptionMode',
   name: 'name',
   description: 'description',
   avatar: 'avatar',
   createdBy: 'createdBy',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  disappearingMessageSeconds: 'disappearingMessageSeconds',
+  scheduledDeletionAt: 'scheduledDeletionAt',
   userId: 'userId'
 };
 
@@ -176,7 +179,46 @@ exports.Prisma.MessageScalarFieldEnum = {
   editedAt: 'editedAt',
   deletedAt: 'deletedAt',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  expiresAt: 'expiresAt',
+  isEncrypted: 'isEncrypted',
+  toDeviceId: 'toDeviceId',
+  senderDeviceId: 'senderDeviceId',
+  signalMessageType: 'signalMessageType',
+  registrationId: 'registrationId'
+};
+
+exports.Prisma.DeviceScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  clientDeviceId: 'clientDeviceId',
+  name: 'name',
+  type: 'type',
+  registrationId: 'registrationId',
+  identityKey: 'identityKey',
+  signedPreKey: 'signedPreKey',
+  signedPreKeySig: 'signedPreKeySig',
+  signedPreKeyExpiry: 'signedPreKeyExpiry',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  lastSeenAt: 'lastSeenAt'
+};
+
+exports.Prisma.PreKeyScalarFieldEnum = {
+  id: 'id',
+  deviceId: 'deviceId',
+  keyId: 'keyId',
+  publicKey: 'publicKey',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.OneTimePreKeyScalarFieldEnum = {
+  id: 'id',
+  deviceId: 'deviceId',
+  keyId: 'keyId',
+  publicKey: 'publicKey',
+  createdAt: 'createdAt',
+  usedAt: 'usedAt'
 };
 
 exports.Prisma.MessageReadStatusScalarFieldEnum = {
@@ -241,9 +283,26 @@ exports.Prisma.PostLikeScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.InvitationScalarFieldEnum = {
+  id: 'id',
+  type: 'type',
+  status: 'status',
+  fromUserId: 'fromUserId',
+  toUserId: 'toUserId',
+  payload: 'payload',
+  resolvedChatId: 'resolvedChatId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
 };
 
 exports.Prisma.NullsOrder = {
@@ -287,7 +346,33 @@ exports.Prisma.MessageOrderByRelevanceFieldEnum = {
   content: 'content',
   fileUrl: 'fileUrl',
   fileName: 'fileName',
-  replyToId: 'replyToId'
+  replyToId: 'replyToId',
+  toDeviceId: 'toDeviceId',
+  senderDeviceId: 'senderDeviceId',
+  signalMessageType: 'signalMessageType'
+};
+
+exports.Prisma.DeviceOrderByRelevanceFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  clientDeviceId: 'clientDeviceId',
+  name: 'name',
+  type: 'type',
+  identityKey: 'identityKey',
+  signedPreKey: 'signedPreKey',
+  signedPreKeySig: 'signedPreKeySig'
+};
+
+exports.Prisma.PreKeyOrderByRelevanceFieldEnum = {
+  id: 'id',
+  deviceId: 'deviceId',
+  publicKey: 'publicKey'
+};
+
+exports.Prisma.OneTimePreKeyOrderByRelevanceFieldEnum = {
+  id: 'id',
+  deviceId: 'deviceId',
+  publicKey: 'publicKey'
 };
 
 exports.Prisma.MessageReadStatusOrderByRelevanceFieldEnum = {
@@ -335,6 +420,24 @@ exports.Prisma.PostLikeOrderByRelevanceFieldEnum = {
   postId: 'postId',
   userId: 'userId'
 };
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
+exports.Prisma.InvitationOrderByRelevanceFieldEnum = {
+  id: 'id',
+  fromUserId: 'fromUserId',
+  toUserId: 'toUserId',
+  resolvedChatId: 'resolvedChatId'
+};
 exports.user_roles = exports.$Enums.user_roles = {
   owner: 'owner',
   admin: 'admin',
@@ -345,6 +448,11 @@ exports.ChatType = exports.$Enums.ChatType = {
   PRIVATE: 'PRIVATE',
   GROUP: 'GROUP',
   SECRET: 'SECRET'
+};
+
+exports.ChatEncryptionMode = exports.$Enums.ChatEncryptionMode = {
+  NONE: 'NONE',
+  SIGNAL: 'SIGNAL'
 };
 
 exports.ChatMemberRole = exports.$Enums.ChatMemberRole = {
@@ -376,18 +484,34 @@ exports.CallStatus = exports.$Enums.CallStatus = {
   ENDED: 'ENDED'
 };
 
+exports.InvitationType = exports.$Enums.InvitationType = {
+  SECRET_PRIVATE: 'SECRET_PRIVATE',
+  GROUP_JOIN: 'GROUP_JOIN'
+};
+
+exports.InvitationStatus = exports.$Enums.InvitationStatus = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED',
+  EXPIRED: 'EXPIRED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Token: 'Token',
   Chat: 'Chat',
   ChatMember: 'ChatMember',
   Message: 'Message',
+  Device: 'Device',
+  PreKey: 'PreKey',
+  OneTimePreKey: 'OneTimePreKey',
   MessageReadStatus: 'MessageReadStatus',
   Call: 'Call',
   Follow: 'Follow',
   Profile: 'Profile',
   Post: 'Post',
-  PostLike: 'PostLike'
+  PostLike: 'PostLike',
+  Invitation: 'Invitation'
 };
 
 /**

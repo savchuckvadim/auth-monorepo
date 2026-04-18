@@ -13,6 +13,8 @@ export type MessageWithRelations = Message & {
             email: string;
         };
     };
+    /** Заполняется в findByChatId из MessageReadStatus (для UI «прочитано»). */
+    readBy?: string[];
 };
 
 export abstract class MessagesRepository {
@@ -31,7 +33,13 @@ export abstract class MessagesRepository {
         fileName?: string;
         fileSize?: number;
         replyToId?: string;
-    }): Promise<Message & { sender?: any }>;
+        isEncrypted?: boolean;
+        toDeviceId?: string;
+        senderDeviceId?: string;
+        signalMessageType?: string;
+        registrationId?: number;
+        expiresAt?: Date;
+    }): Promise<MessageWithRelations>;
     abstract update(id: string, content: string): Promise<Message>;
     abstract delete(id: string): Promise<Message>;
     abstract markAsRead(messageId: string, userId: string): Promise<void>;
@@ -40,4 +48,12 @@ export abstract class MessagesRepository {
         userId: string,
     ): Promise<void>;
     abstract getUnreadCount(chatId: string, userId: string): Promise<number>;
+    abstract getTotalUnreadCount(userId: string): Promise<number>;
+    abstract findLastMessageByChatId(
+        chatId: string,
+    ): Promise<MessageWithRelations | null>;
+    abstract hasUserReadMessage(
+        messageId: string,
+        readerUserId: string,
+    ): Promise<boolean>;
 }

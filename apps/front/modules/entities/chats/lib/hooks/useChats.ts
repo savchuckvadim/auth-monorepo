@@ -1,7 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { getChats, CreateChatDto, UpdateChatDto, AddMemberDto } from '@workspace/nest-api';
+import {
+    getChats,
+    CreateChatDto,
+    UpdateChatDto,
+    AddMemberDto,
+} from '@workspace/nest-api';
 import { useAuth } from '@/modules/processes';
-import { CreateChat } from '../types/chats.types';
+
 
 const chatsApi = getChats();
 
@@ -40,8 +45,11 @@ export const useUpdateChat = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ id, data }: { id: string; data: UpdateChatDto }) =>
-            chatsApi.chatsUpdateChat(id, data),
+        mutationFn: async ({ id, data }: { id: string; data: UpdateChatDto }) =>{
+            debugger
+            return await chatsApi.chatsUpdateChat(id, data)
+
+        },
         onSuccess: (_, variables) => {
             queryClient.invalidateQueries({ queryKey: ['chats', variables.id] });
             queryClient.invalidateQueries({ queryKey: ['chats', 'user'] });
@@ -69,6 +77,17 @@ export const useMarkChatAsRead = () => {
         onSuccess: (_, chatId) => {
             queryClient.invalidateQueries({ queryKey: ['chats', chatId] });
             queryClient.invalidateQueries({ queryKey: ['chats', 'user'] });
+        },
+    });
+};
+
+export const useDeleteChat = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (chatId: string) => chatsApi.chatsDeleteChat(chatId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['chats'] });
         },
     });
 };

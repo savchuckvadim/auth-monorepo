@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MessagesController } from './controllers/messages.controller';
 import { MessagesGateway } from './socket/messages.gateway';
 import { MessagesService } from './services/messages.service';
@@ -10,11 +10,13 @@ import { TokenModule } from '@/modules/token';
 import { PrismaModule } from '@/core/prisma';
 import { NotificationsModule } from '@/modules/notifications/notifications.module';
 import { RedisModule } from '@/core/redis';
+import { EncryptionModule } from '@/modules/encryption/encryption.module';
 
 @Module({
     imports: [
         PrismaModule,
-        ChatsModule,
+        forwardRef(() => ChatsModule),
+        EncryptionModule,
         TokenModule,
         NotificationsModule,
         RedisModule,

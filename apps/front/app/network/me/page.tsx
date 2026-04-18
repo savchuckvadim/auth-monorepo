@@ -6,11 +6,11 @@ import { LoadingComponent } from '@/modules/shared/ui/Loading/ui/LoadingComponen
 
 
 
-const DynamicProfileInformation = dynamic(() => import('@/modules/widgetes/profile/information/ui/ProfileInformation').then(mod => mod.default), {
+const DynamicProfileInformation = dynamic(() => import('@/modules/widgets/profile/information/ui/ProfileInformation').then(mod => mod.default), {
     ssr: false
 });
 
-const DynamicProfilePosts = dynamic(() => import('@/modules/widgetes/profile/posts/ProfilePosts').then(mod => mod.default), {
+const DynamicProfilePosts = dynamic(() => import('@/modules/widgets/profile/posts/ProfilePosts').then(mod => mod.default), {
     ssr: false,
     loading: () => <LoadingComponent />
 });
