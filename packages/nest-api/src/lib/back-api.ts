@@ -11,6 +11,8 @@ import { dispatchAuthSessionExpired } from './auth-session-expired';
 const url = 'https://api.sociopath-network.ru';
 // const url = 'http://localhost:3000';
 
+const AUTH_TOKEN_NAME = 'accessToken';
+
 export interface IBackResponse<T> {
     resultCode: EResultCode; // 0 - успех, 1 - ошибка
     data?: T; // данные ответа (при успехе)
