@@ -1,38 +1,29 @@
-# Секретный / защищённый чат
+# Секретный / защищённый чат (модель продукта)
 
-## Актуальная модель (реализовано в монорепо)
+## Статус
 
-- Обычный и защищённый (Signal E2EE) диалог с одним контактом — **два разных чата** (`chatId`). Поле API: `Chat.encryptionMode`: `NONE` | `SIGNAL`.
-- Режим задаётся **только при создании** чата и **не меняется**. «Переключение» в UI — это **переход** на другой чат или **создание** второго приватного чата с тем же составом и нужным `encryptionMode` (сервер возвращает существующий чат, если пара и режим уже есть).
-- В `SIGNAL` на сервере хранится ciphertext; plaintext только на клиентах (E2EE). Подробнее: [e2ee-messages-react-native-playbook.md](../e2ee-messages-react-native-playbook.md).
+Реализовано в монорепозитории (ветка `end-to-end-encryption`, коммиты с Signal E2EE). Подробное описание поведения и файлов: **[документация Signal E2EE (фронт)](../docs/encryption/signal-e2ee-messenger.md)**.
 
-Ориентиры по коду:
+## Фактическая модель
 
-- Поиск чата: `apps/front/modules/entities/chats/lib/find-private-chat-with-peer.ts`
+- С обычным и защищённым (Signal E2EE) диалогом с одним контактом — **два разных чата** (`chatId`). Поле API: `Chat.encryptionMode`: `NONE` | `SIGNAL`.
+- Режим задаётся **только при создании** чата и **не меняется**. Переход в UI — открыть другой чат или создать второй приватный с нужным `encryptionMode` (сервер вернёт существующий, если пара участников и режим уже совпадают).
+- В режиме **`SIGNAL`** на сервере хранится **ciphertext** в `Message.content` с флагом `isEncrypted`; plaintext только на клиентах. Это **не** модель «только IndexedDB без сервера».
+
+## Ориентиры по коду
+
+- Поиск чата: `apps/front/modules/entities/chats/lib/utils/find-private-chat-with-peer.ts`
 - Открыть или создать: `apps/front/modules/entities/chats/lib/hooks/useEnsurePrivateChat.ts`
-- Шапка: `apps/front/modules/widgetes/chat/ChatMessagesWidget/ChatMessagesWidget.tsx`
-- Список: `apps/front/modules/entities/chats/ui/ChatsList/ChatsListItem.tsx`
+- Текущий чат: `apps/front/modules/widgets/chat/chat-current/`
+- Создание чата (чекбокс Signal): `apps/front/modules/widgets/chat/chat-create/`
+- Строка в списке чатов: `apps/front/modules/widgets/chat/chat-list/ChatListItem/ChatListItem.tsx`
 
-## Как работает UX
+## Бэкенд
 
-1. Пользователь ведёт **две независимые** переписки с одним контактом: одна с `encryptionMode: NONE` (текст на сервере), вторая с `SIGNAL` (ciphertext, E2EE на клиентах).
-2. В шапке приватного чата показываются бейдж режима и кнопка перехода на «другой» канал (открыть существующий `chatId` или создать через `POST /chats`).
-3. В списке чатов у защищённого приватного чата — иконка замка; превью последнего сообщения для ciphertext — текст «Защищённое сообщение».
-4. С профиля: отдельные действия «Написать» (обычный) и «Защищённый чат» (Signal).
-5. В диалоге создания чата при выборе **одного** пользователя доступен чекбокс «Защищённый диалог (Signal E2EE)».
-
-## Бэкенд (инварианты)
-
-- Поле `Chat.encryptionMode` задаётся при создании и не меняется (PATCH не предусмотрен для смены режима).
-- Дедупликация приватного чата: одна пара участников + один `encryptionMode` — один `chatId` (см. репозиторий чатов).
-- Описания полей в Swagger: `CreateChatDto`, `ChatDto`; DTO регистрации устройств шифрования с явными `type` в `@ApiProperty` для Orval.
+- Инварианты, ключи, push: [Signal E2EE и mobile push (backend)](../../backend/docs/encryption/signal-e2ee-and-mobile-push.md)
 
 ## Что можно сделать дальше (не блокирует работу)
 
-- Сгенерировать клиент Orval: поднять API, затем `pnpm run generate` в `packages/nest-api` (см. README пакета).
-- Опциональный endpoint `GET /chats/private-with-user?peerUserId=&encryptionMode=` — если не хочется искать чат в полном списке на клиенте.
-- Групповые чаты + `SIGNAL`: сейчас на фронте отправка E2EE для групп отключена в `useSendMessage`.
-
-## Старый черновик задачи
-
-Ранее обсуждался вариант с переключателем на одном `chatId` и сообщениями только в IndexedDB без REST — он **не** соответствует текущему API и не используется. Историю длинного черновика можно посмотреть в git до этого файла.
+- Сгенерировать Orval-клиент после поднятого API: `pnpm run generate` в `packages/nest-api` (см. README пакета).
+- Опционально: `GET /chats/private-with-user?peerUserId=&encryptionMode=` — чтобы не искать чат в полном списке на клиенте.
+- Групповые чаты + `SIGNAL`: на фронте отправка E2EE для групп отключена в `useSendMessage`.

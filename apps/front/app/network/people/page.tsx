@@ -4,8 +4,8 @@ export const dynamic = 'force-dynamic';
 
 import { useApp } from "@/modules/app";
 import { Users } from "@/modules/entities/user";
-import { useAuth } from "@/modules/processes";
-import { LoadingScreen } from "@/modules/shared";
+import { useAuth } from "@/modules/processes/auth/lib/hooks/auth.hook";
+import { LoadingScreen } from "@/modules/shared/ui";
 
 
 export default function NetworkUsersage() {

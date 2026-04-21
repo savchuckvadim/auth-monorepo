@@ -15,11 +15,19 @@ import { CallAcceptedDto } from '../dto/call-accepted.dto';
 import { PeerNegoNeededDto, PeerNegoDoneDto } from '../dto/peer-nego.dto';
 import { CallEndDto } from '../dto/call-end.dto';
 import { CallInitiatedDto } from '../dto/call-initiated.dto';
-import { CallType, CallStatus } from 'generated/prisma';
+import { CallType, CallStatus, CallEndedReason } from 'generated/prisma';
 import { CallEvent } from '../type/call-event.type';
+import { PushDispatchService } from '@/modules/notifications/push/push-dispatch.service';
+import { MessagesService } from '@/modules/messages/services/messages.service';
 
 const getErrorMessage = (error: unknown): string =>
     error instanceof Error ? error.message : String(error);
+const MISSED_REASON: CallEndedReason = 'MISSED';
+const ACCEPTED_REASON: CallEndedReason = 'ACCEPTED';
+const REJECTED_REASON: CallEndedReason = 'REJECTED';
+const CANCELED_REASON: CallEndedReason = 'CANCELED';
+const FAILED_REASON: CallEndedReason = 'FAILED';
+const TIMEOUT_REASON: CallEndedReason = 'TIMEOUT';
 
 @WebSocketGateway({
     cors: {
@@ -32,10 +40,13 @@ export class CallsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     server: Server;
 
     private readonly callIdMap = new Map<string, string>(); // socketId -> callId
+    private readonly callTimeoutMap = new Map<string, NodeJS.Timeout>();
 
     constructor(
         private readonly onlineUsersService: OnlineUsersService,
         private readonly callsService: CallsService,
+        private readonly pushDispatchService: PushDispatchService,
+        private readonly messagesService: MessagesService,
     ) {}
 
     handleConnection(client: Socket): void {
@@ -104,6 +115,39 @@ export class CallsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 type: data.type,
             });
 
+            if (!this.onlineUsersService.isUserOnline(data.toUserId)) {
+                await this.pushDispatchService.sendIncomingCallVoip(
+                    data.toUserId,
+                    {
+                        title: 'Incoming call',
+                        body: 'You have an incoming call',
+                        data: {
+                            type: 'incoming_call',
+                            callId: call.id,
+                            chatId: data.chatId,
+                            fromUserId: userId,
+                            callType: data.type || CallType.VIDEO,
+                        },
+                    },
+                );
+            }
+
+            const timer = setTimeout(() => {
+                void (async () => {
+                    try {
+                        await this.callsService.markMissed(call.id);
+                        await this.createCallHistorySystemMessage(
+                            call.chatId,
+                            call.initiatorId,
+                            MISSED_REASON,
+                        );
+                    } finally {
+                        this.callTimeoutMap.delete(call.id);
+                    }
+                })();
+            }, 45000);
+            this.callTimeoutMap.set(call.id, timer);
+
             console.log(
                 `Call event sent to user:${data.toUserId} (callId: ${call.id})`,
             );
@@ -136,6 +180,12 @@ export class CallsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             }
 
             if (callId) {
+                // const call = await this.callsService.getCallById(callId);
+                const timeout = this.callTimeoutMap.get(callId);
+                if (timeout) {
+                    clearTimeout(timeout);
+                    this.callTimeoutMap.delete(callId);
+                }
                 await this.callsService.updateCallStatus(
                     callId,
                     CallStatus.ACCEPTED,
@@ -195,8 +245,28 @@ export class CallsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
         try {
             const callId = this.callIdMap.get(client.id) || data.callId;
-            if (callId && data.duration) {
-                await this.callsService.endCall(callId, data.duration);
+            if (callId) {
+                const call = await this.callsService.getCallById(callId);
+                const timeout = this.callTimeoutMap.get(callId);
+                if (timeout) {
+                    clearTimeout(timeout);
+                    this.callTimeoutMap.delete(callId);
+                }
+                const resolvedReason: CallEndedReason = this.resolveEndedReason(
+                    data.endedReason,
+                    call?.status,
+                );
+                await this.callsService.endCallWithReason(
+                    callId,
+                    resolvedReason,
+                    data.duration,
+                );
+                await this.createCallHistorySystemMessage(
+                    call?.chatId,
+                    userId,
+                    resolvedReason,
+                    data.duration,
+                );
                 this.callIdMap.delete(client.id);
             }
 
@@ -252,5 +322,77 @@ export class CallsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             });
 
         return { success: true };
+    }
+
+    private async createCallHistorySystemMessage(
+        chatId: string | undefined,
+        actorUserId: string,
+        reason: CallEndedReason,
+        duration?: number,
+    ): Promise<void> {
+        if (!chatId) return;
+        if (await this.callsService.isSecretChat(chatId)) return;
+        const time = new Date().toLocaleTimeString('ru-RU', {
+            hour: '2-digit',
+            minute: '2-digit',
+        });
+        const durationLabel =
+            typeof duration === 'number' && duration > 0
+                ? `, длительность ${duration}с`
+                : '';
+        const messageText = (() => {
+            switch (reason) {
+                case ACCEPTED_REASON:
+                    return `Звонок состоялся в ${time}${durationLabel}`;
+                case REJECTED_REASON:
+                    return `Звонок отклонен в ${time}`;
+                case MISSED_REASON:
+                    return `Пропущенный звонок в ${time}`;
+                case CANCELED_REASON:
+                    return `Недозвонились в ${time}`;
+                case FAILED_REASON:
+                    return `Звонок не удался в ${time}`;
+                case TIMEOUT_REASON:
+                    return `Звонок завершен по таймауту в ${time}`;
+                default:
+                    return `Звонок завершен в ${time}`;
+            }
+        })();
+
+        try {
+            await this.messagesService.createSystemMessage(
+                actorUserId,
+                chatId,
+                messageText,
+            );
+        } catch (error) {
+            console.error(error);
+            // Do not fail signaling if timeline write fails.
+        }
+    }
+
+    private resolveEndedReason(
+        payloadReason: unknown,
+        currentStatus?: CallStatus | null,
+    ): CallEndedReason {
+        if (this.isCallEndedReason(payloadReason)) {
+            return payloadReason;
+        }
+
+        if (currentStatus === CallStatus.ACCEPTED) {
+            return ACCEPTED_REASON;
+        }
+
+        return CANCELED_REASON;
+    }
+
+    private isCallEndedReason(value: unknown): value is CallEndedReason {
+        if (typeof value !== 'string') {
+            return false;
+        }
+
+        return Object.values(CallEndedReason).includes(
+            value as CallEndedReason,
+        );
     }
 }

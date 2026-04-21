@@ -26,6 +26,7 @@ model User {
     chatMembers   ChatMember[]
     messages      Message[]
     devices       Device[]
+    pushDevices   PushDevice[]
     sentCalls     Call[]              @relation("CallInitiator")
     receivedCalls Call[]              @relation("CallReceiver")
     messageReads  MessageReadStatus[]
@@ -244,6 +245,7 @@ model Call {
     startedAt   DateTime?  @map("started_at")
     endedAt     DateTime?  @map("ended_at")
     duration    Int? // Длительность в секундах
+    endedReason CallEndedReason? @map("ended_reason")
     createdAt   DateTime   @default(now())
 
     chat      Chat  @relation(fields: [chatId], references: [id], onDelete: Cascade)
@@ -295,6 +297,46 @@ enum CallStatus {
     REJECTED
     MISSED
     ENDED
+}
+
+enum CallEndedReason {
+    ACCEPTED
+    REJECTED
+    MISSED
+    CANCELED
+    FAILED
+    TIMEOUT
+}
+
+enum PushPlatform {
+    IOS
+    ANDROID
+    WEB
+}
+
+enum PushProvider {
+    FCM
+    APNS
+    APNS_VOIP
+}
+
+model PushDevice {
+    id         String       @id @default(uuid())
+    userId     String       @map("user_id") @db.VarChar(255)
+    platform   PushPlatform
+    provider   PushProvider
+    token      String       @unique @db.VarChar(512)
+    voipToken  String?      @map("voip_token") @db.VarChar(512)
+    isActive   Boolean      @default(true) @map("is_active")
+    lastSeenAt DateTime     @default(now()) @map("last_seen_at")
+    createdAt  DateTime     @default(now()) @map("created_at")
+    updatedAt  DateTime     @updatedAt @map("updated_at")
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId, isActive])
+    @@index([platform, provider])
+    @@map("push_devices")
 }
 
 // Followers model

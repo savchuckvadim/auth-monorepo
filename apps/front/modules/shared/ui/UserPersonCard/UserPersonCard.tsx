@@ -37,7 +37,7 @@ export function UserPersonCard({
             variant="default"
             className={cn(
                 'flex w-full flex-col rounded-none md:rounded-xl',
-                'md:h-62 md:w-72 md:shrink-0',
+                'md:h-62 md:min-w-0 md:max-w-72 md:justify-self-center',
                 'p-5',
                 className,
             )}

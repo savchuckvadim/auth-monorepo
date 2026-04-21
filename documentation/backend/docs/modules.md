@@ -116,9 +116,35 @@
 
 **Swagger**: [Messages API](https://api.sociopath-network.ru/docs/api#/Messages)
 
+Поддержка **Signal E2EE**: поля сообщения `isEncrypted`, ciphertext в `content`, связи с `Device`; см. [Signal E2EE и mobile push](./encryption/signal-e2ee-and-mobile-push.md).
+
 ---
 
-### 6. `calls` - Звонки
+### 6. `encryption` - Signal E2EE (ключи и устройства)
+
+**Назначение**: каталог публичных ключей устройств (pre-key bundles), без расшифровки на сервере.
+
+**Endpoints** (префикс `/api/encryption`, см. Swagger `Encryption`): регистрация устройства, обновление ключей, one-time pre-keys, выдача bundle для пользователя/устройства, fingerprint.
+
+**Компоненты**: `EncryptionController`, `EncryptionService`, `EncryptionRateLimitGuard`.
+
+**Зависимости**: `TokenModule`, Prisma.
+
+Подробнее: [Signal E2EE и mobile push](./encryption/signal-e2ee-and-mobile-push.md).
+
+---
+
+### 7. `invitations` - Приглашения
+
+**Назначение**: приглашения в защищённый приватный чат и другие сценарии (типы в `InvitationType`).
+
+**Компоненты**: контроллер и сервис модуля `invitations`.
+
+Связь с фронтом: `features/invitations`.
+
+---
+
+### 8. `calls` - Звонки
 
 **Назначение**: Управление видеозвонками и аудиозвонками через LiveKit.
 
@@ -134,9 +160,11 @@
 
 **Swagger**: [Calls API](https://api.sociopath-network.ru/docs/api#/Calls)
 
+**Mobile**: при офлайн-получателе возможен **VoIP push** через `PushDispatchService.sendIncomingCallVoip` — см. [Signal E2EE и mobile push](./encryption/signal-e2ee-and-mobile-push.md), [чеклист интеграции](./calls-push-integration.md).
+
 ---
 
-### 7. `followers` - Подписки
+### 9. `followers` - Подписки
 
 **Назначение**: Подписка на пользователей, получение списка подписчиков и подписок.
 
@@ -156,7 +184,7 @@
 
 ---
 
-### 8. `profile` - Профили
+### 10. `profile` - Профили
 
 **Назначение**: Управление профилями пользователей.
 
@@ -174,7 +202,7 @@
 
 ---
 
-### 9. `token` - Токены
+### 11. `token` - Токены
 
 **Назначение**: Генерация и валидация JWT токенов.
 
@@ -187,7 +215,7 @@
 
 ---
 
-### 10. `mail` - Email
+### 12. `mail` - Email
 
 **Назначение**: Отправка email через очереди Bull.
 
@@ -200,18 +228,22 @@
 
 ---
 
-### 11. `notifications` - Уведомления
+### 13. `notifications` - Уведомления
 
-**Назначение**: Real-time уведомления через WebSocket.
+**Назначение**: Real-time уведомления через WebSocket и **mobile push** (FCM, APNS, APNS VoIP).
 
 **Компоненты**:
-- `NotificationsGateway` - WebSocket gateway
+- `NotificationsGateway` — WebSocket namespace уведомлений
+- `NotificationsController` — регистрация push-токенов (`POST /api/notifications/devices/register` и др.)
+- `FcmPushService`, `ApnsPushService`, `ApnsVoipPushService`, `PushDispatchService`
 
-**Используется**: `MessagesModule` (уведомления о новых сообщениях)
+**Используется**: `MessagesModule` (уведомления о новых сообщениях, fallback push если нет сокета), `CallsModule` (VoIP для входящего звонка).
+
+Подробнее: [Уведомления](./notifications.md), [Signal E2EE и mobile push](./encryption/signal-e2ee-and-mobile-push.md), [чеклист звонков и push](./calls-push-integration.md).
 
 ---
 
-### 12. `presence` - Статус онлайн
+### 14. `presence` - Статус онлайн
 
 **Назначение**: Отслеживание статуса онлайн/офлайн пользователей.
 
@@ -221,7 +253,7 @@
 
 ---
 
-### 13. `telegram` - Telegram интеграция
+### 15. `telegram` - Telegram интеграция
 
 **Назначение**: Интеграция с Telegram для отправки сообщений.
 
@@ -264,8 +296,9 @@ auth → user, token, mail
 user → token
 post → token, s3, followers
 chats → token
-messages → chats, token, notifications, redis
-calls → (независимый)
+encryption → token
+messages → chats, token, notifications, redis, encryption
+calls → notifications, messages, token
 followers → (независимый)
 profile → (независимый)
 ```

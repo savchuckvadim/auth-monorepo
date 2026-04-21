@@ -64,6 +64,11 @@ export type MessageReadStatus = $Result.DefaultSelection<Prisma.$MessageReadStat
  */
 export type Call = $Result.DefaultSelection<Prisma.$CallPayload>
 /**
+ * Model PushDevice
+ * 
+ */
+export type PushDevice = $Result.DefaultSelection<Prisma.$PushDevicePayload>
+/**
  * Model Follow
  * 
  */
@@ -160,6 +165,36 @@ export const CallStatus: {
 export type CallStatus = (typeof CallStatus)[keyof typeof CallStatus]
 
 
+export const CallEndedReason: {
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED',
+  MISSED: 'MISSED',
+  CANCELED: 'CANCELED',
+  FAILED: 'FAILED',
+  TIMEOUT: 'TIMEOUT'
+};
+
+export type CallEndedReason = (typeof CallEndedReason)[keyof typeof CallEndedReason]
+
+
+export const PushPlatform: {
+  IOS: 'IOS',
+  ANDROID: 'ANDROID',
+  WEB: 'WEB'
+};
+
+export type PushPlatform = (typeof PushPlatform)[keyof typeof PushPlatform]
+
+
+export const PushProvider: {
+  FCM: 'FCM',
+  APNS: 'APNS',
+  APNS_VOIP: 'APNS_VOIP'
+};
+
+export type PushProvider = (typeof PushProvider)[keyof typeof PushProvider]
+
+
 export const InvitationType: {
   SECRET_PRIVATE: 'SECRET_PRIVATE',
   GROUP_JOIN: 'GROUP_JOIN'
@@ -206,6 +241,18 @@ export const CallType: typeof $Enums.CallType
 export type CallStatus = $Enums.CallStatus
 
 export const CallStatus: typeof $Enums.CallStatus
+
+export type CallEndedReason = $Enums.CallEndedReason
+
+export const CallEndedReason: typeof $Enums.CallEndedReason
+
+export type PushPlatform = $Enums.PushPlatform
+
+export const PushPlatform: typeof $Enums.PushPlatform
+
+export type PushProvider = $Enums.PushProvider
+
+export const PushProvider: typeof $Enums.PushProvider
 
 export type InvitationType = $Enums.InvitationType
 
@@ -432,6 +479,16 @@ export class PrismaClient<
     * ```
     */
   get call(): Prisma.CallDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.pushDevice`: Exposes CRUD operations for the **PushDevice** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PushDevices
+    * const pushDevices = await prisma.pushDevice.findMany()
+    * ```
+    */
+  get pushDevice(): Prisma.PushDeviceDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.follow`: Exposes CRUD operations for the **Follow** model.
@@ -933,6 +990,7 @@ export namespace Prisma {
     OneTimePreKey: 'OneTimePreKey',
     MessageReadStatus: 'MessageReadStatus',
     Call: 'Call',
+    PushDevice: 'PushDevice',
     Follow: 'Follow',
     Profile: 'Profile',
     Post: 'Post',
@@ -956,7 +1014,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "token" | "chat" | "chatMember" | "message" | "device" | "preKey" | "oneTimePreKey" | "messageReadStatus" | "call" | "follow" | "profile" | "post" | "postLike" | "invitation"
+      modelProps: "user" | "token" | "chat" | "chatMember" | "message" | "device" | "preKey" | "oneTimePreKey" | "messageReadStatus" | "call" | "pushDevice" | "follow" | "profile" | "post" | "postLike" | "invitation"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1620,6 +1678,72 @@ export namespace Prisma {
           }
         }
       }
+      PushDevice: {
+        payload: Prisma.$PushDevicePayload<ExtArgs>
+        fields: Prisma.PushDeviceFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PushDeviceFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushDevicePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PushDeviceFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushDevicePayload>
+          }
+          findFirst: {
+            args: Prisma.PushDeviceFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushDevicePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PushDeviceFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushDevicePayload>
+          }
+          findMany: {
+            args: Prisma.PushDeviceFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushDevicePayload>[]
+          }
+          create: {
+            args: Prisma.PushDeviceCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushDevicePayload>
+          }
+          createMany: {
+            args: Prisma.PushDeviceCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.PushDeviceDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushDevicePayload>
+          }
+          update: {
+            args: Prisma.PushDeviceUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushDevicePayload>
+          }
+          deleteMany: {
+            args: Prisma.PushDeviceDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PushDeviceUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.PushDeviceUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PushDevicePayload>
+          }
+          aggregate: {
+            args: Prisma.PushDeviceAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePushDevice>
+          }
+          groupBy: {
+            args: Prisma.PushDeviceGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PushDeviceGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PushDeviceCountArgs<ExtArgs>
+            result: $Utils.Optional<PushDeviceCountAggregateOutputType> | number
+          }
+        }
+      }
       Follow: {
         payload: Prisma.$FollowPayload<ExtArgs>
         fields: Prisma.FollowFieldRefs
@@ -2056,6 +2180,7 @@ export namespace Prisma {
     oneTimePreKey?: OneTimePreKeyOmit
     messageReadStatus?: MessageReadStatusOmit
     call?: CallOmit
+    pushDevice?: PushDeviceOmit
     follow?: FollowOmit
     profile?: ProfileOmit
     post?: PostOmit
@@ -2146,6 +2271,7 @@ export namespace Prisma {
     chatMembers: number
     messages: number
     devices: number
+    pushDevices: number
     sentCalls: number
     receivedCalls: number
     messageReads: number
@@ -2165,6 +2291,7 @@ export namespace Prisma {
     chatMembers?: boolean | UserCountOutputTypeCountChatMembersArgs
     messages?: boolean | UserCountOutputTypeCountMessagesArgs
     devices?: boolean | UserCountOutputTypeCountDevicesArgs
+    pushDevices?: boolean | UserCountOutputTypeCountPushDevicesArgs
     sentCalls?: boolean | UserCountOutputTypeCountSentCallsArgs
     receivedCalls?: boolean | UserCountOutputTypeCountReceivedCallsArgs
     messageReads?: boolean | UserCountOutputTypeCountMessageReadsArgs
@@ -2222,6 +2349,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountDevicesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: DeviceWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountPushDevicesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PushDeviceWhereInput
   }
 
   /**
@@ -2694,6 +2828,7 @@ export namespace Prisma {
     chatMembers?: boolean | User$chatMembersArgs<ExtArgs>
     messages?: boolean | User$messagesArgs<ExtArgs>
     devices?: boolean | User$devicesArgs<ExtArgs>
+    pushDevices?: boolean | User$pushDevicesArgs<ExtArgs>
     sentCalls?: boolean | User$sentCallsArgs<ExtArgs>
     receivedCalls?: boolean | User$receivedCallsArgs<ExtArgs>
     messageReads?: boolean | User$messageReadsArgs<ExtArgs>
@@ -2730,6 +2865,7 @@ export namespace Prisma {
     chatMembers?: boolean | User$chatMembersArgs<ExtArgs>
     messages?: boolean | User$messagesArgs<ExtArgs>
     devices?: boolean | User$devicesArgs<ExtArgs>
+    pushDevices?: boolean | User$pushDevicesArgs<ExtArgs>
     sentCalls?: boolean | User$sentCallsArgs<ExtArgs>
     receivedCalls?: boolean | User$receivedCallsArgs<ExtArgs>
     messageReads?: boolean | User$messageReadsArgs<ExtArgs>
@@ -2753,6 +2889,7 @@ export namespace Prisma {
       chatMembers: Prisma.$ChatMemberPayload<ExtArgs>[]
       messages: Prisma.$MessagePayload<ExtArgs>[]
       devices: Prisma.$DevicePayload<ExtArgs>[]
+      pushDevices: Prisma.$PushDevicePayload<ExtArgs>[]
       sentCalls: Prisma.$CallPayload<ExtArgs>[]
       receivedCalls: Prisma.$CallPayload<ExtArgs>[]
       messageReads: Prisma.$MessageReadStatusPayload<ExtArgs>[]
@@ -3121,6 +3258,7 @@ export namespace Prisma {
     chatMembers<T extends User$chatMembersArgs<ExtArgs> = {}>(args?: Subset<T, User$chatMembersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     messages<T extends User$messagesArgs<ExtArgs> = {}>(args?: Subset<T, User$messagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     devices<T extends User$devicesArgs<ExtArgs> = {}>(args?: Subset<T, User$devicesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DevicePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    pushDevices<T extends User$pushDevicesArgs<ExtArgs> = {}>(args?: Subset<T, User$pushDevicesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PushDevicePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     sentCalls<T extends User$sentCallsArgs<ExtArgs> = {}>(args?: Subset<T, User$sentCallsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CallPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     receivedCalls<T extends User$receivedCallsArgs<ExtArgs> = {}>(args?: Subset<T, User$receivedCallsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CallPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     messageReads<T extends User$messageReadsArgs<ExtArgs> = {}>(args?: Subset<T, User$messageReadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -3631,6 +3769,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: DeviceScalarFieldEnum | DeviceScalarFieldEnum[]
+  }
+
+  /**
+   * User.pushDevices
+   */
+  export type User$pushDevicesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushDevice
+     */
+    select?: PushDeviceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushDevice
+     */
+    omit?: PushDeviceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PushDeviceInclude<ExtArgs> | null
+    where?: PushDeviceWhereInput
+    orderBy?: PushDeviceOrderByWithRelationInput | PushDeviceOrderByWithRelationInput[]
+    cursor?: PushDeviceWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PushDeviceScalarFieldEnum | PushDeviceScalarFieldEnum[]
   }
 
   /**
@@ -12283,6 +12445,7 @@ export namespace Prisma {
     startedAt: Date | null
     endedAt: Date | null
     duration: number | null
+    endedReason: $Enums.CallEndedReason | null
     createdAt: Date | null
   }
 
@@ -12296,6 +12459,7 @@ export namespace Prisma {
     startedAt: Date | null
     endedAt: Date | null
     duration: number | null
+    endedReason: $Enums.CallEndedReason | null
     createdAt: Date | null
   }
 
@@ -12309,6 +12473,7 @@ export namespace Prisma {
     startedAt: number
     endedAt: number
     duration: number
+    endedReason: number
     createdAt: number
     _all: number
   }
@@ -12332,6 +12497,7 @@ export namespace Prisma {
     startedAt?: true
     endedAt?: true
     duration?: true
+    endedReason?: true
     createdAt?: true
   }
 
@@ -12345,6 +12511,7 @@ export namespace Prisma {
     startedAt?: true
     endedAt?: true
     duration?: true
+    endedReason?: true
     createdAt?: true
   }
 
@@ -12358,6 +12525,7 @@ export namespace Prisma {
     startedAt?: true
     endedAt?: true
     duration?: true
+    endedReason?: true
     createdAt?: true
     _all?: true
   }
@@ -12458,6 +12626,7 @@ export namespace Prisma {
     startedAt: Date | null
     endedAt: Date | null
     duration: number | null
+    endedReason: $Enums.CallEndedReason | null
     createdAt: Date
     _count: CallCountAggregateOutputType | null
     _avg: CallAvgAggregateOutputType | null
@@ -12490,6 +12659,7 @@ export namespace Prisma {
     startedAt?: boolean
     endedAt?: boolean
     duration?: boolean
+    endedReason?: boolean
     createdAt?: boolean
     chat?: boolean | ChatDefaultArgs<ExtArgs>
     initiator?: boolean | UserDefaultArgs<ExtArgs>
@@ -12508,10 +12678,11 @@ export namespace Prisma {
     startedAt?: boolean
     endedAt?: boolean
     duration?: boolean
+    endedReason?: boolean
     createdAt?: boolean
   }
 
-  export type CallOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "chatId" | "initiatorId" | "receiverId" | "type" | "status" | "startedAt" | "endedAt" | "duration" | "createdAt", ExtArgs["result"]["call"]>
+  export type CallOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "chatId" | "initiatorId" | "receiverId" | "type" | "status" | "startedAt" | "endedAt" | "duration" | "endedReason" | "createdAt", ExtArgs["result"]["call"]>
   export type CallInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     chat?: boolean | ChatDefaultArgs<ExtArgs>
     initiator?: boolean | UserDefaultArgs<ExtArgs>
@@ -12535,6 +12706,7 @@ export namespace Prisma {
       startedAt: Date | null
       endedAt: Date | null
       duration: number | null
+      endedReason: $Enums.CallEndedReason | null
       createdAt: Date
     }, ExtArgs["result"]["call"]>
     composites: {}
@@ -12917,6 +13089,7 @@ export namespace Prisma {
     readonly startedAt: FieldRef<"Call", 'DateTime'>
     readonly endedAt: FieldRef<"Call", 'DateTime'>
     readonly duration: FieldRef<"Call", 'Int'>
+    readonly endedReason: FieldRef<"Call", 'CallEndedReason'>
     readonly createdAt: FieldRef<"Call", 'DateTime'>
   }
     
@@ -13295,6 +13468,990 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: CallInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model PushDevice
+   */
+
+  export type AggregatePushDevice = {
+    _count: PushDeviceCountAggregateOutputType | null
+    _min: PushDeviceMinAggregateOutputType | null
+    _max: PushDeviceMaxAggregateOutputType | null
+  }
+
+  export type PushDeviceMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    platform: $Enums.PushPlatform | null
+    provider: $Enums.PushProvider | null
+    token: string | null
+    voipToken: string | null
+    isActive: boolean | null
+    lastSeenAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PushDeviceMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    platform: $Enums.PushPlatform | null
+    provider: $Enums.PushProvider | null
+    token: string | null
+    voipToken: string | null
+    isActive: boolean | null
+    lastSeenAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type PushDeviceCountAggregateOutputType = {
+    id: number
+    userId: number
+    platform: number
+    provider: number
+    token: number
+    voipToken: number
+    isActive: number
+    lastSeenAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type PushDeviceMinAggregateInputType = {
+    id?: true
+    userId?: true
+    platform?: true
+    provider?: true
+    token?: true
+    voipToken?: true
+    isActive?: true
+    lastSeenAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PushDeviceMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    platform?: true
+    provider?: true
+    token?: true
+    voipToken?: true
+    isActive?: true
+    lastSeenAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type PushDeviceCountAggregateInputType = {
+    id?: true
+    userId?: true
+    platform?: true
+    provider?: true
+    token?: true
+    voipToken?: true
+    isActive?: true
+    lastSeenAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type PushDeviceAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PushDevice to aggregate.
+     */
+    where?: PushDeviceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PushDevices to fetch.
+     */
+    orderBy?: PushDeviceOrderByWithRelationInput | PushDeviceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PushDeviceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PushDevices from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PushDevices.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PushDevices
+    **/
+    _count?: true | PushDeviceCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PushDeviceMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PushDeviceMaxAggregateInputType
+  }
+
+  export type GetPushDeviceAggregateType<T extends PushDeviceAggregateArgs> = {
+        [P in keyof T & keyof AggregatePushDevice]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePushDevice[P]>
+      : GetScalarType<T[P], AggregatePushDevice[P]>
+  }
+
+
+
+
+  export type PushDeviceGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PushDeviceWhereInput
+    orderBy?: PushDeviceOrderByWithAggregationInput | PushDeviceOrderByWithAggregationInput[]
+    by: PushDeviceScalarFieldEnum[] | PushDeviceScalarFieldEnum
+    having?: PushDeviceScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PushDeviceCountAggregateInputType | true
+    _min?: PushDeviceMinAggregateInputType
+    _max?: PushDeviceMaxAggregateInputType
+  }
+
+  export type PushDeviceGroupByOutputType = {
+    id: string
+    userId: string
+    platform: $Enums.PushPlatform
+    provider: $Enums.PushProvider
+    token: string
+    voipToken: string | null
+    isActive: boolean
+    lastSeenAt: Date
+    createdAt: Date
+    updatedAt: Date
+    _count: PushDeviceCountAggregateOutputType | null
+    _min: PushDeviceMinAggregateOutputType | null
+    _max: PushDeviceMaxAggregateOutputType | null
+  }
+
+  type GetPushDeviceGroupByPayload<T extends PushDeviceGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PushDeviceGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PushDeviceGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PushDeviceGroupByOutputType[P]>
+            : GetScalarType<T[P], PushDeviceGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PushDeviceSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    platform?: boolean
+    provider?: boolean
+    token?: boolean
+    voipToken?: boolean
+    isActive?: boolean
+    lastSeenAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["pushDevice"]>
+
+
+
+  export type PushDeviceSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    platform?: boolean
+    provider?: boolean
+    token?: boolean
+    voipToken?: boolean
+    isActive?: boolean
+    lastSeenAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type PushDeviceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "platform" | "provider" | "token" | "voipToken" | "isActive" | "lastSeenAt" | "createdAt" | "updatedAt", ExtArgs["result"]["pushDevice"]>
+  export type PushDeviceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $PushDevicePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PushDevice"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      platform: $Enums.PushPlatform
+      provider: $Enums.PushProvider
+      token: string
+      voipToken: string | null
+      isActive: boolean
+      lastSeenAt: Date
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["pushDevice"]>
+    composites: {}
+  }
+
+  type PushDeviceGetPayload<S extends boolean | null | undefined | PushDeviceDefaultArgs> = $Result.GetResult<Prisma.$PushDevicePayload, S>
+
+  type PushDeviceCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PushDeviceFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PushDeviceCountAggregateInputType | true
+    }
+
+  export interface PushDeviceDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PushDevice'], meta: { name: 'PushDevice' } }
+    /**
+     * Find zero or one PushDevice that matches the filter.
+     * @param {PushDeviceFindUniqueArgs} args - Arguments to find a PushDevice
+     * @example
+     * // Get one PushDevice
+     * const pushDevice = await prisma.pushDevice.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PushDeviceFindUniqueArgs>(args: SelectSubset<T, PushDeviceFindUniqueArgs<ExtArgs>>): Prisma__PushDeviceClient<$Result.GetResult<Prisma.$PushDevicePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PushDevice that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PushDeviceFindUniqueOrThrowArgs} args - Arguments to find a PushDevice
+     * @example
+     * // Get one PushDevice
+     * const pushDevice = await prisma.pushDevice.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PushDeviceFindUniqueOrThrowArgs>(args: SelectSubset<T, PushDeviceFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PushDeviceClient<$Result.GetResult<Prisma.$PushDevicePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PushDevice that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushDeviceFindFirstArgs} args - Arguments to find a PushDevice
+     * @example
+     * // Get one PushDevice
+     * const pushDevice = await prisma.pushDevice.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PushDeviceFindFirstArgs>(args?: SelectSubset<T, PushDeviceFindFirstArgs<ExtArgs>>): Prisma__PushDeviceClient<$Result.GetResult<Prisma.$PushDevicePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PushDevice that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushDeviceFindFirstOrThrowArgs} args - Arguments to find a PushDevice
+     * @example
+     * // Get one PushDevice
+     * const pushDevice = await prisma.pushDevice.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PushDeviceFindFirstOrThrowArgs>(args?: SelectSubset<T, PushDeviceFindFirstOrThrowArgs<ExtArgs>>): Prisma__PushDeviceClient<$Result.GetResult<Prisma.$PushDevicePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PushDevices that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushDeviceFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PushDevices
+     * const pushDevices = await prisma.pushDevice.findMany()
+     * 
+     * // Get first 10 PushDevices
+     * const pushDevices = await prisma.pushDevice.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const pushDeviceWithIdOnly = await prisma.pushDevice.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PushDeviceFindManyArgs>(args?: SelectSubset<T, PushDeviceFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PushDevicePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PushDevice.
+     * @param {PushDeviceCreateArgs} args - Arguments to create a PushDevice.
+     * @example
+     * // Create one PushDevice
+     * const PushDevice = await prisma.pushDevice.create({
+     *   data: {
+     *     // ... data to create a PushDevice
+     *   }
+     * })
+     * 
+     */
+    create<T extends PushDeviceCreateArgs>(args: SelectSubset<T, PushDeviceCreateArgs<ExtArgs>>): Prisma__PushDeviceClient<$Result.GetResult<Prisma.$PushDevicePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PushDevices.
+     * @param {PushDeviceCreateManyArgs} args - Arguments to create many PushDevices.
+     * @example
+     * // Create many PushDevices
+     * const pushDevice = await prisma.pushDevice.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PushDeviceCreateManyArgs>(args?: SelectSubset<T, PushDeviceCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a PushDevice.
+     * @param {PushDeviceDeleteArgs} args - Arguments to delete one PushDevice.
+     * @example
+     * // Delete one PushDevice
+     * const PushDevice = await prisma.pushDevice.delete({
+     *   where: {
+     *     // ... filter to delete one PushDevice
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PushDeviceDeleteArgs>(args: SelectSubset<T, PushDeviceDeleteArgs<ExtArgs>>): Prisma__PushDeviceClient<$Result.GetResult<Prisma.$PushDevicePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PushDevice.
+     * @param {PushDeviceUpdateArgs} args - Arguments to update one PushDevice.
+     * @example
+     * // Update one PushDevice
+     * const pushDevice = await prisma.pushDevice.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PushDeviceUpdateArgs>(args: SelectSubset<T, PushDeviceUpdateArgs<ExtArgs>>): Prisma__PushDeviceClient<$Result.GetResult<Prisma.$PushDevicePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PushDevices.
+     * @param {PushDeviceDeleteManyArgs} args - Arguments to filter PushDevices to delete.
+     * @example
+     * // Delete a few PushDevices
+     * const { count } = await prisma.pushDevice.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PushDeviceDeleteManyArgs>(args?: SelectSubset<T, PushDeviceDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PushDevices.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushDeviceUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PushDevices
+     * const pushDevice = await prisma.pushDevice.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PushDeviceUpdateManyArgs>(args: SelectSubset<T, PushDeviceUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one PushDevice.
+     * @param {PushDeviceUpsertArgs} args - Arguments to update or create a PushDevice.
+     * @example
+     * // Update or create a PushDevice
+     * const pushDevice = await prisma.pushDevice.upsert({
+     *   create: {
+     *     // ... data to create a PushDevice
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PushDevice we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PushDeviceUpsertArgs>(args: SelectSubset<T, PushDeviceUpsertArgs<ExtArgs>>): Prisma__PushDeviceClient<$Result.GetResult<Prisma.$PushDevicePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PushDevices.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushDeviceCountArgs} args - Arguments to filter PushDevices to count.
+     * @example
+     * // Count the number of PushDevices
+     * const count = await prisma.pushDevice.count({
+     *   where: {
+     *     // ... the filter for the PushDevices we want to count
+     *   }
+     * })
+    **/
+    count<T extends PushDeviceCountArgs>(
+      args?: Subset<T, PushDeviceCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PushDeviceCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PushDevice.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushDeviceAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PushDeviceAggregateArgs>(args: Subset<T, PushDeviceAggregateArgs>): Prisma.PrismaPromise<GetPushDeviceAggregateType<T>>
+
+    /**
+     * Group by PushDevice.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PushDeviceGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PushDeviceGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PushDeviceGroupByArgs['orderBy'] }
+        : { orderBy?: PushDeviceGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PushDeviceGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPushDeviceGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PushDevice model
+   */
+  readonly fields: PushDeviceFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PushDevice.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PushDeviceClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PushDevice model
+   */
+  interface PushDeviceFieldRefs {
+    readonly id: FieldRef<"PushDevice", 'String'>
+    readonly userId: FieldRef<"PushDevice", 'String'>
+    readonly platform: FieldRef<"PushDevice", 'PushPlatform'>
+    readonly provider: FieldRef<"PushDevice", 'PushProvider'>
+    readonly token: FieldRef<"PushDevice", 'String'>
+    readonly voipToken: FieldRef<"PushDevice", 'String'>
+    readonly isActive: FieldRef<"PushDevice", 'Boolean'>
+    readonly lastSeenAt: FieldRef<"PushDevice", 'DateTime'>
+    readonly createdAt: FieldRef<"PushDevice", 'DateTime'>
+    readonly updatedAt: FieldRef<"PushDevice", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PushDevice findUnique
+   */
+  export type PushDeviceFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushDevice
+     */
+    select?: PushDeviceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushDevice
+     */
+    omit?: PushDeviceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PushDeviceInclude<ExtArgs> | null
+    /**
+     * Filter, which PushDevice to fetch.
+     */
+    where: PushDeviceWhereUniqueInput
+  }
+
+  /**
+   * PushDevice findUniqueOrThrow
+   */
+  export type PushDeviceFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushDevice
+     */
+    select?: PushDeviceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushDevice
+     */
+    omit?: PushDeviceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PushDeviceInclude<ExtArgs> | null
+    /**
+     * Filter, which PushDevice to fetch.
+     */
+    where: PushDeviceWhereUniqueInput
+  }
+
+  /**
+   * PushDevice findFirst
+   */
+  export type PushDeviceFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushDevice
+     */
+    select?: PushDeviceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushDevice
+     */
+    omit?: PushDeviceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PushDeviceInclude<ExtArgs> | null
+    /**
+     * Filter, which PushDevice to fetch.
+     */
+    where?: PushDeviceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PushDevices to fetch.
+     */
+    orderBy?: PushDeviceOrderByWithRelationInput | PushDeviceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PushDevices.
+     */
+    cursor?: PushDeviceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PushDevices from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PushDevices.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PushDevices.
+     */
+    distinct?: PushDeviceScalarFieldEnum | PushDeviceScalarFieldEnum[]
+  }
+
+  /**
+   * PushDevice findFirstOrThrow
+   */
+  export type PushDeviceFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushDevice
+     */
+    select?: PushDeviceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushDevice
+     */
+    omit?: PushDeviceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PushDeviceInclude<ExtArgs> | null
+    /**
+     * Filter, which PushDevice to fetch.
+     */
+    where?: PushDeviceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PushDevices to fetch.
+     */
+    orderBy?: PushDeviceOrderByWithRelationInput | PushDeviceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PushDevices.
+     */
+    cursor?: PushDeviceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PushDevices from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PushDevices.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PushDevices.
+     */
+    distinct?: PushDeviceScalarFieldEnum | PushDeviceScalarFieldEnum[]
+  }
+
+  /**
+   * PushDevice findMany
+   */
+  export type PushDeviceFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushDevice
+     */
+    select?: PushDeviceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushDevice
+     */
+    omit?: PushDeviceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PushDeviceInclude<ExtArgs> | null
+    /**
+     * Filter, which PushDevices to fetch.
+     */
+    where?: PushDeviceWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PushDevices to fetch.
+     */
+    orderBy?: PushDeviceOrderByWithRelationInput | PushDeviceOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PushDevices.
+     */
+    cursor?: PushDeviceWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PushDevices from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PushDevices.
+     */
+    skip?: number
+    distinct?: PushDeviceScalarFieldEnum | PushDeviceScalarFieldEnum[]
+  }
+
+  /**
+   * PushDevice create
+   */
+  export type PushDeviceCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushDevice
+     */
+    select?: PushDeviceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushDevice
+     */
+    omit?: PushDeviceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PushDeviceInclude<ExtArgs> | null
+    /**
+     * The data needed to create a PushDevice.
+     */
+    data: XOR<PushDeviceCreateInput, PushDeviceUncheckedCreateInput>
+  }
+
+  /**
+   * PushDevice createMany
+   */
+  export type PushDeviceCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PushDevices.
+     */
+    data: PushDeviceCreateManyInput | PushDeviceCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PushDevice update
+   */
+  export type PushDeviceUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushDevice
+     */
+    select?: PushDeviceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushDevice
+     */
+    omit?: PushDeviceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PushDeviceInclude<ExtArgs> | null
+    /**
+     * The data needed to update a PushDevice.
+     */
+    data: XOR<PushDeviceUpdateInput, PushDeviceUncheckedUpdateInput>
+    /**
+     * Choose, which PushDevice to update.
+     */
+    where: PushDeviceWhereUniqueInput
+  }
+
+  /**
+   * PushDevice updateMany
+   */
+  export type PushDeviceUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PushDevices.
+     */
+    data: XOR<PushDeviceUpdateManyMutationInput, PushDeviceUncheckedUpdateManyInput>
+    /**
+     * Filter which PushDevices to update
+     */
+    where?: PushDeviceWhereInput
+    /**
+     * Limit how many PushDevices to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PushDevice upsert
+   */
+  export type PushDeviceUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushDevice
+     */
+    select?: PushDeviceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushDevice
+     */
+    omit?: PushDeviceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PushDeviceInclude<ExtArgs> | null
+    /**
+     * The filter to search for the PushDevice to update in case it exists.
+     */
+    where: PushDeviceWhereUniqueInput
+    /**
+     * In case the PushDevice found by the `where` argument doesn't exist, create a new PushDevice with this data.
+     */
+    create: XOR<PushDeviceCreateInput, PushDeviceUncheckedCreateInput>
+    /**
+     * In case the PushDevice was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PushDeviceUpdateInput, PushDeviceUncheckedUpdateInput>
+  }
+
+  /**
+   * PushDevice delete
+   */
+  export type PushDeviceDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushDevice
+     */
+    select?: PushDeviceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushDevice
+     */
+    omit?: PushDeviceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PushDeviceInclude<ExtArgs> | null
+    /**
+     * Filter which PushDevice to delete.
+     */
+    where: PushDeviceWhereUniqueInput
+  }
+
+  /**
+   * PushDevice deleteMany
+   */
+  export type PushDeviceDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PushDevices to delete
+     */
+    where?: PushDeviceWhereInput
+    /**
+     * Limit how many PushDevices to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PushDevice without action
+   */
+  export type PushDeviceDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PushDevice
+     */
+    select?: PushDeviceSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PushDevice
+     */
+    omit?: PushDeviceOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PushDeviceInclude<ExtArgs> | null
   }
 
 
@@ -18401,10 +19558,27 @@ export namespace Prisma {
     startedAt: 'startedAt',
     endedAt: 'endedAt',
     duration: 'duration',
+    endedReason: 'endedReason',
     createdAt: 'createdAt'
   };
 
   export type CallScalarFieldEnum = (typeof CallScalarFieldEnum)[keyof typeof CallScalarFieldEnum]
+
+
+  export const PushDeviceScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    platform: 'platform',
+    provider: 'provider',
+    token: 'token',
+    voipToken: 'voipToken',
+    isActive: 'isActive',
+    lastSeenAt: 'lastSeenAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type PushDeviceScalarFieldEnum = (typeof PushDeviceScalarFieldEnum)[keyof typeof PushDeviceScalarFieldEnum]
 
 
   export const FollowScalarFieldEnum: {
@@ -18608,6 +19782,16 @@ export namespace Prisma {
   export type CallOrderByRelevanceFieldEnum = (typeof CallOrderByRelevanceFieldEnum)[keyof typeof CallOrderByRelevanceFieldEnum]
 
 
+  export const PushDeviceOrderByRelevanceFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    token: 'token',
+    voipToken: 'voipToken'
+  };
+
+  export type PushDeviceOrderByRelevanceFieldEnum = (typeof PushDeviceOrderByRelevanceFieldEnum)[keyof typeof PushDeviceOrderByRelevanceFieldEnum]
+
+
   export const FollowOrderByRelevanceFieldEnum: {
     id: 'id',
     followerId: 'followerId',
@@ -18763,6 +19947,27 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'CallEndedReason'
+   */
+  export type EnumCallEndedReasonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CallEndedReason'>
+    
+
+
+  /**
+   * Reference to a field of type 'PushPlatform'
+   */
+  export type EnumPushPlatformFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PushPlatform'>
+    
+
+
+  /**
+   * Reference to a field of type 'PushProvider'
+   */
+  export type EnumPushProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PushProvider'>
+    
+
+
+  /**
    * Reference to a field of type 'InvitationType'
    */
   export type EnumInvitationTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InvitationType'>
@@ -18818,6 +20023,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberListRelationFilter
     messages?: MessageListRelationFilter
     devices?: DeviceListRelationFilter
+    pushDevices?: PushDeviceListRelationFilter
     sentCalls?: CallListRelationFilter
     receivedCalls?: CallListRelationFilter
     messageReads?: MessageReadStatusListRelationFilter
@@ -18847,6 +20053,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberOrderByRelationAggregateInput
     messages?: MessageOrderByRelationAggregateInput
     devices?: DeviceOrderByRelationAggregateInput
+    pushDevices?: PushDeviceOrderByRelationAggregateInput
     sentCalls?: CallOrderByRelationAggregateInput
     receivedCalls?: CallOrderByRelationAggregateInput
     messageReads?: MessageReadStatusOrderByRelationAggregateInput
@@ -18880,6 +20087,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberListRelationFilter
     messages?: MessageListRelationFilter
     devices?: DeviceListRelationFilter
+    pushDevices?: PushDeviceListRelationFilter
     sentCalls?: CallListRelationFilter
     receivedCalls?: CallListRelationFilter
     messageReads?: MessageReadStatusListRelationFilter
@@ -19603,6 +20811,7 @@ export namespace Prisma {
     startedAt?: DateTimeNullableFilter<"Call"> | Date | string | null
     endedAt?: DateTimeNullableFilter<"Call"> | Date | string | null
     duration?: IntNullableFilter<"Call"> | number | null
+    endedReason?: EnumCallEndedReasonNullableFilter<"Call"> | $Enums.CallEndedReason | null
     createdAt?: DateTimeFilter<"Call"> | Date | string
     chat?: XOR<ChatScalarRelationFilter, ChatWhereInput>
     initiator?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -19619,6 +20828,7 @@ export namespace Prisma {
     startedAt?: SortOrderInput | SortOrder
     endedAt?: SortOrderInput | SortOrder
     duration?: SortOrderInput | SortOrder
+    endedReason?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     chat?: ChatOrderByWithRelationInput
     initiator?: UserOrderByWithRelationInput
@@ -19639,6 +20849,7 @@ export namespace Prisma {
     startedAt?: DateTimeNullableFilter<"Call"> | Date | string | null
     endedAt?: DateTimeNullableFilter<"Call"> | Date | string | null
     duration?: IntNullableFilter<"Call"> | number | null
+    endedReason?: EnumCallEndedReasonNullableFilter<"Call"> | $Enums.CallEndedReason | null
     createdAt?: DateTimeFilter<"Call"> | Date | string
     chat?: XOR<ChatScalarRelationFilter, ChatWhereInput>
     initiator?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -19655,6 +20866,7 @@ export namespace Prisma {
     startedAt?: SortOrderInput | SortOrder
     endedAt?: SortOrderInput | SortOrder
     duration?: SortOrderInput | SortOrder
+    endedReason?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: CallCountOrderByAggregateInput
     _avg?: CallAvgOrderByAggregateInput
@@ -19676,7 +20888,89 @@ export namespace Prisma {
     startedAt?: DateTimeNullableWithAggregatesFilter<"Call"> | Date | string | null
     endedAt?: DateTimeNullableWithAggregatesFilter<"Call"> | Date | string | null
     duration?: IntNullableWithAggregatesFilter<"Call"> | number | null
+    endedReason?: EnumCallEndedReasonNullableWithAggregatesFilter<"Call"> | $Enums.CallEndedReason | null
     createdAt?: DateTimeWithAggregatesFilter<"Call"> | Date | string
+  }
+
+  export type PushDeviceWhereInput = {
+    AND?: PushDeviceWhereInput | PushDeviceWhereInput[]
+    OR?: PushDeviceWhereInput[]
+    NOT?: PushDeviceWhereInput | PushDeviceWhereInput[]
+    id?: StringFilter<"PushDevice"> | string
+    userId?: StringFilter<"PushDevice"> | string
+    platform?: EnumPushPlatformFilter<"PushDevice"> | $Enums.PushPlatform
+    provider?: EnumPushProviderFilter<"PushDevice"> | $Enums.PushProvider
+    token?: StringFilter<"PushDevice"> | string
+    voipToken?: StringNullableFilter<"PushDevice"> | string | null
+    isActive?: BoolFilter<"PushDevice"> | boolean
+    lastSeenAt?: DateTimeFilter<"PushDevice"> | Date | string
+    createdAt?: DateTimeFilter<"PushDevice"> | Date | string
+    updatedAt?: DateTimeFilter<"PushDevice"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type PushDeviceOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    platform?: SortOrder
+    provider?: SortOrder
+    token?: SortOrder
+    voipToken?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    lastSeenAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+    _relevance?: PushDeviceOrderByRelevanceInput
+  }
+
+  export type PushDeviceWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    token?: string
+    AND?: PushDeviceWhereInput | PushDeviceWhereInput[]
+    OR?: PushDeviceWhereInput[]
+    NOT?: PushDeviceWhereInput | PushDeviceWhereInput[]
+    userId?: StringFilter<"PushDevice"> | string
+    platform?: EnumPushPlatformFilter<"PushDevice"> | $Enums.PushPlatform
+    provider?: EnumPushProviderFilter<"PushDevice"> | $Enums.PushProvider
+    voipToken?: StringNullableFilter<"PushDevice"> | string | null
+    isActive?: BoolFilter<"PushDevice"> | boolean
+    lastSeenAt?: DateTimeFilter<"PushDevice"> | Date | string
+    createdAt?: DateTimeFilter<"PushDevice"> | Date | string
+    updatedAt?: DateTimeFilter<"PushDevice"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "token">
+
+  export type PushDeviceOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    platform?: SortOrder
+    provider?: SortOrder
+    token?: SortOrder
+    voipToken?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    lastSeenAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: PushDeviceCountOrderByAggregateInput
+    _max?: PushDeviceMaxOrderByAggregateInput
+    _min?: PushDeviceMinOrderByAggregateInput
+  }
+
+  export type PushDeviceScalarWhereWithAggregatesInput = {
+    AND?: PushDeviceScalarWhereWithAggregatesInput | PushDeviceScalarWhereWithAggregatesInput[]
+    OR?: PushDeviceScalarWhereWithAggregatesInput[]
+    NOT?: PushDeviceScalarWhereWithAggregatesInput | PushDeviceScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"PushDevice"> | string
+    userId?: StringWithAggregatesFilter<"PushDevice"> | string
+    platform?: EnumPushPlatformWithAggregatesFilter<"PushDevice"> | $Enums.PushPlatform
+    provider?: EnumPushProviderWithAggregatesFilter<"PushDevice"> | $Enums.PushProvider
+    token?: StringWithAggregatesFilter<"PushDevice"> | string
+    voipToken?: StringNullableWithAggregatesFilter<"PushDevice"> | string | null
+    isActive?: BoolWithAggregatesFilter<"PushDevice"> | boolean
+    lastSeenAt?: DateTimeWithAggregatesFilter<"PushDevice"> | Date | string
+    createdAt?: DateTimeWithAggregatesFilter<"PushDevice"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"PushDevice"> | Date | string
   }
 
   export type FollowWhereInput = {
@@ -20069,6 +21363,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberCreateNestedManyWithoutUserInput
     messages?: MessageCreateNestedManyWithoutSenderInput
     devices?: DeviceCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceCreateNestedManyWithoutUserInput
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
@@ -20098,6 +21393,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedCreateNestedManyWithoutUserInput
     messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceUncheckedCreateNestedManyWithoutUserInput
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
@@ -20127,6 +21423,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUpdateManyWithoutUserNestedInput
     messages?: MessageUpdateManyWithoutSenderNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUpdateManyWithoutUserNestedInput
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
@@ -20156,6 +21453,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedUpdateManyWithoutUserNestedInput
     messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUncheckedUpdateManyWithoutUserNestedInput
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
@@ -20899,6 +22197,7 @@ export namespace Prisma {
     startedAt?: Date | string | null
     endedAt?: Date | string | null
     duration?: number | null
+    endedReason?: $Enums.CallEndedReason | null
     createdAt?: Date | string
     chat: ChatCreateNestedOneWithoutCallsInput
     initiator: UserCreateNestedOneWithoutSentCallsInput
@@ -20915,6 +22214,7 @@ export namespace Prisma {
     startedAt?: Date | string | null
     endedAt?: Date | string | null
     duration?: number | null
+    endedReason?: $Enums.CallEndedReason | null
     createdAt?: Date | string
   }
 
@@ -20925,6 +22225,7 @@ export namespace Prisma {
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    endedReason?: NullableEnumCallEndedReasonFieldUpdateOperationsInput | $Enums.CallEndedReason | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatUpdateOneRequiredWithoutCallsNestedInput
     initiator?: UserUpdateOneRequiredWithoutSentCallsNestedInput
@@ -20941,6 +22242,7 @@ export namespace Prisma {
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    endedReason?: NullableEnumCallEndedReasonFieldUpdateOperationsInput | $Enums.CallEndedReason | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -20954,6 +22256,7 @@ export namespace Prisma {
     startedAt?: Date | string | null
     endedAt?: Date | string | null
     duration?: number | null
+    endedReason?: $Enums.CallEndedReason | null
     createdAt?: Date | string
   }
 
@@ -20964,6 +22267,7 @@ export namespace Prisma {
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    endedReason?: NullableEnumCallEndedReasonFieldUpdateOperationsInput | $Enums.CallEndedReason | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -20977,7 +22281,98 @@ export namespace Prisma {
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    endedReason?: NullableEnumCallEndedReasonFieldUpdateOperationsInput | $Enums.CallEndedReason | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PushDeviceCreateInput = {
+    id?: string
+    platform: $Enums.PushPlatform
+    provider: $Enums.PushProvider
+    token: string
+    voipToken?: string | null
+    isActive?: boolean
+    lastSeenAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutPushDevicesInput
+  }
+
+  export type PushDeviceUncheckedCreateInput = {
+    id?: string
+    userId: string
+    platform: $Enums.PushPlatform
+    provider: $Enums.PushProvider
+    token: string
+    voipToken?: string | null
+    isActive?: boolean
+    lastSeenAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PushDeviceUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    platform?: EnumPushPlatformFieldUpdateOperationsInput | $Enums.PushPlatform
+    provider?: EnumPushProviderFieldUpdateOperationsInput | $Enums.PushProvider
+    token?: StringFieldUpdateOperationsInput | string
+    voipToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutPushDevicesNestedInput
+  }
+
+  export type PushDeviceUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    platform?: EnumPushPlatformFieldUpdateOperationsInput | $Enums.PushPlatform
+    provider?: EnumPushProviderFieldUpdateOperationsInput | $Enums.PushProvider
+    token?: StringFieldUpdateOperationsInput | string
+    voipToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PushDeviceCreateManyInput = {
+    id?: string
+    userId: string
+    platform: $Enums.PushPlatform
+    provider: $Enums.PushProvider
+    token: string
+    voipToken?: string | null
+    isActive?: boolean
+    lastSeenAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PushDeviceUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    platform?: EnumPushPlatformFieldUpdateOperationsInput | $Enums.PushPlatform
+    provider?: EnumPushProviderFieldUpdateOperationsInput | $Enums.PushProvider
+    token?: StringFieldUpdateOperationsInput | string
+    voipToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PushDeviceUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    platform?: EnumPushPlatformFieldUpdateOperationsInput | $Enums.PushPlatform
+    provider?: EnumPushProviderFieldUpdateOperationsInput | $Enums.PushProvider
+    token?: StringFieldUpdateOperationsInput | string
+    voipToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type FollowCreateInput = {
@@ -21424,6 +22819,12 @@ export namespace Prisma {
     none?: DeviceWhereInput
   }
 
+  export type PushDeviceListRelationFilter = {
+    every?: PushDeviceWhereInput
+    some?: PushDeviceWhereInput
+    none?: PushDeviceWhereInput
+  }
+
   export type CallListRelationFilter = {
     every?: CallWhereInput
     some?: CallWhereInput
@@ -21487,6 +22888,10 @@ export namespace Prisma {
   }
 
   export type DeviceOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type PushDeviceOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -22255,6 +23660,13 @@ export namespace Prisma {
     not?: NestedEnumCallStatusFilter<$PrismaModel> | $Enums.CallStatus
   }
 
+  export type EnumCallEndedReasonNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.CallEndedReason | EnumCallEndedReasonFieldRefInput<$PrismaModel> | null
+    in?: $Enums.CallEndedReason[] | null
+    notIn?: $Enums.CallEndedReason[] | null
+    not?: NestedEnumCallEndedReasonNullableFilter<$PrismaModel> | $Enums.CallEndedReason | null
+  }
+
   export type CallOrderByRelevanceInput = {
     fields: CallOrderByRelevanceFieldEnum | CallOrderByRelevanceFieldEnum[]
     sort: SortOrder
@@ -22271,6 +23683,7 @@ export namespace Prisma {
     startedAt?: SortOrder
     endedAt?: SortOrder
     duration?: SortOrder
+    endedReason?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -22288,6 +23701,7 @@ export namespace Prisma {
     startedAt?: SortOrder
     endedAt?: SortOrder
     duration?: SortOrder
+    endedReason?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -22301,6 +23715,7 @@ export namespace Prisma {
     startedAt?: SortOrder
     endedAt?: SortOrder
     duration?: SortOrder
+    endedReason?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -22326,6 +23741,95 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumCallStatusFilter<$PrismaModel>
     _max?: NestedEnumCallStatusFilter<$PrismaModel>
+  }
+
+  export type EnumCallEndedReasonNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.CallEndedReason | EnumCallEndedReasonFieldRefInput<$PrismaModel> | null
+    in?: $Enums.CallEndedReason[] | null
+    notIn?: $Enums.CallEndedReason[] | null
+    not?: NestedEnumCallEndedReasonNullableWithAggregatesFilter<$PrismaModel> | $Enums.CallEndedReason | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumCallEndedReasonNullableFilter<$PrismaModel>
+    _max?: NestedEnumCallEndedReasonNullableFilter<$PrismaModel>
+  }
+
+  export type EnumPushPlatformFilter<$PrismaModel = never> = {
+    equals?: $Enums.PushPlatform | EnumPushPlatformFieldRefInput<$PrismaModel>
+    in?: $Enums.PushPlatform[]
+    notIn?: $Enums.PushPlatform[]
+    not?: NestedEnumPushPlatformFilter<$PrismaModel> | $Enums.PushPlatform
+  }
+
+  export type EnumPushProviderFilter<$PrismaModel = never> = {
+    equals?: $Enums.PushProvider | EnumPushProviderFieldRefInput<$PrismaModel>
+    in?: $Enums.PushProvider[]
+    notIn?: $Enums.PushProvider[]
+    not?: NestedEnumPushProviderFilter<$PrismaModel> | $Enums.PushProvider
+  }
+
+  export type PushDeviceOrderByRelevanceInput = {
+    fields: PushDeviceOrderByRelevanceFieldEnum | PushDeviceOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type PushDeviceCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    platform?: SortOrder
+    provider?: SortOrder
+    token?: SortOrder
+    voipToken?: SortOrder
+    isActive?: SortOrder
+    lastSeenAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PushDeviceMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    platform?: SortOrder
+    provider?: SortOrder
+    token?: SortOrder
+    voipToken?: SortOrder
+    isActive?: SortOrder
+    lastSeenAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type PushDeviceMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    platform?: SortOrder
+    provider?: SortOrder
+    token?: SortOrder
+    voipToken?: SortOrder
+    isActive?: SortOrder
+    lastSeenAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type EnumPushPlatformWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.PushPlatform | EnumPushPlatformFieldRefInput<$PrismaModel>
+    in?: $Enums.PushPlatform[]
+    notIn?: $Enums.PushPlatform[]
+    not?: NestedEnumPushPlatformWithAggregatesFilter<$PrismaModel> | $Enums.PushPlatform
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPushPlatformFilter<$PrismaModel>
+    _max?: NestedEnumPushPlatformFilter<$PrismaModel>
+  }
+
+  export type EnumPushProviderWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.PushProvider | EnumPushProviderFieldRefInput<$PrismaModel>
+    in?: $Enums.PushProvider[]
+    notIn?: $Enums.PushProvider[]
+    not?: NestedEnumPushProviderWithAggregatesFilter<$PrismaModel> | $Enums.PushProvider
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPushProviderFilter<$PrismaModel>
+    _max?: NestedEnumPushProviderFilter<$PrismaModel>
   }
 
   export type FollowOrderByRelevanceInput = {
@@ -22664,6 +24168,13 @@ export namespace Prisma {
     connect?: DeviceWhereUniqueInput | DeviceWhereUniqueInput[]
   }
 
+  export type PushDeviceCreateNestedManyWithoutUserInput = {
+    create?: XOR<PushDeviceCreateWithoutUserInput, PushDeviceUncheckedCreateWithoutUserInput> | PushDeviceCreateWithoutUserInput[] | PushDeviceUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PushDeviceCreateOrConnectWithoutUserInput | PushDeviceCreateOrConnectWithoutUserInput[]
+    createMany?: PushDeviceCreateManyUserInputEnvelope
+    connect?: PushDeviceWhereUniqueInput | PushDeviceWhereUniqueInput[]
+  }
+
   export type CallCreateNestedManyWithoutInitiatorInput = {
     create?: XOR<CallCreateWithoutInitiatorInput, CallUncheckedCreateWithoutInitiatorInput> | CallCreateWithoutInitiatorInput[] | CallUncheckedCreateWithoutInitiatorInput[]
     connectOrCreate?: CallCreateOrConnectWithoutInitiatorInput | CallCreateOrConnectWithoutInitiatorInput[]
@@ -22780,6 +24291,13 @@ export namespace Prisma {
     connectOrCreate?: DeviceCreateOrConnectWithoutUserInput | DeviceCreateOrConnectWithoutUserInput[]
     createMany?: DeviceCreateManyUserInputEnvelope
     connect?: DeviceWhereUniqueInput | DeviceWhereUniqueInput[]
+  }
+
+  export type PushDeviceUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<PushDeviceCreateWithoutUserInput, PushDeviceUncheckedCreateWithoutUserInput> | PushDeviceCreateWithoutUserInput[] | PushDeviceUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PushDeviceCreateOrConnectWithoutUserInput | PushDeviceCreateOrConnectWithoutUserInput[]
+    createMany?: PushDeviceCreateManyUserInputEnvelope
+    connect?: PushDeviceWhereUniqueInput | PushDeviceWhereUniqueInput[]
   }
 
   export type CallUncheckedCreateNestedManyWithoutInitiatorInput = {
@@ -22949,6 +24467,20 @@ export namespace Prisma {
     update?: DeviceUpdateWithWhereUniqueWithoutUserInput | DeviceUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: DeviceUpdateManyWithWhereWithoutUserInput | DeviceUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: DeviceScalarWhereInput | DeviceScalarWhereInput[]
+  }
+
+  export type PushDeviceUpdateManyWithoutUserNestedInput = {
+    create?: XOR<PushDeviceCreateWithoutUserInput, PushDeviceUncheckedCreateWithoutUserInput> | PushDeviceCreateWithoutUserInput[] | PushDeviceUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PushDeviceCreateOrConnectWithoutUserInput | PushDeviceCreateOrConnectWithoutUserInput[]
+    upsert?: PushDeviceUpsertWithWhereUniqueWithoutUserInput | PushDeviceUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: PushDeviceCreateManyUserInputEnvelope
+    set?: PushDeviceWhereUniqueInput | PushDeviceWhereUniqueInput[]
+    disconnect?: PushDeviceWhereUniqueInput | PushDeviceWhereUniqueInput[]
+    delete?: PushDeviceWhereUniqueInput | PushDeviceWhereUniqueInput[]
+    connect?: PushDeviceWhereUniqueInput | PushDeviceWhereUniqueInput[]
+    update?: PushDeviceUpdateWithWhereUniqueWithoutUserInput | PushDeviceUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: PushDeviceUpdateManyWithWhereWithoutUserInput | PushDeviceUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: PushDeviceScalarWhereInput | PushDeviceScalarWhereInput[]
   }
 
   export type CallUpdateManyWithoutInitiatorNestedInput = {
@@ -23183,6 +24715,20 @@ export namespace Prisma {
     update?: DeviceUpdateWithWhereUniqueWithoutUserInput | DeviceUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: DeviceUpdateManyWithWhereWithoutUserInput | DeviceUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: DeviceScalarWhereInput | DeviceScalarWhereInput[]
+  }
+
+  export type PushDeviceUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<PushDeviceCreateWithoutUserInput, PushDeviceUncheckedCreateWithoutUserInput> | PushDeviceCreateWithoutUserInput[] | PushDeviceUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: PushDeviceCreateOrConnectWithoutUserInput | PushDeviceCreateOrConnectWithoutUserInput[]
+    upsert?: PushDeviceUpsertWithWhereUniqueWithoutUserInput | PushDeviceUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: PushDeviceCreateManyUserInputEnvelope
+    set?: PushDeviceWhereUniqueInput | PushDeviceWhereUniqueInput[]
+    disconnect?: PushDeviceWhereUniqueInput | PushDeviceWhereUniqueInput[]
+    delete?: PushDeviceWhereUniqueInput | PushDeviceWhereUniqueInput[]
+    connect?: PushDeviceWhereUniqueInput | PushDeviceWhereUniqueInput[]
+    update?: PushDeviceUpdateWithWhereUniqueWithoutUserInput | PushDeviceUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: PushDeviceUpdateManyWithWhereWithoutUserInput | PushDeviceUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: PushDeviceScalarWhereInput | PushDeviceScalarWhereInput[]
   }
 
   export type CallUncheckedUpdateManyWithoutInitiatorNestedInput = {
@@ -24011,6 +25557,10 @@ export namespace Prisma {
     set?: $Enums.CallStatus
   }
 
+  export type NullableEnumCallEndedReasonFieldUpdateOperationsInput = {
+    set?: $Enums.CallEndedReason | null
+  }
+
   export type ChatUpdateOneRequiredWithoutCallsNestedInput = {
     create?: XOR<ChatCreateWithoutCallsInput, ChatUncheckedCreateWithoutCallsInput>
     connectOrCreate?: ChatCreateOrConnectWithoutCallsInput
@@ -24035,6 +25585,28 @@ export namespace Prisma {
     delete?: UserWhereInput | boolean
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutReceivedCallsInput, UserUpdateWithoutReceivedCallsInput>, UserUncheckedUpdateWithoutReceivedCallsInput>
+  }
+
+  export type UserCreateNestedOneWithoutPushDevicesInput = {
+    create?: XOR<UserCreateWithoutPushDevicesInput, UserUncheckedCreateWithoutPushDevicesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPushDevicesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type EnumPushPlatformFieldUpdateOperationsInput = {
+    set?: $Enums.PushPlatform
+  }
+
+  export type EnumPushProviderFieldUpdateOperationsInput = {
+    set?: $Enums.PushProvider
+  }
+
+  export type UserUpdateOneRequiredWithoutPushDevicesNestedInput = {
+    create?: XOR<UserCreateWithoutPushDevicesInput, UserUncheckedCreateWithoutPushDevicesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutPushDevicesInput
+    upsert?: UserUpsertWithoutPushDevicesInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPushDevicesInput, UserUpdateWithoutPushDevicesInput>, UserUncheckedUpdateWithoutPushDevicesInput>
   }
 
   export type UserCreateNestedOneWithoutFollowersInput = {
@@ -24577,6 +26149,13 @@ export namespace Prisma {
     not?: NestedEnumCallStatusFilter<$PrismaModel> | $Enums.CallStatus
   }
 
+  export type NestedEnumCallEndedReasonNullableFilter<$PrismaModel = never> = {
+    equals?: $Enums.CallEndedReason | EnumCallEndedReasonFieldRefInput<$PrismaModel> | null
+    in?: $Enums.CallEndedReason[] | null
+    notIn?: $Enums.CallEndedReason[] | null
+    not?: NestedEnumCallEndedReasonNullableFilter<$PrismaModel> | $Enums.CallEndedReason | null
+  }
+
   export type NestedEnumCallTypeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.CallType | EnumCallTypeFieldRefInput<$PrismaModel>
     in?: $Enums.CallType[]
@@ -24595,6 +26174,50 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumCallStatusFilter<$PrismaModel>
     _max?: NestedEnumCallStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumCallEndedReasonNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.CallEndedReason | EnumCallEndedReasonFieldRefInput<$PrismaModel> | null
+    in?: $Enums.CallEndedReason[] | null
+    notIn?: $Enums.CallEndedReason[] | null
+    not?: NestedEnumCallEndedReasonNullableWithAggregatesFilter<$PrismaModel> | $Enums.CallEndedReason | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedEnumCallEndedReasonNullableFilter<$PrismaModel>
+    _max?: NestedEnumCallEndedReasonNullableFilter<$PrismaModel>
+  }
+
+  export type NestedEnumPushPlatformFilter<$PrismaModel = never> = {
+    equals?: $Enums.PushPlatform | EnumPushPlatformFieldRefInput<$PrismaModel>
+    in?: $Enums.PushPlatform[]
+    notIn?: $Enums.PushPlatform[]
+    not?: NestedEnumPushPlatformFilter<$PrismaModel> | $Enums.PushPlatform
+  }
+
+  export type NestedEnumPushProviderFilter<$PrismaModel = never> = {
+    equals?: $Enums.PushProvider | EnumPushProviderFieldRefInput<$PrismaModel>
+    in?: $Enums.PushProvider[]
+    notIn?: $Enums.PushProvider[]
+    not?: NestedEnumPushProviderFilter<$PrismaModel> | $Enums.PushProvider
+  }
+
+  export type NestedEnumPushPlatformWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.PushPlatform | EnumPushPlatformFieldRefInput<$PrismaModel>
+    in?: $Enums.PushPlatform[]
+    notIn?: $Enums.PushPlatform[]
+    not?: NestedEnumPushPlatformWithAggregatesFilter<$PrismaModel> | $Enums.PushPlatform
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPushPlatformFilter<$PrismaModel>
+    _max?: NestedEnumPushPlatformFilter<$PrismaModel>
+  }
+
+  export type NestedEnumPushProviderWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.PushProvider | EnumPushProviderFieldRefInput<$PrismaModel>
+    in?: $Enums.PushProvider[]
+    notIn?: $Enums.PushProvider[]
+    not?: NestedEnumPushProviderWithAggregatesFilter<$PrismaModel> | $Enums.PushProvider
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumPushProviderFilter<$PrismaModel>
+    _max?: NestedEnumPushProviderFilter<$PrismaModel>
   }
 
   export type NestedEnumInvitationTypeFilter<$PrismaModel = never> = {
@@ -24854,6 +26477,40 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type PushDeviceCreateWithoutUserInput = {
+    id?: string
+    platform: $Enums.PushPlatform
+    provider: $Enums.PushProvider
+    token: string
+    voipToken?: string | null
+    isActive?: boolean
+    lastSeenAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PushDeviceUncheckedCreateWithoutUserInput = {
+    id?: string
+    platform: $Enums.PushPlatform
+    provider: $Enums.PushProvider
+    token: string
+    voipToken?: string | null
+    isActive?: boolean
+    lastSeenAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PushDeviceCreateOrConnectWithoutUserInput = {
+    where: PushDeviceWhereUniqueInput
+    create: XOR<PushDeviceCreateWithoutUserInput, PushDeviceUncheckedCreateWithoutUserInput>
+  }
+
+  export type PushDeviceCreateManyUserInputEnvelope = {
+    data: PushDeviceCreateManyUserInput | PushDeviceCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type CallCreateWithoutInitiatorInput = {
     id?: string
     type?: $Enums.CallType
@@ -24861,6 +26518,7 @@ export namespace Prisma {
     startedAt?: Date | string | null
     endedAt?: Date | string | null
     duration?: number | null
+    endedReason?: $Enums.CallEndedReason | null
     createdAt?: Date | string
     chat: ChatCreateNestedOneWithoutCallsInput
     receiver?: UserCreateNestedOneWithoutReceivedCallsInput
@@ -24875,6 +26533,7 @@ export namespace Prisma {
     startedAt?: Date | string | null
     endedAt?: Date | string | null
     duration?: number | null
+    endedReason?: $Enums.CallEndedReason | null
     createdAt?: Date | string
   }
 
@@ -24895,6 +26554,7 @@ export namespace Prisma {
     startedAt?: Date | string | null
     endedAt?: Date | string | null
     duration?: number | null
+    endedReason?: $Enums.CallEndedReason | null
     createdAt?: Date | string
     chat: ChatCreateNestedOneWithoutCallsInput
     initiator: UserCreateNestedOneWithoutSentCallsInput
@@ -24909,6 +26569,7 @@ export namespace Prisma {
     startedAt?: Date | string | null
     endedAt?: Date | string | null
     duration?: number | null
+    endedReason?: $Enums.CallEndedReason | null
     createdAt?: Date | string
   }
 
@@ -25399,6 +27060,38 @@ export namespace Prisma {
     lastSeenAt?: DateTimeFilter<"Device"> | Date | string
   }
 
+  export type PushDeviceUpsertWithWhereUniqueWithoutUserInput = {
+    where: PushDeviceWhereUniqueInput
+    update: XOR<PushDeviceUpdateWithoutUserInput, PushDeviceUncheckedUpdateWithoutUserInput>
+    create: XOR<PushDeviceCreateWithoutUserInput, PushDeviceUncheckedCreateWithoutUserInput>
+  }
+
+  export type PushDeviceUpdateWithWhereUniqueWithoutUserInput = {
+    where: PushDeviceWhereUniqueInput
+    data: XOR<PushDeviceUpdateWithoutUserInput, PushDeviceUncheckedUpdateWithoutUserInput>
+  }
+
+  export type PushDeviceUpdateManyWithWhereWithoutUserInput = {
+    where: PushDeviceScalarWhereInput
+    data: XOR<PushDeviceUpdateManyMutationInput, PushDeviceUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type PushDeviceScalarWhereInput = {
+    AND?: PushDeviceScalarWhereInput | PushDeviceScalarWhereInput[]
+    OR?: PushDeviceScalarWhereInput[]
+    NOT?: PushDeviceScalarWhereInput | PushDeviceScalarWhereInput[]
+    id?: StringFilter<"PushDevice"> | string
+    userId?: StringFilter<"PushDevice"> | string
+    platform?: EnumPushPlatformFilter<"PushDevice"> | $Enums.PushPlatform
+    provider?: EnumPushProviderFilter<"PushDevice"> | $Enums.PushProvider
+    token?: StringFilter<"PushDevice"> | string
+    voipToken?: StringNullableFilter<"PushDevice"> | string | null
+    isActive?: BoolFilter<"PushDevice"> | boolean
+    lastSeenAt?: DateTimeFilter<"PushDevice"> | Date | string
+    createdAt?: DateTimeFilter<"PushDevice"> | Date | string
+    updatedAt?: DateTimeFilter<"PushDevice"> | Date | string
+  }
+
   export type CallUpsertWithWhereUniqueWithoutInitiatorInput = {
     where: CallWhereUniqueInput
     update: XOR<CallUpdateWithoutInitiatorInput, CallUncheckedUpdateWithoutInitiatorInput>
@@ -25428,6 +27121,7 @@ export namespace Prisma {
     startedAt?: DateTimeNullableFilter<"Call"> | Date | string | null
     endedAt?: DateTimeNullableFilter<"Call"> | Date | string | null
     duration?: IntNullableFilter<"Call"> | number | null
+    endedReason?: EnumCallEndedReasonNullableFilter<"Call"> | $Enums.CallEndedReason | null
     createdAt?: DateTimeFilter<"Call"> | Date | string
   }
 
@@ -25701,6 +27395,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberCreateNestedManyWithoutUserInput
     messages?: MessageCreateNestedManyWithoutSenderInput
     devices?: DeviceCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceCreateNestedManyWithoutUserInput
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
@@ -25729,6 +27424,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedCreateNestedManyWithoutUserInput
     messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceUncheckedCreateNestedManyWithoutUserInput
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
@@ -25773,6 +27469,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUpdateManyWithoutUserNestedInput
     messages?: MessageUpdateManyWithoutSenderNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUpdateManyWithoutUserNestedInput
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
@@ -25801,6 +27498,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedUpdateManyWithoutUserNestedInput
     messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUncheckedUpdateManyWithoutUserNestedInput
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
@@ -25906,6 +27604,7 @@ export namespace Prisma {
     startedAt?: Date | string | null
     endedAt?: Date | string | null
     duration?: number | null
+    endedReason?: $Enums.CallEndedReason | null
     createdAt?: Date | string
     initiator: UserCreateNestedOneWithoutSentCallsInput
     receiver?: UserCreateNestedOneWithoutReceivedCallsInput
@@ -25920,6 +27619,7 @@ export namespace Prisma {
     startedAt?: Date | string | null
     endedAt?: Date | string | null
     duration?: number | null
+    endedReason?: $Enums.CallEndedReason | null
     createdAt?: Date | string
   }
 
@@ -25947,6 +27647,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberCreateNestedManyWithoutUserInput
     messages?: MessageCreateNestedManyWithoutSenderInput
     devices?: DeviceCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceCreateNestedManyWithoutUserInput
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
@@ -25975,6 +27676,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedCreateNestedManyWithoutUserInput
     messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceUncheckedCreateNestedManyWithoutUserInput
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
@@ -26009,6 +27711,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberCreateNestedManyWithoutUserInput
     messages?: MessageCreateNestedManyWithoutSenderInput
     devices?: DeviceCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceCreateNestedManyWithoutUserInput
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
@@ -26037,6 +27740,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedCreateNestedManyWithoutUserInput
     messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceUncheckedCreateNestedManyWithoutUserInput
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
@@ -26128,6 +27832,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUpdateManyWithoutUserNestedInput
     messages?: MessageUpdateManyWithoutSenderNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUpdateManyWithoutUserNestedInput
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
@@ -26156,6 +27861,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedUpdateManyWithoutUserNestedInput
     messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUncheckedUpdateManyWithoutUserNestedInput
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
@@ -26196,6 +27902,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUpdateManyWithoutUserNestedInput
     messages?: MessageUpdateManyWithoutSenderNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUpdateManyWithoutUserNestedInput
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
@@ -26224,6 +27931,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedUpdateManyWithoutUserNestedInput
     messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUncheckedUpdateManyWithoutUserNestedInput
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
@@ -26290,6 +27998,7 @@ export namespace Prisma {
     createdChats?: ChatCreateNestedManyWithoutCreatorInput
     messages?: MessageCreateNestedManyWithoutSenderInput
     devices?: DeviceCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceCreateNestedManyWithoutUserInput
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
@@ -26318,6 +28027,7 @@ export namespace Prisma {
     createdChats?: ChatUncheckedCreateNestedManyWithoutCreatorInput
     messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceUncheckedCreateNestedManyWithoutUserInput
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
@@ -26407,6 +28117,7 @@ export namespace Prisma {
     createdChats?: ChatUpdateManyWithoutCreatorNestedInput
     messages?: MessageUpdateManyWithoutSenderNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUpdateManyWithoutUserNestedInput
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
@@ -26435,6 +28146,7 @@ export namespace Prisma {
     createdChats?: ChatUncheckedUpdateManyWithoutCreatorNestedInput
     messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUncheckedUpdateManyWithoutUserNestedInput
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
@@ -26502,6 +28214,7 @@ export namespace Prisma {
     createdChats?: ChatCreateNestedManyWithoutCreatorInput
     chatMembers?: ChatMemberCreateNestedManyWithoutUserInput
     devices?: DeviceCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceCreateNestedManyWithoutUserInput
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
@@ -26530,6 +28243,7 @@ export namespace Prisma {
     createdChats?: ChatUncheckedCreateNestedManyWithoutCreatorInput
     chatMembers?: ChatMemberUncheckedCreateNestedManyWithoutUserInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceUncheckedCreateNestedManyWithoutUserInput
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
@@ -26834,6 +28548,7 @@ export namespace Prisma {
     createdChats?: ChatUpdateManyWithoutCreatorNestedInput
     chatMembers?: ChatMemberUpdateManyWithoutUserNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUpdateManyWithoutUserNestedInput
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
@@ -26862,6 +28577,7 @@ export namespace Prisma {
     createdChats?: ChatUncheckedUpdateManyWithoutCreatorNestedInput
     chatMembers?: ChatMemberUncheckedUpdateManyWithoutUserNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUncheckedUpdateManyWithoutUserNestedInput
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
@@ -27077,6 +28793,7 @@ export namespace Prisma {
     createdChats?: ChatCreateNestedManyWithoutCreatorInput
     chatMembers?: ChatMemberCreateNestedManyWithoutUserInput
     messages?: MessageCreateNestedManyWithoutSenderInput
+    pushDevices?: PushDeviceCreateNestedManyWithoutUserInput
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
@@ -27105,6 +28822,7 @@ export namespace Prisma {
     createdChats?: ChatUncheckedCreateNestedManyWithoutCreatorInput
     chatMembers?: ChatMemberUncheckedCreateNestedManyWithoutUserInput
     messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    pushDevices?: PushDeviceUncheckedCreateNestedManyWithoutUserInput
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
@@ -27311,6 +29029,7 @@ export namespace Prisma {
     createdChats?: ChatUpdateManyWithoutCreatorNestedInput
     chatMembers?: ChatMemberUpdateManyWithoutUserNestedInput
     messages?: MessageUpdateManyWithoutSenderNestedInput
+    pushDevices?: PushDeviceUpdateManyWithoutUserNestedInput
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
@@ -27339,6 +29058,7 @@ export namespace Prisma {
     createdChats?: ChatUncheckedUpdateManyWithoutCreatorNestedInput
     chatMembers?: ChatMemberUncheckedUpdateManyWithoutUserNestedInput
     messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    pushDevices?: PushDeviceUncheckedUpdateManyWithoutUserNestedInput
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
@@ -27690,6 +29410,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberCreateNestedManyWithoutUserInput
     messages?: MessageCreateNestedManyWithoutSenderInput
     devices?: DeviceCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceCreateNestedManyWithoutUserInput
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     chats?: ChatCreateNestedManyWithoutUserInput
@@ -27718,6 +29439,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedCreateNestedManyWithoutUserInput
     messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceUncheckedCreateNestedManyWithoutUserInput
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     chats?: ChatUncheckedCreateNestedManyWithoutUserInput
@@ -27819,6 +29541,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUpdateManyWithoutUserNestedInput
     messages?: MessageUpdateManyWithoutSenderNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUpdateManyWithoutUserNestedInput
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     chats?: ChatUpdateManyWithoutUserNestedInput
@@ -27847,6 +29570,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedUpdateManyWithoutUserNestedInput
     messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUncheckedUpdateManyWithoutUserNestedInput
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
@@ -27914,6 +29638,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberCreateNestedManyWithoutUserInput
     messages?: MessageCreateNestedManyWithoutSenderInput
     devices?: DeviceCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceCreateNestedManyWithoutUserInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
     chats?: ChatCreateNestedManyWithoutUserInput
@@ -27942,6 +29667,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedCreateNestedManyWithoutUserInput
     messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceUncheckedCreateNestedManyWithoutUserInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
     chats?: ChatUncheckedCreateNestedManyWithoutUserInput
@@ -27975,6 +29701,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberCreateNestedManyWithoutUserInput
     messages?: MessageCreateNestedManyWithoutSenderInput
     devices?: DeviceCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceCreateNestedManyWithoutUserInput
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
     chats?: ChatCreateNestedManyWithoutUserInput
@@ -28003,6 +29730,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedCreateNestedManyWithoutUserInput
     messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceUncheckedCreateNestedManyWithoutUserInput
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
     chats?: ChatUncheckedCreateNestedManyWithoutUserInput
@@ -28092,6 +29820,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUpdateManyWithoutUserNestedInput
     messages?: MessageUpdateManyWithoutSenderNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUpdateManyWithoutUserNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
     chats?: ChatUpdateManyWithoutUserNestedInput
@@ -28120,6 +29849,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedUpdateManyWithoutUserNestedInput
     messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUncheckedUpdateManyWithoutUserNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
     chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
@@ -28159,6 +29889,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUpdateManyWithoutUserNestedInput
     messages?: MessageUpdateManyWithoutSenderNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUpdateManyWithoutUserNestedInput
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
     chats?: ChatUpdateManyWithoutUserNestedInput
@@ -28187,7 +29918,140 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedUpdateManyWithoutUserNestedInput
     messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUncheckedUpdateManyWithoutUserNestedInput
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
+    messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
+    followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
+    following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
+    profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
+    posts?: PostUncheckedUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUncheckedUpdateManyWithoutAuthorNestedInput
+    postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
+    invitationsSent?: InvitationUncheckedUpdateManyWithoutFromUserNestedInput
+    invitationsReceived?: InvitationUncheckedUpdateManyWithoutToUserNestedInput
+  }
+
+  export type UserCreateWithoutPushDevicesInput = {
+    id?: string
+    name: string
+    email: string
+    isAcivated?: boolean
+    activationLink: string
+    role: $Enums.user_roles
+    password: string
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+    tokens?: TokenCreateNestedManyWithoutUserInput
+    createdChats?: ChatCreateNestedManyWithoutCreatorInput
+    chatMembers?: ChatMemberCreateNestedManyWithoutUserInput
+    messages?: MessageCreateNestedManyWithoutSenderInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    sentCalls?: CallCreateNestedManyWithoutInitiatorInput
+    receivedCalls?: CallCreateNestedManyWithoutReceiverInput
+    messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
+    chats?: ChatCreateNestedManyWithoutUserInput
+    followers?: FollowCreateNestedManyWithoutFollowerInput
+    following?: FollowCreateNestedManyWithoutFollowingInput
+    profile?: ProfileCreateNestedOneWithoutUserInput
+    posts?: PostCreateNestedManyWithoutUserInput
+    authoredPosts?: PostCreateNestedManyWithoutAuthorInput
+    postLikes?: PostLikeCreateNestedManyWithoutUserInput
+    invitationsSent?: InvitationCreateNestedManyWithoutFromUserInput
+    invitationsReceived?: InvitationCreateNestedManyWithoutToUserInput
+  }
+
+  export type UserUncheckedCreateWithoutPushDevicesInput = {
+    id?: string
+    name: string
+    email: string
+    isAcivated?: boolean
+    activationLink: string
+    role: $Enums.user_roles
+    password: string
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+    tokens?: TokenUncheckedCreateNestedManyWithoutUserInput
+    createdChats?: ChatUncheckedCreateNestedManyWithoutCreatorInput
+    chatMembers?: ChatMemberUncheckedCreateNestedManyWithoutUserInput
+    messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
+    receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
+    messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    chats?: ChatUncheckedCreateNestedManyWithoutUserInput
+    followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
+    following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
+    profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
+    posts?: PostUncheckedCreateNestedManyWithoutUserInput
+    authoredPosts?: PostUncheckedCreateNestedManyWithoutAuthorInput
+    postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
+    invitationsSent?: InvitationUncheckedCreateNestedManyWithoutFromUserInput
+    invitationsReceived?: InvitationUncheckedCreateNestedManyWithoutToUserInput
+  }
+
+  export type UserCreateOrConnectWithoutPushDevicesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutPushDevicesInput, UserUncheckedCreateWithoutPushDevicesInput>
+  }
+
+  export type UserUpsertWithoutPushDevicesInput = {
+    update: XOR<UserUpdateWithoutPushDevicesInput, UserUncheckedUpdateWithoutPushDevicesInput>
+    create: XOR<UserCreateWithoutPushDevicesInput, UserUncheckedCreateWithoutPushDevicesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutPushDevicesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutPushDevicesInput, UserUncheckedUpdateWithoutPushDevicesInput>
+  }
+
+  export type UserUpdateWithoutPushDevicesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    isAcivated?: BoolFieldUpdateOperationsInput | boolean
+    activationLink?: StringFieldUpdateOperationsInput | string
+    role?: Enumuser_rolesFieldUpdateOperationsInput | $Enums.user_roles
+    password?: StringFieldUpdateOperationsInput | string
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tokens?: TokenUpdateManyWithoutUserNestedInput
+    createdChats?: ChatUpdateManyWithoutCreatorNestedInput
+    chatMembers?: ChatMemberUpdateManyWithoutUserNestedInput
+    messages?: MessageUpdateManyWithoutSenderNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
+    receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
+    messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    chats?: ChatUpdateManyWithoutUserNestedInput
+    followers?: FollowUpdateManyWithoutFollowerNestedInput
+    following?: FollowUpdateManyWithoutFollowingNestedInput
+    profile?: ProfileUpdateOneWithoutUserNestedInput
+    posts?: PostUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUpdateManyWithoutAuthorNestedInput
+    postLikes?: PostLikeUpdateManyWithoutUserNestedInput
+    invitationsSent?: InvitationUpdateManyWithoutFromUserNestedInput
+    invitationsReceived?: InvitationUpdateManyWithoutToUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutPushDevicesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    isAcivated?: BoolFieldUpdateOperationsInput | boolean
+    activationLink?: StringFieldUpdateOperationsInput | string
+    role?: Enumuser_rolesFieldUpdateOperationsInput | $Enums.user_roles
+    password?: StringFieldUpdateOperationsInput | string
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tokens?: TokenUncheckedUpdateManyWithoutUserNestedInput
+    createdChats?: ChatUncheckedUpdateManyWithoutCreatorNestedInput
+    chatMembers?: ChatMemberUncheckedUpdateManyWithoutUserNestedInput
+    messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
+    receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
     chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
     followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
@@ -28215,6 +30079,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberCreateNestedManyWithoutUserInput
     messages?: MessageCreateNestedManyWithoutSenderInput
     devices?: DeviceCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceCreateNestedManyWithoutUserInput
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
@@ -28243,6 +30108,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedCreateNestedManyWithoutUserInput
     messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceUncheckedCreateNestedManyWithoutUserInput
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
@@ -28276,6 +30142,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberCreateNestedManyWithoutUserInput
     messages?: MessageCreateNestedManyWithoutSenderInput
     devices?: DeviceCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceCreateNestedManyWithoutUserInput
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
@@ -28304,6 +30171,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedCreateNestedManyWithoutUserInput
     messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceUncheckedCreateNestedManyWithoutUserInput
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
@@ -28348,6 +30216,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUpdateManyWithoutUserNestedInput
     messages?: MessageUpdateManyWithoutSenderNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUpdateManyWithoutUserNestedInput
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
@@ -28376,6 +30245,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedUpdateManyWithoutUserNestedInput
     messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUncheckedUpdateManyWithoutUserNestedInput
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
@@ -28415,6 +30285,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUpdateManyWithoutUserNestedInput
     messages?: MessageUpdateManyWithoutSenderNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUpdateManyWithoutUserNestedInput
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
@@ -28443,6 +30314,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedUpdateManyWithoutUserNestedInput
     messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUncheckedUpdateManyWithoutUserNestedInput
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
@@ -28471,6 +30343,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberCreateNestedManyWithoutUserInput
     messages?: MessageCreateNestedManyWithoutSenderInput
     devices?: DeviceCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceCreateNestedManyWithoutUserInput
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
@@ -28499,6 +30372,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedCreateNestedManyWithoutUserInput
     messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceUncheckedCreateNestedManyWithoutUserInput
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
@@ -28543,6 +30417,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUpdateManyWithoutUserNestedInput
     messages?: MessageUpdateManyWithoutSenderNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUpdateManyWithoutUserNestedInput
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
@@ -28571,6 +30446,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedUpdateManyWithoutUserNestedInput
     messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUncheckedUpdateManyWithoutUserNestedInput
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
@@ -28599,6 +30475,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberCreateNestedManyWithoutUserInput
     messages?: MessageCreateNestedManyWithoutSenderInput
     devices?: DeviceCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceCreateNestedManyWithoutUserInput
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
@@ -28627,6 +30504,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedCreateNestedManyWithoutUserInput
     messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceUncheckedCreateNestedManyWithoutUserInput
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
@@ -28660,6 +30538,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberCreateNestedManyWithoutUserInput
     messages?: MessageCreateNestedManyWithoutSenderInput
     devices?: DeviceCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceCreateNestedManyWithoutUserInput
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
@@ -28688,6 +30567,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedCreateNestedManyWithoutUserInput
     messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceUncheckedCreateNestedManyWithoutUserInput
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
@@ -28839,6 +30719,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUpdateManyWithoutUserNestedInput
     messages?: MessageUpdateManyWithoutSenderNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUpdateManyWithoutUserNestedInput
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
@@ -28867,6 +30748,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedUpdateManyWithoutUserNestedInput
     messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUncheckedUpdateManyWithoutUserNestedInput
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
@@ -28906,6 +30788,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUpdateManyWithoutUserNestedInput
     messages?: MessageUpdateManyWithoutSenderNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUpdateManyWithoutUserNestedInput
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
@@ -28934,6 +30817,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedUpdateManyWithoutUserNestedInput
     messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUncheckedUpdateManyWithoutUserNestedInput
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
@@ -29078,6 +30962,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberCreateNestedManyWithoutUserInput
     messages?: MessageCreateNestedManyWithoutSenderInput
     devices?: DeviceCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceCreateNestedManyWithoutUserInput
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
@@ -29106,6 +30991,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedCreateNestedManyWithoutUserInput
     messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceUncheckedCreateNestedManyWithoutUserInput
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
@@ -29195,6 +31081,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUpdateManyWithoutUserNestedInput
     messages?: MessageUpdateManyWithoutSenderNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUpdateManyWithoutUserNestedInput
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
@@ -29223,6 +31110,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedUpdateManyWithoutUserNestedInput
     messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUncheckedUpdateManyWithoutUserNestedInput
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
@@ -29251,6 +31139,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberCreateNestedManyWithoutUserInput
     messages?: MessageCreateNestedManyWithoutSenderInput
     devices?: DeviceCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceCreateNestedManyWithoutUserInput
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
@@ -29279,6 +31168,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedCreateNestedManyWithoutUserInput
     messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceUncheckedCreateNestedManyWithoutUserInput
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
@@ -29312,6 +31202,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberCreateNestedManyWithoutUserInput
     messages?: MessageCreateNestedManyWithoutSenderInput
     devices?: DeviceCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceCreateNestedManyWithoutUserInput
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
@@ -29340,6 +31231,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedCreateNestedManyWithoutUserInput
     messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceUncheckedCreateNestedManyWithoutUserInput
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
@@ -29384,6 +31276,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUpdateManyWithoutUserNestedInput
     messages?: MessageUpdateManyWithoutSenderNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUpdateManyWithoutUserNestedInput
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
@@ -29412,6 +31305,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedUpdateManyWithoutUserNestedInput
     messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUncheckedUpdateManyWithoutUserNestedInput
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
@@ -29451,6 +31345,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUpdateManyWithoutUserNestedInput
     messages?: MessageUpdateManyWithoutSenderNestedInput
     devices?: DeviceUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUpdateManyWithoutUserNestedInput
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
@@ -29479,6 +31374,7 @@ export namespace Prisma {
     chatMembers?: ChatMemberUncheckedUpdateManyWithoutUserNestedInput
     messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUncheckedUpdateManyWithoutUserNestedInput
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
@@ -29558,6 +31454,18 @@ export namespace Prisma {
     lastSeenAt?: Date | string
   }
 
+  export type PushDeviceCreateManyUserInput = {
+    id?: string
+    platform: $Enums.PushPlatform
+    provider: $Enums.PushProvider
+    token: string
+    voipToken?: string | null
+    isActive?: boolean
+    lastSeenAt?: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type CallCreateManyInitiatorInput = {
     id?: string
     chatId: string
@@ -29567,6 +31475,7 @@ export namespace Prisma {
     startedAt?: Date | string | null
     endedAt?: Date | string | null
     duration?: number | null
+    endedReason?: $Enums.CallEndedReason | null
     createdAt?: Date | string
   }
 
@@ -29579,6 +31488,7 @@ export namespace Prisma {
     startedAt?: Date | string | null
     endedAt?: Date | string | null
     duration?: number | null
+    endedReason?: $Enums.CallEndedReason | null
     createdAt?: Date | string
   }
 
@@ -29889,6 +31799,42 @@ export namespace Prisma {
     lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type PushDeviceUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    platform?: EnumPushPlatformFieldUpdateOperationsInput | $Enums.PushPlatform
+    provider?: EnumPushProviderFieldUpdateOperationsInput | $Enums.PushProvider
+    token?: StringFieldUpdateOperationsInput | string
+    voipToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PushDeviceUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    platform?: EnumPushPlatformFieldUpdateOperationsInput | $Enums.PushPlatform
+    provider?: EnumPushProviderFieldUpdateOperationsInput | $Enums.PushProvider
+    token?: StringFieldUpdateOperationsInput | string
+    voipToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PushDeviceUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    platform?: EnumPushPlatformFieldUpdateOperationsInput | $Enums.PushPlatform
+    provider?: EnumPushProviderFieldUpdateOperationsInput | $Enums.PushProvider
+    token?: StringFieldUpdateOperationsInput | string
+    voipToken?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    lastSeenAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type CallUpdateWithoutInitiatorInput = {
     id?: StringFieldUpdateOperationsInput | string
     type?: EnumCallTypeFieldUpdateOperationsInput | $Enums.CallType
@@ -29896,6 +31842,7 @@ export namespace Prisma {
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    endedReason?: NullableEnumCallEndedReasonFieldUpdateOperationsInput | $Enums.CallEndedReason | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatUpdateOneRequiredWithoutCallsNestedInput
     receiver?: UserUpdateOneWithoutReceivedCallsNestedInput
@@ -29910,6 +31857,7 @@ export namespace Prisma {
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    endedReason?: NullableEnumCallEndedReasonFieldUpdateOperationsInput | $Enums.CallEndedReason | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -29922,6 +31870,7 @@ export namespace Prisma {
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    endedReason?: NullableEnumCallEndedReasonFieldUpdateOperationsInput | $Enums.CallEndedReason | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -29932,6 +31881,7 @@ export namespace Prisma {
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    endedReason?: NullableEnumCallEndedReasonFieldUpdateOperationsInput | $Enums.CallEndedReason | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatUpdateOneRequiredWithoutCallsNestedInput
     initiator?: UserUpdateOneRequiredWithoutSentCallsNestedInput
@@ -29946,6 +31896,7 @@ export namespace Prisma {
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    endedReason?: NullableEnumCallEndedReasonFieldUpdateOperationsInput | $Enums.CallEndedReason | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -29958,6 +31909,7 @@ export namespace Prisma {
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    endedReason?: NullableEnumCallEndedReasonFieldUpdateOperationsInput | $Enums.CallEndedReason | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -30287,6 +32239,7 @@ export namespace Prisma {
     startedAt?: Date | string | null
     endedAt?: Date | string | null
     duration?: number | null
+    endedReason?: $Enums.CallEndedReason | null
     createdAt?: Date | string
   }
 
@@ -30391,6 +32344,7 @@ export namespace Prisma {
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    endedReason?: NullableEnumCallEndedReasonFieldUpdateOperationsInput | $Enums.CallEndedReason | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     initiator?: UserUpdateOneRequiredWithoutSentCallsNestedInput
     receiver?: UserUpdateOneWithoutReceivedCallsNestedInput
@@ -30405,6 +32359,7 @@ export namespace Prisma {
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    endedReason?: NullableEnumCallEndedReasonFieldUpdateOperationsInput | $Enums.CallEndedReason | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -30417,6 +32372,7 @@ export namespace Prisma {
     startedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     endedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     duration?: NullableIntFieldUpdateOperationsInput | number | null
+    endedReason?: NullableEnumCallEndedReasonFieldUpdateOperationsInput | $Enums.CallEndedReason | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

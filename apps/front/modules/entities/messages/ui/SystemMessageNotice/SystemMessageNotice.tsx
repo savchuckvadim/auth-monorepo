@@ -12,6 +12,8 @@ export function SystemMessageNotice({
     content,
     className,
 }: SystemMessageNoticeProps) {
+    const isCallHistoryEvent = /звонок|недозвонились|пропущенный/i.test(content);
+
     return (
         <div
             className={cn(
@@ -19,8 +21,13 @@ export function SystemMessageNotice({
                 className,
             )}
         >
-            <p className="max-w-[min(100%,28rem)] text-xs leading-snug text-muted-foreground">
-                {content}
+            <p
+                className={cn(
+                    'max-w-[min(100%,28rem)] text-xs leading-snug text-muted-foreground',
+                    isCallHistoryEvent && 'rounded-full bg-muted px-3 py-1',
+                )}
+            >
+                {isCallHistoryEvent ? `Звонок: ${content}` : content}
             </p>
         </div>
     );

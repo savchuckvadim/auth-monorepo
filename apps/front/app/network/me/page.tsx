@@ -1,16 +1,18 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-import { useAuth } from '@/modules/processes';
+import dynamicImport from 'next/dynamic';
+import { useAuth } from '@/modules/processes/auth/lib/hooks/auth.hook';
 import { LoadingComponent } from '@/modules/shared/ui/Loading/ui/LoadingComponent';
 
+export const dynamic = 'force-dynamic';
 
 
-const DynamicProfileInformation = dynamic(() => import('@/modules/widgets/profile/information/ui/ProfileInformation').then(mod => mod.default), {
+
+const DynamicProfileInformation = dynamicImport(() => import('@/modules/widgets/profile/information/ui/ProfileInformation').then(mod => mod.default), {
     ssr: false
 });
 
-const DynamicProfilePosts = dynamic(() => import('@/modules/widgets/profile/posts/ProfilePosts').then(mod => mod.default), {
+const DynamicProfilePosts = dynamicImport(() => import('@/modules/widgets/profile/posts/ProfilePosts').then(mod => mod.default), {
     ssr: false,
     loading: () => <LoadingComponent />
 });

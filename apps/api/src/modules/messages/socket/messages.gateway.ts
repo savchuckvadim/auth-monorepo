@@ -23,6 +23,7 @@ import {
 import { ChatReadEvent, MessageCreatedEvent } from '../events/message.events';
 import { MessageEvent } from '../type/message-event.type';
 import { getErrorMessage } from '../lib/get-error-message';
+import { PushDispatchService } from '@/modules/notifications/push/push-dispatch.service';
 
 /** Retransmit persisted message; clients decrypt when isEncrypted. */
 type BroadcastMessage = Pick<
@@ -59,6 +60,7 @@ export class MessagesGateway
         private readonly chatsRepository: ChatsRepository,
         private readonly notificationsGateway: NotificationsGateway,
         private readonly socketStorage: SocketStorageService,
+        private readonly pushDispatchService: PushDispatchService,
     ) {}
 
     async handleConnection(client: Socket) {
@@ -130,18 +132,38 @@ export class MessagesGateway
             }
         }
 
-        chatMembers.forEach(member => {
+        for (const member of chatMembers) {
             if (member.userId !== senderId) {
-                this.notificationsGateway.notifyNewMessage(member.userId, {
+                const memberSockets = await this.socketStorage.getUserSockets(
+                    member.userId,
+                );
+                const payload = {
                     id: message.id,
                     chatId,
                     content: message.isEncrypted
                         ? '[E2EE message]'
                         : message.content,
                     sender: message.sender || { name: 'Пользователь' },
-                });
+                };
+
+                if (memberSockets.length > 0) {
+                    this.notificationsGateway.notifyNewMessage(
+                        member.userId,
+                        payload,
+                    );
+                } else {
+                    await this.pushDispatchService.sendToUser(member.userId, {
+                        title: payload.sender.name,
+                        body: payload.content,
+                        data: {
+                            type: 'new_message',
+                            messageId: payload.id,
+                            chatId: payload.chatId,
+                        },
+                    });
+                }
             }
-        });
+        }
     }
 
     @SubscribeMessage(MessagesWsClientEvent.SEND)

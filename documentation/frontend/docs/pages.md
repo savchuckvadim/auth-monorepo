@@ -190,7 +190,7 @@ app/
 - Отображение истории сообщений
 - Отправка сообщений
 - Real-time обновления через WebSocket
-- Секретные чаты (WebRTC)
+- Приватные чаты с **Signal E2EE** (`encryptionMode: SIGNAL`) — см. [Signal E2EE](./encryption/signal-e2ee-messenger.md)
 
 ---
 

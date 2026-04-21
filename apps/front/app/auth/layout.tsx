@@ -1,7 +1,7 @@
 'use client';
 
 import { useApp } from '@/modules/app';
-import { LoadingScreen } from '@/modules/shared';
+import { LoadingScreen } from '@/modules/shared/ui';
 import { AuthHeader } from '@/modules/shared/ui/AuthHeader';
 import Image from 'next/image';
 

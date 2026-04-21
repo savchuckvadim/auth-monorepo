@@ -238,7 +238,21 @@ exports.Prisma.CallScalarFieldEnum = {
   startedAt: 'startedAt',
   endedAt: 'endedAt',
   duration: 'duration',
+  endedReason: 'endedReason',
   createdAt: 'createdAt'
+};
+
+exports.Prisma.PushDeviceScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  platform: 'platform',
+  provider: 'provider',
+  token: 'token',
+  voipToken: 'voipToken',
+  isActive: 'isActive',
+  lastSeenAt: 'lastSeenAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.FollowScalarFieldEnum = {
@@ -388,6 +402,13 @@ exports.Prisma.CallOrderByRelevanceFieldEnum = {
   receiverId: 'receiverId'
 };
 
+exports.Prisma.PushDeviceOrderByRelevanceFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  token: 'token',
+  voipToken: 'voipToken'
+};
+
 exports.Prisma.FollowOrderByRelevanceFieldEnum = {
   id: 'id',
   followerId: 'followerId',
@@ -484,6 +505,27 @@ exports.CallStatus = exports.$Enums.CallStatus = {
   ENDED: 'ENDED'
 };
 
+exports.CallEndedReason = exports.$Enums.CallEndedReason = {
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED',
+  MISSED: 'MISSED',
+  CANCELED: 'CANCELED',
+  FAILED: 'FAILED',
+  TIMEOUT: 'TIMEOUT'
+};
+
+exports.PushPlatform = exports.$Enums.PushPlatform = {
+  IOS: 'IOS',
+  ANDROID: 'ANDROID',
+  WEB: 'WEB'
+};
+
+exports.PushProvider = exports.$Enums.PushProvider = {
+  FCM: 'FCM',
+  APNS: 'APNS',
+  APNS_VOIP: 'APNS_VOIP'
+};
+
 exports.InvitationType = exports.$Enums.InvitationType = {
   SECRET_PRIVATE: 'SECRET_PRIVATE',
   GROUP_JOIN: 'GROUP_JOIN'
@@ -507,6 +549,7 @@ exports.Prisma.ModelName = {
   OneTimePreKey: 'OneTimePreKey',
   MessageReadStatus: 'MessageReadStatus',
   Call: 'Call',
+  PushDevice: 'PushDevice',
   Follow: 'Follow',
   Profile: 'Profile',
   Post: 'Post',

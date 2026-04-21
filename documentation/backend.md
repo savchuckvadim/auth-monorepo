@@ -19,6 +19,8 @@ Backend API для социальной сети Sociopath Network, постро
 9. **[Swagger](./backend/docs/swagger.md)** - API документация и интеграция с Orval
 10. **[Модули](./backend/docs/modules.md)** - описание всех модулей (user, post, chat, message и т.д.)
 11. **[Добавление модуля](./backend/docs/adding-module.md)** - инструкция по созданию нового модуля
+12. **[Signal E2EE и mobile push](./backend/docs/encryption/signal-e2ee-and-mobile-push.md)** - ключи Signal, ciphertext в сообщениях, FCM / APNS / VoIP для «спящих» клиентов
+13. **[Звонки и mobile push (статус интеграции)](./backend/docs/calls-push-integration.md)** - чеклист сделано/осталось, env, ссылки на API
 
 ## Технологический стек
 
@@ -33,6 +35,8 @@ Backend API для социальной сети Sociopath Network, постро
 - **JWT** - аутентификация
 - **AWS S3** - хранение файлов
 - **Swagger** - документация API
+- **firebase-admin** - отправка push через FCM (модуль notifications)
+- **apn** - Apple Push Notification (обычные и VoIP-токены)
 
 Подробнее см. [Документацию по стеку](./backend/docs/stack.md).
 
@@ -107,3 +111,4 @@ pnpm dev
 - [Frontend документация](./frontend.md)
 - [Swagger API](https://api.sociopath-network.ru/docs/api)
 - [Задачи](./backend/tasks/tasks.md) - список задач для выполнения
+- [Звонки и mobile push (чеклист)](./backend/docs/calls-push-integration.md)

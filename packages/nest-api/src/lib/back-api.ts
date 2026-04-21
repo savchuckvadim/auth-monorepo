@@ -8,8 +8,8 @@ import { dispatchAuthSessionExpired } from './auth-session-expired';
 // ХАРДКОД
 // В браузере Next.js заменяет process.env.NEXT_PUBLIC_API_URL на строковое значение
 // Если переменная не установлена, используется дефолт
-// const url = 'https://api.sociopath-network.ru';
-const url = 'http://localhost:3000';
+const url = 'https://api.sociopath-network.ru';
+// const url = 'http://localhost:3000';
 
 export interface IBackResponse<T> {
     resultCode: EResultCode; // 0 - успех, 1 - ошибка

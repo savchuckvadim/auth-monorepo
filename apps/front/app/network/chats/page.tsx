@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useAuth } from '@/modules/processes';
+import { useAuth } from '@/modules/processes/auth/lib/hooks/auth.hook';
 import { LoadingScreen } from '@/modules/shared/ui';
 import { ChatMessagesWidget, ChatInputWidget, CreateChatDialogWidget } from '@/modules/widgets/chat';
 import { useUserChats, useCreateChat, useMarkChatAsRead, useChatSocket, useSendMessage } from '@/modules/entities/chats';
 import { scrollToBottom } from '@/modules/entities/messages/lib/utils/scroll-to-bottom.util';
 import { Chat, ChatType, CreateChat } from '@/modules/entities/chats';
 import { useAllUsers } from '@/modules/entities/followers';
-import { ChatDtoEncryptionMode, ChatMemberDto, CreateChatDto } from '@workspace/nest-api';
+import { ChatDtoEncryptionMode, CreateChatDto } from '@workspace/nest-api';
 //TODO: страница чатов не используется и надо ее удалить теперь в чат попадаем через chat/[chatId]
 
 
@@ -116,7 +116,6 @@ export default function ChatsPage() {
             return next;
         });
     };
-    const otherUserId = selectedChat?.members?.find((m: ChatMemberDto) => m.userId !== currentUser?.id)?.userId || '';
     return (
         <div className="md:h-[88vh] h-[calc(100dvh-10rem)] bg-background flex overflow-hidden border-2 rounded-3xl">
 

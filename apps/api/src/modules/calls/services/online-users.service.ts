@@ -34,4 +34,8 @@ export class OnlineUsersService {
     hasUser(socketId: string): boolean {
         return this.socketToUserId.has(socketId);
     }
+
+    isUserOnline(userId: string): boolean {
+        return this.userIdToSocket.has(userId);
+    }
 }

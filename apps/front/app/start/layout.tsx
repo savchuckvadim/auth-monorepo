@@ -1,4 +1,4 @@
-import { LoadingScreen } from "@/modules/shared";
+import { LoadingScreen } from "@/modules/shared/ui";
 // import "@/styles/globals.css";
 import { Metadata } from "next";
 import Image from "next/image";
