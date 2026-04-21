@@ -25,6 +25,8 @@ model User {
   createdChats  Chat[]              @relation("ChatCreator")
   chatMembers   ChatMember[]
   messages      Message[]
+  devices       Device[]
+  pushDevices   PushDevice[]
   sentCalls     Call[]              @relation("CallInitiator")
   receivedCalls Call[]              @relation("CallReceiver")
   messageReads  MessageReadStatus[]
@@ -41,6 +43,9 @@ model User {
   posts         Post[]     @relation("PostWall")
   authoredPosts Post[]     @relation("PostAuthor")
   postLikes     PostLike[]
+
+  invitationsSent     Invitation[] @relation("InvitationsSent")
+  invitationsReceived Invitation[] @relation("InvitationsReceived")
 
   @@unique([email])
   @@map("users")
@@ -68,14 +73,20 @@ enum user_roles {
 // Messenger models
 
 model Chat {
-  id          String   @id @default(uuid())
-  type        ChatType @default(PRIVATE)
-  name        String?  @db.VarChar(255) // Для групповых чатов
-  description String?  @db.Text // Для групповых чатов
-  avatar      String?  @db.VarChar(500) // URL аватара
-  createdBy   String   @map("created_by") @db.VarChar(255)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String             @id @default(uuid())
+  type           ChatType           @default(PRIVATE)
+  encryptionMode ChatEncryptionMode @default(NONE) @map("encryption_mode")
+  name           String?            @db.VarChar(255) // Для групповых чатов
+  description    String?            @db.Text // Для групповых чатов
+  avatar         String?            @db.VarChar(500) // URL аватара
+  createdBy      String             @map("created_by") @db.VarChar(255)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  /// Auto-delete each message after N seconds (optional; 0 = off). Client + jobs should enforce.
+  disappearingMessageSeconds Int?      @map("disappearing_message_seconds")
+  /// When set, entire chat is deleted at this time (optional).
+  scheduledDeletionAt        DateTime? @map("scheduled_deletion_at")
 
   members  ChatMember[]
   messages Message[]
@@ -86,6 +97,7 @@ model Chat {
   userId  String?
 
   @@index([type])
+  @@index([encryptionMode])
   @@index([createdAt])
   @@map("chats")
 }
@@ -123,16 +135,89 @@ model Message {
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 
+  /// When set, message is permanently removed after this instant (disappearing messages).
+  expiresAt DateTime? @map("expires_at")
+
+  // E2EE (Signal): when isEncrypted, content holds ciphertext (base64); optional per-device fan-out
+  isEncrypted       Boolean @default(false) @map("is_encrypted")
+  toDeviceId        String? @map("to_device_id") @db.VarChar(255)
+  senderDeviceId    String? @map("sender_device_id") @db.VarChar(255)
+  signalMessageType String? @map("signal_message_type") @db.VarChar(50)
+  registrationId    Int?    @map("registration_id")
+
   chat       Chat                @relation(fields: [chatId], references: [id], onDelete: Cascade)
   sender     User                @relation(fields: [senderId], references: [id], onDelete: Cascade)
   replyTo    Message?            @relation("MessageReply", fields: [replyToId], references: [id], onDelete: SetNull)
   replies    Message[]           @relation("MessageReply")
   readStatus MessageReadStatus[]
+  toDevice   Device?             @relation("MessageTargetDevice", fields: [toDeviceId], references: [id], onDelete: SetNull)
+  fromDevice Device?             @relation("MessageSenderDevice", fields: [senderDeviceId], references: [id], onDelete: SetNull)
 
   @@index([chatId, createdAt])
   @@index([senderId])
   @@index([replyToId])
+  @@index([isEncrypted])
+  @@index([toDeviceId])
+  @@index([senderDeviceId])
   @@map("messages")
+}
+
+/// Client-registered device for Signal E2EE (multi-device)
+model Device {
+  id                 String    @id @default(uuid())
+  userId             String    @map("user_id") @db.VarChar(255)
+  clientDeviceId     String    @unique @map("client_device_id") @db.VarChar(255)
+  name               String?   @db.VarChar(255)
+  type               String    @db.VarChar(50)
+  registrationId     Int       @map("registration_id")
+  identityKey        String    @map("identity_key") @db.Text
+  signedPreKey       String    @map("signed_pre_key") @db.Text
+  signedPreKeySig    String    @map("signed_pre_key_sig") @db.Text
+  signedPreKeyExpiry DateTime? @map("signed_pre_key_expiry")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+  lastSeenAt         DateTime  @default(now()) @map("last_seen_at")
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  preKeys        PreKey[]
+  otPreKeys      OneTimePreKey[]
+  targetMessages Message[]       @relation("MessageTargetDevice")
+  sentMessages   Message[]       @relation("MessageSenderDevice")
+
+  @@unique([userId, clientDeviceId])
+  @@index([userId])
+  @@index([clientDeviceId])
+  @@map("devices")
+}
+
+model PreKey {
+  id        String   @id @default(uuid())
+  deviceId  String   @map("device_id") @db.VarChar(255)
+  keyId     Int      @map("key_id")
+  publicKey String   @map("public_key") @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@unique([deviceId, keyId])
+  @@index([deviceId])
+  @@map("prekeys")
+}
+
+model OneTimePreKey {
+  id        String    @id @default(uuid())
+  deviceId  String    @map("device_id") @db.VarChar(255)
+  keyId     Int       @map("key_id")
+  publicKey String    @map("public_key") @db.Text
+  createdAt DateTime  @default(now()) @map("created_at")
+  usedAt    DateTime? @map("used_at")
+
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@unique([deviceId, keyId])
+  @@index([deviceId])
+  @@index([usedAt])
+  @@map("one_time_prekeys")
 }
 
 model MessageReadStatus {
@@ -151,16 +236,17 @@ model MessageReadStatus {
 }
 
 model Call {
-  id          String     @id @default(uuid())
-  chatId      String     @map("chat_id") @db.VarChar(255)
-  initiatorId String     @map("initiator_id") @db.VarChar(255)
-  receiverId  String?    @map("receiver_id") @db.VarChar(255)
-  type        CallType   @default(VIDEO)
-  status      CallStatus @default(INITIATED)
-  startedAt   DateTime?  @map("started_at")
-  endedAt     DateTime?  @map("ended_at")
+  id          String           @id @default(uuid())
+  chatId      String           @map("chat_id") @db.VarChar(255)
+  initiatorId String           @map("initiator_id") @db.VarChar(255)
+  receiverId  String?          @map("receiver_id") @db.VarChar(255)
+  type        CallType         @default(VIDEO)
+  status      CallStatus       @default(INITIATED)
+  startedAt   DateTime?        @map("started_at")
+  endedAt     DateTime?        @map("ended_at")
   duration    Int? // Длительность в секундах
-  createdAt   DateTime   @default(now())
+  endedReason CallEndedReason? @map("ended_reason")
+  createdAt   DateTime         @default(now())
 
   chat      Chat  @relation(fields: [chatId], references: [id], onDelete: Cascade)
   initiator User  @relation("CallInitiator", fields: [initiatorId], references: [id], onDelete: Cascade)
@@ -176,6 +262,12 @@ enum ChatType {
   PRIVATE
   GROUP
   SECRET
+}
+
+/// Orthogonal to ChatType: messenger E2EE vs plaintext-at-rest on server
+enum ChatEncryptionMode {
+  NONE
+  SIGNAL
 }
 
 enum ChatMemberRole {
@@ -205,6 +297,46 @@ enum CallStatus {
   REJECTED
   MISSED
   ENDED
+}
+
+enum CallEndedReason {
+  ACCEPTED
+  REJECTED
+  MISSED
+  CANCELED
+  FAILED
+  TIMEOUT
+}
+
+enum PushPlatform {
+  IOS
+  ANDROID
+  WEB
+}
+
+enum PushProvider {
+  FCM
+  APNS
+  APNS_VOIP
+}
+
+model PushDevice {
+  id         String       @id @default(uuid())
+  userId     String       @map("user_id") @db.VarChar(255)
+  platform   PushPlatform
+  provider   PushProvider
+  token      String       @unique @db.VarChar(512)
+  voipToken  String?      @map("voip_token") @db.VarChar(512)
+  isActive   Boolean      @default(true) @map("is_active")
+  lastSeenAt DateTime     @default(now()) @map("last_seen_at")
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isActive])
+  @@index([platform, provider])
+  @@map("push_devices")
 }
 
 // Followers model
@@ -286,4 +418,35 @@ model PostLike {
   @@index([postId])
   @@index([userId])
   @@map("post_likes")
+}
+
+enum InvitationType {
+  SECRET_PRIVATE
+  GROUP_JOIN
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+model Invitation {
+  id             String           @id @default(uuid())
+  type           InvitationType
+  status         InvitationStatus @default(PENDING)
+  fromUserId     String           @map("from_user_id") @db.VarChar(255)
+  toUserId       String           @map("to_user_id") @db.VarChar(255)
+  payload        Json?
+  resolvedChatId String?          @map("resolved_chat_id") @db.VarChar(255)
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  fromUser User @relation("InvitationsSent", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser   User @relation("InvitationsReceived", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  @@index([toUserId, status])
+  @@index([fromUserId])
+  @@map("invitations")
 }

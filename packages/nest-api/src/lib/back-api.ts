@@ -1,4 +1,5 @@
-import axios, { Method } from 'axios';
+import axios, { type InternalAxiosRequestConfig, Method } from 'axios';
+import { dispatchAuthSessionExpired } from './auth-session-expired';
 
 // URL бэкенда из переменной окружения
 // Для Next.js используем NEXT_PUBLIC_ префикс (доступно в браузере)
@@ -23,61 +24,70 @@ export enum EResultCode {
     ERROR = 1,
 }
 
-const headers = {
-    'content-type': 'application/json',
-    'X-BACK-API-KEY': '',
-};
-
 const $api = axios.create({
     baseURL: url,
     withCredentials: true,
-    headers: headers,
+    headers: {},
 });
 
-// ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА - логируем baseURL при создании инстанса
-// // // 🔐 автоматически добавляем JWT
-// $api.interceptors.request.use((config) => {
-//     const token = localStorage.getItem(AUTH_TOKEN_NAME);
-//     if (token) {
-//         config.headers.Authorization = `Bearer ${token}`;
-//     }
-//     return config;
-// });
-$api.interceptors.response.use((response) => {
-    return response;
-}, async (error) => {
-    console.log(error.response.request.responseURL);
-    const isRefresh = error.response.request.responseURL.includes('auth/refresh');
+$api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+    const method = (config.method ?? 'get').toLowerCase();
+    if (['post', 'put', 'patch', 'delete'].includes(method)) {
+        config.headers.set('Content-Type', 'application/json');
+    }
+    config.headers.set('Cache-Control', 'no-cache');
+    config.headers.set('Pragma', 'no-cache');
+    return config;
+});
 
-    if (error.response.status === 401 && error.config && !isRefresh) {
+function isRefreshRequestUrl(configUrl: string, responseUrl: string): boolean {
+    const u = `${responseUrl} ${configUrl}`;
+    return u.includes('auth/refresh');
+}
 
-        const originalRequest = error.config;
+$api.interceptors.response.use(
+    response => response,
+    async error => {
+        const status = error.response?.status;
+        const responseURL = String(error.response?.request?.responseURL ?? '');
+        const configUrl = String(error.config?.url ?? '');
+        const refreshCall = isRefreshRequestUrl(configUrl, responseURL);
 
-        originalRequest._isRetry = true; // TODO: не работает как в видосе
-
-        try {
-            const res = await $api.post('/api/auth/refresh');
-            if (res.data.resultCode === EResultCode.SUCCESS) {
-
-                return $api(originalRequest);
-            }
-
-        } catch (e) {
-
-
-            console.log('НЕ АВТОРИЗОВАН');
+        if (status === 401 && refreshCall) {
+            dispatchAuthSessionExpired();
+            return Promise.reject(error);
         }
 
-    }
-    throw error;
-});
+        if (status === 401 && error.config && !refreshCall) {
+            const originalRequest = error.config as typeof error.config & {
+                _retry?: boolean;
+            };
+            if (originalRequest._retry) {
+                dispatchAuthSessionExpired();
+                return Promise.reject(error);
+            }
+            originalRequest._retry = true;
 
-export const customAxios = async<T>({
+            try {
+                const res = await $api.post('/api/auth/refresh');
+                if (res.data.resultCode === EResultCode.SUCCESS) {
+                    return $api(originalRequest);
+                }
+                dispatchAuthSessionExpired();
+            } catch {
+                dispatchAuthSessionExpired();
+            }
+        }
+        return Promise.reject(error);
+    },
+);
+
+export const customAxios = async <T>({
     url,
     method,
     data,
     params,
-    headers,
+    headers: reqHeaders,
 }: {
     url: string;
     method: Method;
@@ -85,14 +95,12 @@ export const customAxios = async<T>({
     params?: any;
     headers?: any;
 }): Promise<T> => {
-    // // Orval всегда ждёт, что mutator возвращает **данные**, а не { resultCode, data }
-
     const res = await $api.request<IBackResponse<T>>({
         url,
         method: method as Method,
         data,
-        params, // 🔹 вот здесь axios сам превращает объект в query string
-        headers,
+        params,
+        headers: reqHeaders,
     });
     if (res.data.resultCode !== EResultCode.SUCCESS) {
         throw new Error(res.data.message || `Backend error ${url}`);

@@ -8,7 +8,7 @@
       "@workspace/ui/*": ["../../packages/ui/src/*"],
       "@/app/*": ["./modules/app/*"],
       "@/pages/*": ["./modules/pages/*"],
-      "@/widgets/*": ["./modules/widgetes/*"],
+      "@/widgets/*": ["modules/widgets/*"],
       "@/features/*": ["./modules/features/*"],
       "@/entities/*": ["./modules/entities/*"],
       "@/shared/*": ["./modules/shared/*"],

@@ -1,17 +1,22 @@
 import { MessageDto } from '@/modules/messages/dto';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
     IsArray,
+    IsBoolean,
     IsDate,
+    IsDateString,
     IsEnum,
+    IsInt,
     IsNumber,
     IsOptional,
     IsString,
+    Min,
     ValidateNested,
 } from 'class-validator';
 import {
     Chat,
+    ChatEncryptionMode,
     ChatMemberRole,
     ChatType,
     User,
@@ -21,26 +26,43 @@ import { ChatMemberWithUser } from '../types/chat-member-with-user.type';
 import { UserDto } from '@/modules/user';
 
 export class ChatMemberDto {
-    @ApiProperty({ description: 'ID', example: '1' })
+    @ApiProperty({ description: 'ID', example: '1', type: String })
     @IsString()
     id: string;
-    @ApiProperty({ description: 'Chat ID', example: '1' })
+    @ApiProperty({ description: 'Chat ID', example: '1', type: String })
     @IsString()
     chatId: string;
-    @ApiProperty({ description: 'User ID', example: '1' })
+    @ApiProperty({ description: 'User ID', example: '1', type: String })
     @IsString()
     userId: string;
-    @ApiProperty({ description: 'Role', example: 'MEMBER' })
+    @ApiProperty({
+        description: 'Role',
+        example: 'MEMBER',
+        enum: ChatMemberRole,
+        type: String,
+    })
     @IsEnum(ChatMemberRole)
     role: ChatMemberRole;
-    @ApiProperty({ description: 'Joined At', example: '2021-01-01' })
+    @ApiProperty({
+        description: 'Joined At',
+        example: '2021-01-01',
+        type: Date,
+    })
     @IsDate()
     joinedAt: Date;
-    @ApiProperty({ description: 'Left At', example: '2021-01-01' })
+    @ApiProperty({
+        description: 'Left At',
+        example: '2021-01-01',
+        type: Date,
+    })
     @IsOptional()
     @IsDate()
     leftAt?: Date;
-    @ApiProperty({ description: 'Last Read At', example: '2021-01-01' })
+    @ApiProperty({
+        description: 'Last Read At',
+        example: '2021-01-01',
+        type: Date,
+    })
     @IsOptional()
     @IsDate()
     lastReadAt?: Date;
@@ -54,6 +76,7 @@ export class ChatMemberDto {
             role: 'user',
             isAcivated: true,
         },
+        type: () => UserDto,
     })
     @ValidateNested()
     @Type(() => UserDto)
@@ -77,55 +100,127 @@ export class ChatMemberDto {
     }
 }
 
+/** Name/description/avatar; timer policy only for SIGNAL private chats. */
 export class UpdateChatDto {
-    @ApiProperty({ description: 'Name', example: 'Test' })
+    @ApiPropertyOptional({ description: 'Name', example: 'Test', type: String })
     @IsOptional()
     @IsString()
     name?: string;
-    @ApiProperty({ description: 'Description', example: 'Test' })
+    @ApiPropertyOptional({
+        description: 'Description',
+        example: 'Test',
+        type: String,
+    })
     @IsOptional()
     @IsString()
     description?: string;
-    @ApiProperty({
+    @ApiPropertyOptional({
         description: 'Avatar',
         example: 'https://example.com/avatar.jpg',
+        type: String,
     })
     @IsOptional()
     @IsString()
     avatar?: string;
+
+    @ApiPropertyOptional({
+        description:
+            'Удалить весь чат в указанный момент (ISO 8601). `null` — отключить.',
+        type: String,
+        format: 'date-time',
+        nullable: true,
+    })
+    @IsOptional()
+    @IsDateString()
+    scheduledDeletionAt?: string | null;
+
+    @ApiPropertyOptional({
+        description:
+            'Новые сообщения удалять через N секунд (`null` или `0` — выкл.).',
+        type: Number,
+        example: 3600,
+        nullable: true,
+    })
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @Min(0)
+    disappearingMessageSeconds?: number | null;
 }
 
 export class ChatDto {
-    @ApiProperty({ description: 'ID', example: '1' })
+    @ApiProperty({ description: 'ID', example: '1', type: String })
     @IsString()
     id: string;
-    @ApiProperty({ description: 'Type', example: 'PRIVATE' })
+    @ApiProperty({
+        description: 'Type',
+        example: 'PRIVATE',
+        enum: ChatType,
+        type: String,
+    })
     @IsEnum(ChatType)
     type: ChatType;
-    @ApiProperty({ description: 'Name', example: 'Test' })
+
+    @ApiProperty({
+        enum: ChatEncryptionMode,
+        description:
+            'Messenger E2EE mode. Immutable after create. ' +
+            'To use both plaintext and E2EE with the same contact, create two private chats (different chatId).',
+        type: String,
+    })
+    @IsEnum(ChatEncryptionMode)
+    encryptionMode: ChatEncryptionMode;
+    @ApiProperty({ description: 'Name', example: 'Test', type: String })
     @IsOptional()
     @IsString()
     name?: string;
-    @ApiProperty({ description: 'Description', example: 'Test' })
+    @ApiProperty({ description: 'Description', example: 'Test', type: String })
     @IsOptional()
     @IsString()
     description?: string;
     @ApiProperty({
         description: 'Avatar',
         example: 'https://example.com/avatar.jpg',
+        type: String,
     })
     @IsOptional()
     @IsString()
     avatar?: string;
-    @ApiProperty({ description: 'Created By', example: '1' })
+    @ApiProperty({ description: 'Created By', example: '1', type: String })
     @IsString()
     createdBy: string;
-    @ApiProperty({ description: 'Created At', example: '2021-01-01' })
+    @ApiProperty({
+        description: 'Created At',
+        example: '2021-01-01',
+        type: Date,
+    })
     @IsDate()
     createdAt: Date;
-    @ApiProperty({ description: 'Updated At', example: '2021-01-01' })
+    @ApiProperty({
+        description: 'Updated At',
+        example: '2021-01-01',
+        type: Date,
+    })
     @IsDate()
     updatedAt: Date;
+
+    @ApiPropertyOptional({
+        description: 'Автоудаление всего чата в это время',
+        type: String,
+        format: 'date-time',
+    })
+    @IsOptional()
+    @IsDate()
+    scheduledDeletionAt?: Date;
+
+    @ApiPropertyOptional({
+        description: 'Новые сообщения исчезают через N секунд (0 = выкл.)',
+        example: 3600,
+    })
+    @IsOptional()
+    @IsNumber()
+    disappearingMessageSeconds?: number;
+
     @ApiProperty({
         description: 'Members',
         example: [
@@ -146,7 +241,7 @@ export class ChatDto {
     @ValidateNested({ each: true })
     @Type(() => ChatMemberDto)
     members?: ChatMemberDto[];
-    @ApiProperty({ description: 'Unread Count', example: 1 })
+    @ApiProperty({ description: 'Unread Count', example: 1, type: Number })
     @IsOptional()
     @IsNumber()
     unreadCount?: number;
@@ -158,11 +253,22 @@ export class ChatDto {
             createdAt: '2021-01-01',
             senderId: '1',
         },
+        type: () => MessageDto,
     })
     @IsOptional()
     @ValidateNested()
     @Type(() => MessageDto)
     lastMessage?: MessageDto;
+
+    @ApiPropertyOptional({
+        description:
+            'When last message is from current user (private chat): peer has read it (double-check UX)',
+        example: true,
+        type: Boolean,
+    })
+    @IsOptional()
+    @IsBoolean()
+    lastMessageOutgoingRead?: boolean;
     // lastMessage?: {
     //     id: string;
     //     content: string;
@@ -175,18 +281,24 @@ export class ChatDto {
             members?: ChatMemberWithUser[];
             unreadCount?: number;
             lastMessage?: MessageDto;
+            lastMessageOutgoingRead?: boolean;
         },
     ) {
         this.id = chat.id;
         this.type = chat.type;
+        this.encryptionMode = chat.encryptionMode;
         this.name = chat.name || undefined;
         this.description = chat.description || undefined;
         this.avatar = chat.avatar || undefined;
         this.createdBy = chat.createdBy;
         this.createdAt = chat.createdAt;
         this.updatedAt = chat.updatedAt;
+        this.scheduledDeletionAt = chat.scheduledDeletionAt ?? undefined;
+        this.disappearingMessageSeconds =
+            chat.disappearingMessageSeconds ?? undefined;
         this.members = chat.members?.map(m => new ChatMemberDto(m));
         this.unreadCount = chat.unreadCount;
         this.lastMessage = chat.lastMessage;
+        this.lastMessageOutgoingRead = chat.lastMessageOutgoingRead;
     }
 }

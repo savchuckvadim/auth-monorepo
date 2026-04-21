@@ -6,6 +6,8 @@
 /loki-data/**
 /prometheus/**
 /promtail/**
+./keys/**
+/keys
 
 # Dependencies
 node_modules

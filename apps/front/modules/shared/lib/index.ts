@@ -1,3 +1,4 @@
+export * from './hooks/use-exhausting-callback';
 export * from './socket/messages-socket';
 export * from './socket/notifications-socket';
 export * from './socket/calls-socket';

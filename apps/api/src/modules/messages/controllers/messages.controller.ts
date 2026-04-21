@@ -10,10 +10,22 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { MessagesService } from '../services/messages.service';
-import { CreateMessageDto, MessageDto } from '../dto';
+import {
+    CreateMessageDto,
+    CreateSystemMessageDto,
+    MessageDto,
+    UnreadCountResponseDto,
+    UnreadTotalResponseDto,
+} from '../dto';
 import { AccessTokenGuard } from '@/core/guards/access-token.guard';
 import { CurrentUser } from '@/core/decorators/auth/current-user.decorator';
-import { ApiBody, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import {
+    ApiBody,
+    ApiOkResponse,
+    ApiOperation,
+    ApiParam,
+    ApiResponse,
+} from '@nestjs/swagger';
 import { TokenPayloadDto } from '../../token/';
 
 @Controller('messages')
@@ -38,6 +50,28 @@ export class MessagesController {
             createMessageDto,
         );
     }
+
+    @ApiOperation({
+        summary:
+            'Create a system line in chat (policy / service notice; rendered as SYSTEM)',
+    })
+    @ApiBody({ type: CreateSystemMessageDto })
+    @ApiResponse({
+        status: 200,
+        description: 'System message created',
+        type: MessageDto,
+    })
+    @Post('system')
+    async createSystemMessage(
+        @CurrentUser() user: TokenPayloadDto,
+        @Body() dto: CreateSystemMessageDto,
+    ) {
+        return this.messagesService.createSystemMessage(
+            user.userId,
+            dto.chatId,
+            dto.content,
+        );
+    }
     @ApiOperation({ summary: 'Get messages for a chat' })
     @ApiResponse({
         status: 200,
@@ -57,6 +91,21 @@ export class MessagesController {
             limit ? parseInt(limit) : undefined,
             offset ? parseInt(offset) : undefined,
         );
+    }
+
+    @ApiOperation({
+        summary: 'Total unread messages for current user (all chats)',
+    })
+    @ApiOkResponse({
+        description: 'Total unread count',
+        type: UnreadTotalResponseDto,
+    })
+    @Get('unread/total')
+    async getTotalUnread(@CurrentUser() user: TokenPayloadDto) {
+        const total = await this.messagesService.getTotalUnreadCount(
+            user.userId,
+        );
+        return { total };
     }
 
     @ApiOperation({ summary: 'Get a message by ID' })
@@ -142,10 +191,9 @@ export class MessagesController {
 
     @ApiOperation({ summary: 'Get unread count for a chat' })
     @ApiParam({ name: 'chatId', description: 'Chat ID', example: '1' })
-    @ApiResponse({
-        status: 200,
-        description: 'Unread count fetched',
-        type: Number,
+    @ApiOkResponse({
+        description: 'Unread count for the chat',
+        type: UnreadCountResponseDto,
     })
     @Get('chat/:chatId/unread')
     async getUnreadCount(

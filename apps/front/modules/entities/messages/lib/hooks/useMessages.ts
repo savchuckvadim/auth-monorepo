@@ -13,11 +13,10 @@ export const useChatMessages = (chatId: string, limit?: number, offset?: number)
             const params: { limit?: string; offset?: string } = {};
             if (limit !== undefined) params.limit = limit.toString();
             if (offset !== undefined) params.offset = offset.toString();
-            ;
-            console.log('params', params);
             return messagesApi.messagesGetChatMessages(chatId, params as any);
         },
         enabled: !!currentUser?.id && !!chatId,
+        refetchOnWindowFocus: true,
     });
 
 };
@@ -45,8 +44,8 @@ export const useCreateMessage = () => {
         // Не инвалидируем здесь - обновление делается вручную в компоненте
         // для лучшего контроля над оптимистичным обновлением
         onSuccess: (_, variables) => {
-            // Обновляем только список чатов, сообщения обновятся через WebSocket или вручную
             queryClient.invalidateQueries({ queryKey: ['chats', 'user'] });
+            queryClient.invalidateQueries({ queryKey: ['messages', 'unread', 'total'] });
         },
     });
 };
@@ -97,6 +96,7 @@ export const useMarkChatAsRead = () => {
             queryClient.invalidateQueries({ queryKey: ['messages', 'chat', chatId] });
             queryClient.invalidateQueries({ queryKey: ['chats', chatId] });
             queryClient.invalidateQueries({ queryKey: ['chats', 'user'] });
+            queryClient.invalidateQueries({ queryKey: ['messages', 'unread', 'total'] });
         },
     });
 };
@@ -106,9 +106,27 @@ export const useUnreadCount = (chatId: string) => {
 
     return useQuery({
         queryKey: ['messages', 'unread', chatId],
-        queryFn: () => messagesApi.messagesGetUnreadCount(chatId),
+        queryFn: async () => {
+            const r = await messagesApi.messagesGetUnreadCount(chatId);
+            return r.count;
+        },
         enabled: !!currentUser?.id && !!chatId,
-        refetchInterval: 30000, // Обновлять каждые 30 секунд
+        refetchInterval: 30000,
+    });
+};
+
+export const useTotalUnreadMessages = () => {
+    const { currentUser } = useAuth();
+
+    return useQuery({
+        queryKey: ['messages', 'unread', 'total'],
+        queryFn: async () => {
+            const r = await messagesApi.messagesGetTotalUnread();
+            return r.total;
+        },
+        enabled: !!currentUser?.id,
+        refetchInterval: 30000,
+        refetchOnWindowFocus: true,
     });
 };
 

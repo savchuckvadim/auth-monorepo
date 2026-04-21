@@ -1,20 +1,19 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/modules/processes';
 import { LoadingScreen } from '@/modules/shared/ui';
-import { Chat, useUserChats } from '@/modules/entities/chats';
-import { ChatMemberDto, MessageDto } from '@workspace/nest-api';
+import { Chat, useChatById, useUserChats } from '@/modules/entities/chats';
+import { MessageDto } from '@workspace/nest-api';
 import { Button } from '@workspace/ui/components/button';
 
-import { useChatMessages } from '@/modules/entities/messages';
+import { useChatMessages, useMarkChatAsRead } from '@/modules/entities/messages';
 import { useChatSocket, useSendMessage } from '@/modules/entities/chats';
 
-import { CallWrapperWidget } from '@/modules/widgetes/call/CallWrapper/CallWrapperWidget';
-import { ChatInputWidget, ChatMessagesWidget, } from '@/modules/widgetes/chat';
+import { ChatInputWidget, ChatMessagesWidget } from '@/modules/widgets/chat';
 import { LoadingComponent } from '@/modules/shared/ui/Loading/ui/LoadingComponent';
-import { scrollToBottom } from '@/modules/entities/messages/lib/utils/scroll-to-bottom.util';
+import { scrollToBottomDeferred } from '@/modules/entities/messages/lib/utils/scroll-to-bottom.util';
 
 export default function ChatPage() {
     const { currentUser } = useAuth();
@@ -23,51 +22,88 @@ export default function ChatPage() {
     const chatId = params?.chatId as string;
     const [messageText, setMessageText] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const lastMarkedChatIdRef = useRef<string | null>(null);
+    const markChatReadMutation = useMarkChatAsRead();
+    const initialScrollDoneRef = useRef(false);
 
-    const { data: chats } = useUserChats();
-    const selectedChat = (chats as Chat[] | undefined)?.find((c) => c.id === chatId);
-    const otherUserId = selectedChat?.members?.find((m: ChatMemberDto) => m.userId !== currentUser?.id)?.userId || '';
-    const { data: messages, isPending: isMessagesPending } = useChatMessages(chatId || '', 50, 0);
+    const { data: chats, isPending: chatsLoading } = useUserChats();
+    const {
+        data: chatById,
+        isPending: chatByIdLoading,
+        isError: chatByIdError,
+    } = useChatById(chatId || '');
+    const selectedChat =
+        (chatById ? (chatById as Chat) : undefined) ??
+        (chats as Chat[] | undefined)?.find((c) => c.id === chatId);
+    const { data: messages, isPending: isMessagesPending } = useChatMessages(
+        chatId || '',
+        50,
+        0,
+    );
     const sortedMessages = messages ? (messages as MessageDto[]) : [];
 
-    // WebSocket hook
+    useEffect(() => {
+        if (chatId && lastMarkedChatIdRef.current !== chatId) {
+            lastMarkedChatIdRef.current = chatId;
+            markChatReadMutation.mutate(chatId);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [chatId]);
+
     useChatSocket({
         chatId: chatId || null,
         userId: currentUser?.id,
         messagesEndRef,
     });
 
-    // Send message hook
-    const { sendMessage, isPending: isSendingMessage } = useSendMessage({
+    const {
+        sendMessage,
+        retryFailedMessage,
+        isPending: isSendingMessage,
+    } = useSendMessage({
         chatId: chatId || null,
         currentUser,
         messagesEndRef,
+        chat: selectedChat,
     });
 
-    // Auto-scroll to bottom when messages change
-    // На мобильных скроллим только контейнер сообщений, а не всю страницу
+    useLayoutEffect(() => {
+        initialScrollDoneRef.current = false;
+    }, [chatId]);
+
+    useLayoutEffect(() => {
+        if (!chatId || isMessagesPending || sortedMessages.length === 0) return;
+        if (initialScrollDoneRef.current) return;
+        scrollToBottomDeferred(messagesEndRef, 'auto');
+        initialScrollDoneRef.current = true;
+    }, [chatId, isMessagesPending, sortedMessages.length]);
+
     useEffect(() => {
-        if (messagesEndRef.current && chatId) {
-            // Небольшая задержка для рендера
-            setTimeout(() => {
-                scrollToBottom(messagesEndRef);
-            }, 100);
+        if (!chatId || chatByIdLoading) return;
+        if (chatByIdError) {
+            router.replace('/network/chats/list');
         }
-    }, [chatId, sortedMessages.length]);
+    }, [chatId, chatByIdError, chatByIdLoading, router]);
 
     if (!currentUser) {
         return <LoadingScreen />;
     }
-    if (isMessagesPending) {
+
+    const chatResolving = Boolean(chatId) && (chatsLoading || chatByIdLoading);
+
+    if (isMessagesPending || chatResolving) {
         return <LoadingComponent />;
     }
 
-    if (!chatId || !selectedChat) {
+    if (!chatId || chatByIdError || !selectedChat) {
         return (
-            <div className="h-screen flex items-center justify-center">
+            <div className="flex h-screen items-center justify-center">
                 <div className="text-center">
                     <p className="text-muted-foreground">Чат не найден</p>
-                    <Button onClick={() => router.push('/network/chats/list')} className="mt-4">
+                    <Button
+                        onClick={() => router.push('/network/chats/list')}
+                        className="mt-4"
+                    >
                         Вернуться к списку
                     </Button>
                 </div>
@@ -75,53 +111,34 @@ export default function ChatPage() {
         );
     }
 
-    // const otherUser = selectedChat.members?.find(
-    //     (m: ChatMemberDto) => m.userId !== currentUser.id
-    // ) || null;
-    // const chatName =
-    //     selectedChat.type === ChatType.PRIVATE
-    //         ? otherUser?.user?.name || 'Пользователь'
-    //         : selectedChat.name || 'Групповой чат';
-
-    const handleSendMessage = async () => {
-        if (!messageText.trim()) return;
-        try {
-            await sendMessage(messageText);
-            setMessageText('');
-        } catch (error) {
+    const handleSendMessage = () => {
+        const text = messageText.trim();
+        if (!text) return;
+        setMessageText('');
+        void sendMessage(text).catch((error) => {
             console.error('Failed to send message:', error);
-        }
+        });
     };
 
     return (
-        <div className="md:h-[82vh] h-[calc(100dvh-10rem)]  bg-background flex overflow-hidden border-2 rounded-3xl">
-
-
-            {/* <CallWrapperWidget> */}
+        <div className="flex h-[calc(100dvh-10rem)] overflow-hidden rounded-3xl border-2 bg-background md:h-[82vh]">
             <div className="w-full">
-                <div className=" flex flex-col h-full overflow-hidden bg-card">
+                <div className="flex h-full flex-col overflow-hidden bg-card">
                     <ChatMessagesWidget
-                        chatId={chatId}
-                        currentUserId={currentUser.id}
-                        selectedChat={selectedChat}
                         messagesEndRef={messagesEndRef}
+                        onRetryFailed={retryFailedMessage}
                     />
 
-                    {chatId && (
+                    {chatId ? (
                         <ChatInputWidget
                             messageText={messageText}
                             onMessageTextChange={setMessageText}
                             onSendMessage={handleSendMessage}
                             isPending={isSendingMessage}
                         />
-
-                    )}
+                    ) : null}
                 </div>
             </div>
-            {/* </CallWrapperWidget> */}
-
-
         </div>
     );
 }
-

@@ -1,13 +1,13 @@
-import { Card, CardHeader } from "@workspace/ui/components/card";
-import { CardTitle } from "@workspace/ui/components/card";
-import { CardDescription } from "@workspace/ui/components/card";
-import { CardContent } from "@workspace/ui/components/card";
 import { Metadata } from 'next';
+
+import { AuthFormPageShell } from '@/modules/shared/ui';
+import { RegisterAuthCardFooter } from '@/modules/widgets/auth';
 import RegistrationFormWrapper from './RegistrationFormWrapper';
 
 export const metadata: Metadata = {
     title: 'Регистрация — Sociopath Network',
-    description: 'Зарегистрируйтесь в приватном сообществе для общения и поиска единомышленников',
+    description:
+        'Зарегистрируйтесь в приватном сообществе для общения и поиска единомышленников',
     robots: {
         index: false,
         follow: false,
@@ -18,18 +18,12 @@ export const metadata: Metadata = {
 
 export default function Page() {
     return (
-        <div className="flex w-full flex-row justify-center items-start pt-30">
-            <Card className="w-full max-w-2xl mx-auto">
-                <CardHeader>
-                    <CardTitle className="text-center">Вход в систему</CardTitle>
-                    <CardDescription className="text-center">
-                        Зарегистрируйтесь в системе
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <RegistrationFormWrapper />
-                </CardContent>
-            </Card>
-        </div>
+        <AuthFormPageShell
+            title="Getting started"
+            description="Create an account to continue and connect with the Sociopaths."
+        >
+            <RegistrationFormWrapper />
+            <RegisterAuthCardFooter />
+        </AuthFormPageShell>
     );
 }

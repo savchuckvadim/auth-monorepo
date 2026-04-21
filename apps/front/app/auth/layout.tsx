@@ -1,57 +1,28 @@
 'use client';
 
-import { useApp } from "@/modules/app";
-import { LoadingScreen } from "@/modules/shared";
-
-
+import { useApp } from '@/modules/app';
+import { LoadingScreen } from '@/modules/shared/ui';
+import { AuthHeader } from '@/modules/shared/ui/AuthHeader';
+import Image from 'next/image';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
     const { isClient } = useApp();
     if (!isClient) {
-        return <LoadingScreen />
+        return <LoadingScreen />;
     }
     return (
-        <>
-
-
-            <div className="min-h-screen bg-background/90">
-                {/* Video Background */}
-{/*
-                <nav className="bg-background/90 border-b shadow-sm">
-                    <div className="max-w-7xl mx-auto px-6 py-4">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-8">
-                                <h1 className="text-2xl font-bold text-foreground">
-                                    IT Booster Auth
-                                </h1>
-
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <Badge variant="outline" className="text-primary border-primary">
-                                    <Users className="w-4 h-4 mr-2" />
-                                    Для пользователей
-                                </Badge>
-                            </div>
-                        </div>
-                    </div>
-                </nav> */}
-
-                {/* <div className="max-w-4xl mx-auto p-6">
-
-                    <div className="text-center mb-12">
-                        <h1 className="text-3xl font-bold text-foreground mb-4">
-                            Аутентификация и Регистрация
-                        </h1>
-
-                    </div> */}
-
-                    {children}
-
-
-                {/* </div> */}
-            </div>
-        </>
-
-
+        <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-mainBackground">
+            <Image
+                className="pointer-events-none absolute inset-0 z-0 object-contain opacity-10"
+                src="/logo.svg"
+                alt=""
+                fill
+                priority
+                sizes="100vw"
+                aria-hidden
+            />
+            <AuthHeader />
+            <div className="relative z-10 flex min-h-0 flex-1 flex-col">{children}</div>
+        </div>
     );
 }

@@ -1,6 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@/core';
-import { MessagesRepository } from './messages.repository';
+import {
+    MessagesRepository,
+    type MessageWithRelations,
+} from './messages.repository';
 import { Message, MessageType } from 'generated/prisma';
 
 @Injectable()
@@ -18,6 +21,9 @@ export class MessagesPrismaRepository implements MessagesRepository {
                         email: true,
                     },
                 },
+                fromDevice: {
+                    select: { clientDeviceId: true },
+                },
                 replyTo: {
                     include: {
                         sender: {
@@ -29,6 +35,9 @@ export class MessagesPrismaRepository implements MessagesRepository {
                         },
                     },
                 },
+                readStatus: {
+                    select: { userId: true },
+                },
             },
         });
 
@@ -36,10 +45,10 @@ export class MessagesPrismaRepository implements MessagesRepository {
             throw new NotFoundException('Message not found');
         }
 
-        // Преобразуем null в undefined для replyTo
         return {
             ...message,
             replyTo: message.replyTo || undefined,
+            readBy: message.readStatus.map(r => r.userId),
         };
     }
 
@@ -57,6 +66,9 @@ export class MessagesPrismaRepository implements MessagesRepository {
                         email: true,
                     },
                 },
+                fromDevice: {
+                    select: { clientDeviceId: true },
+                },
                 replyTo: {
                     include: {
                         sender: {
@@ -68,6 +80,9 @@ export class MessagesPrismaRepository implements MessagesRepository {
                         },
                     },
                 },
+                readStatus: {
+                    select: { userId: true },
+                },
             },
             orderBy: {
                 createdAt: 'desc',
@@ -76,10 +91,11 @@ export class MessagesPrismaRepository implements MessagesRepository {
             skip: offset,
         });
 
-        // Преобразуем null в undefined для replyTo в каждом сообщении
+        // Преобразуем null в undefined для replyTo в каждом сообщении; readBy — для UI «прочитано»
         return messages.reverse().map(msg => ({
             ...msg,
             replyTo: msg.replyTo || undefined,
+            readBy: msg.readStatus.map(r => r.userId),
         }));
     }
 
@@ -92,7 +108,13 @@ export class MessagesPrismaRepository implements MessagesRepository {
         fileName?: string;
         fileSize?: number;
         replyToId?: string;
-    }): Promise<Message & { sender?: any }> {
+        isEncrypted?: boolean;
+        toDeviceId?: string;
+        senderDeviceId?: string;
+        signalMessageType?: string;
+        registrationId?: number;
+        expiresAt?: Date;
+    }): Promise<MessageWithRelations> {
         return this.prisma.message.create({
             data: {
                 chatId: data.chatId,
@@ -103,6 +125,12 @@ export class MessagesPrismaRepository implements MessagesRepository {
                 fileName: data.fileName,
                 fileSize: data.fileSize,
                 replyToId: data.replyToId,
+                isEncrypted: data.isEncrypted ?? false,
+                toDeviceId: data.toDeviceId,
+                senderDeviceId: data.senderDeviceId,
+                signalMessageType: data.signalMessageType,
+                registrationId: data.registrationId,
+                expiresAt: data.expiresAt,
             },
             include: {
                 sender: {
@@ -111,6 +139,9 @@ export class MessagesPrismaRepository implements MessagesRepository {
                         name: true,
                         email: true,
                     },
+                },
+                fromDevice: {
+                    select: { clientDeviceId: true },
                 },
             },
         });
@@ -213,5 +244,65 @@ export class MessagesPrismaRepository implements MessagesRepository {
                 },
             },
         });
+    }
+
+    async getTotalUnreadCount(userId: string): Promise<number> {
+        return this.prisma.message.count({
+            where: {
+                deletedAt: null,
+                senderId: { not: userId },
+                chat: {
+                    members: {
+                        some: {
+                            userId,
+                            leftAt: null,
+                        },
+                    },
+                },
+                readStatus: {
+                    none: { userId },
+                },
+            },
+        });
+    }
+
+    async findLastMessageByChatId(
+        chatId: string,
+    ): Promise<MessageWithRelations | null> {
+        const message = await this.prisma.message.findFirst({
+            where: {
+                chatId,
+                deletedAt: null,
+            },
+            orderBy: { createdAt: 'desc' },
+            include: {
+                sender: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+                fromDevice: {
+                    select: { clientDeviceId: true },
+                },
+            },
+        });
+        return message;
+    }
+
+    async hasUserReadMessage(
+        messageId: string,
+        readerUserId: string,
+    ): Promise<boolean> {
+        const row = await this.prisma.messageReadStatus.findUnique({
+            where: {
+                messageId_userId: {
+                    messageId,
+                    userId: readerUserId,
+                },
+            },
+        });
+        return row !== null;
     }
 }

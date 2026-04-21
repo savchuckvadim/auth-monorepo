@@ -3,19 +3,19 @@ import React from 'react';
 import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
 
-const DynamicProfileInformation = dynamic(() => import('@/modules/widgetes/profile/information/ui/ProfileInformation').then(mod => mod.default), {
+const DynamicProfileInformation = dynamic(() => import('@/modules/widgets/profile/information/ui/ProfileInformation').then(mod => mod.default), {
     ssr: false
 });
 
-const DynamicProfilePosts = dynamic(() => import('@/modules/widgetes/profile/posts/ProfilePosts').then(mod => mod.default), {
+const DynamicProfilePosts = dynamic(() => import('@/modules/widgets/profile/posts/ProfilePosts').then(mod => mod.default), {
     ssr: false
 });
 
 
 
 
-export default  function NetworkProfilePage() {
-    const params  = useParams();
+export default function NetworkProfilePage() {
+    const params = useParams();
     const userId = params.userId as string;
 
 
@@ -26,7 +26,7 @@ export default  function NetworkProfilePage() {
 
         </div>
 
-   
+
 
     );
 }

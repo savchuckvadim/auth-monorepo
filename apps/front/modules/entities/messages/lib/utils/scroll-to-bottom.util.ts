@@ -1,30 +1,44 @@
 /**
- * Утилита для скролла к последнему сообщению
- * На мобильных скроллит только контейнер сообщений, а не всю страницу
+ * Скролл к последнему сообщению. По умолчанию `behavior: 'auto'` — без анимации «вжух»
+ * при открытии чата; для живого донабора можно передать `'smooth'`.
  */
-export const scrollToBottom = (messagesEndRef: React.RefObject<HTMLDivElement | null>) => {
+export const scrollToBottom = (
+    messagesEndRef: React.RefObject<HTMLDivElement | null>,
+    behavior: ScrollBehavior = 'auto',
+) => {
     if (!messagesEndRef.current) return;
 
-    // Находим скроллируемый контейнер сообщений
-    const scrollContainer = messagesEndRef.current.closest('.overflow-y-auto');
+    const scrollContainer =
+        (messagesEndRef.current.closest(
+            '[data-messages-scroll-root]',
+        ) as HTMLElement | null) ??
+        (messagesEndRef.current.closest('.overflow-y-auto') as HTMLElement | null);
 
     if (scrollContainer) {
-        // Скроллим внутри контейнера, а не всю страницу
-        const container = scrollContainer as HTMLElement;
-
-        // Используем scrollTo для скролла внутри контейнера
-        container.scrollTo({
-            top: container.scrollHeight,
-            behavior: 'smooth'
+        scrollContainer.scrollTo({
+            top: scrollContainer.scrollHeight,
+            behavior,
         });
     } else {
-        // Fallback: если контейнер не найден, используем стандартный scrollIntoView
-        // но с block: 'nearest' чтобы не скроллить если элемент уже виден
         messagesEndRef.current.scrollIntoView({
-            behavior: 'smooth',
+            behavior,
             block: 'nearest',
-            inline: 'nearest'
+            inline: 'nearest',
         });
     }
 };
 
+/**
+ * После вставки DOM (картинки, шрифты) высота контейнера может измениться — один rAF не всегда хватает.
+ */
+export const scrollToBottomDeferred = (
+    messagesEndRef: React.RefObject<HTMLDivElement | null>,
+    behavior: ScrollBehavior = 'auto',
+) => {
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            scrollToBottom(messagesEndRef, behavior);
+            queueMicrotask(() => scrollToBottom(messagesEndRef, behavior));
+        });
+    });
+};

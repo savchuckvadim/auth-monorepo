@@ -7,6 +7,7 @@
  */
 import type {
     AuthenticatedUserDto,
+    CreateUserDto,
     LoginDto,
     RefreshTokenDto,
 } from '.././model';
@@ -15,9 +16,20 @@ import { customAxios } from '../../lib/back-api';
 
 export const getAuthMobile = () => {
     /**
+     * @summary Registration
+     */
+    const authMobileRegistration = (createUserDto: CreateUserDto) => {
+        return customAxios<AuthenticatedUserDto>({
+            url: `/api/auth-mobile/registration`,
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            data: createUserDto,
+        });
+    };
+    /**
      * @summary Login for mobile app
      */
-    const authMobileMobileLogin = (loginDto: LoginDto) => {
+    const authMobileLogin = (loginDto: LoginDto) => {
         return customAxios<AuthenticatedUserDto>({
             url: `/api/auth-mobile/mobile/login`,
             method: 'POST',
@@ -57,16 +69,20 @@ export const getAuthMobile = () => {
         });
     };
     return {
-        authMobileMobileLogin,
+        authMobileRegistration,
+        authMobileLogin,
         authMobileActivate,
         authMobileLogout,
         authMobileRefreshToken,
     };
 };
-export type AuthMobileMobileLoginResult = NonNullable<
+export type AuthMobileRegistrationResult = NonNullable<
     Awaited<
-        ReturnType<ReturnType<typeof getAuthMobile>['authMobileMobileLogin']>
+        ReturnType<ReturnType<typeof getAuthMobile>['authMobileRegistration']>
     >
+>;
+export type AuthMobileLoginResult = NonNullable<
+    Awaited<ReturnType<ReturnType<typeof getAuthMobile>['authMobileLogin']>>
 >;
 export type AuthMobileActivateResult = NonNullable<
     Awaited<ReturnType<ReturnType<typeof getAuthMobile>['authMobileActivate']>>

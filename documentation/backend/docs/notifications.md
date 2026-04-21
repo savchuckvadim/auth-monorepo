@@ -346,3 +346,7 @@ handleDisconnect(client: Socket) {
 console.log(`Notification socket connected: ${client.id} (user: ${userId})`);
 console.log(`Notification socket disconnected: ${client.id}`);
 ```
+
+## Mobile push (FCM, APNS, VoIP)
+
+Помимо WebSocket, для нативных клиентов реализована регистрация токенов и доставка уведомлений через **Firebase Cloud Messaging** и **Apple Push Notification service** (включая отдельный поток **VoIP** для пробуждения приложения при входящем звонке). Сервисы находятся в `src/modules/notifications/push/`; сценарии отправки (новое сообщение без активного сокета, входящий звонок при офлайн-получателе) и переменные окружения описаны в **[Signal E2EE и mobile push](./encryption/signal-e2ee-and-mobile-push.md)**. Чеклист интеграции (сделано / осталось / env) — **[Звонки и mobile push: статус интеграции](./calls-push-integration.md)**.

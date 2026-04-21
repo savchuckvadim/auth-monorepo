@@ -8,7 +8,10 @@ export async function middleware(req: NextRequest) {
 
     const hasToken = accessToken || refreshToken;
     const url = req.nextUrl;
-
+    const isStartPage = url.pathname.startsWith('/start');
+    if (isStartPage) {
+        return NextResponse.next();
+    }
     const isConfirmPage = url.pathname.startsWith('/auth/confirm');
     const isAuthPage = url.pathname.startsWith('/auth') && !isConfirmPage;
     const isProtected = url.pathname.startsWith('/network');
@@ -37,6 +40,7 @@ export const config = {
         '/',
         '/network/:path*',
         '/auth/:path*',
+        '/start/:path*',
 
     ],
 };

@@ -1,11 +1,17 @@
 import {
+    BadRequestException,
     Injectable,
     NotFoundException,
     ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '@/core';
 import { ChatsRepository } from './chats.repository';
-import { Chat, ChatType, ChatMemberRole } from 'generated/prisma';
+import {
+    Chat,
+    ChatEncryptionMode,
+    ChatMemberRole,
+    ChatType,
+} from 'generated/prisma';
 import { ChatMemberWithUser } from '../types/chat-member-with-user.type';
 
 @Injectable()
@@ -86,10 +92,12 @@ export class ChatsPrismaRepository implements ChatsRepository {
     async findPrivateChat(
         userId1: string,
         userId2: string,
+        encryptionMode: ChatEncryptionMode,
     ): Promise<Chat | null> {
         const chat = await this.prisma.chat.findFirst({
             where: {
                 type: ChatType.PRIVATE,
+                encryptionMode,
                 members: {
                     every: {
                         userId: {
@@ -106,16 +114,19 @@ export class ChatsPrismaRepository implements ChatsRepository {
 
     async create(data: {
         type: ChatType;
+        encryptionMode?: ChatEncryptionMode;
         createdBy: string;
         name?: string;
         description?: string;
         memberIds: string[];
     }): Promise<Chat & { members: ChatMemberWithUser[] }> {
+        const encryptionMode = data.encryptionMode ?? ChatEncryptionMode.NONE;
         // Для приватного чата проверяем, не существует ли уже такой чат
         if (data.type === ChatType.PRIVATE && data.memberIds.length === 2) {
             const existingChat = await this.findPrivateChat(
                 data.memberIds[0],
                 data.memberIds[1],
+                encryptionMode,
             );
             if (existingChat) {
                 return this.findById(existingChat.id) as Promise<
@@ -132,6 +143,7 @@ export class ChatsPrismaRepository implements ChatsRepository {
         return this.prisma.chat.create({
             data: {
                 type: data.type,
+                encryptionMode,
                 createdBy: data.createdBy,
                 name: data.name,
                 description: data.description,
@@ -231,6 +243,11 @@ export class ChatsPrismaRepository implements ChatsRepository {
     }
 
     async update(chatId: string, data: Partial<Chat>): Promise<Chat> {
+        if (data.encryptionMode !== undefined) {
+            throw new BadRequestException(
+                'encryptionMode cannot be changed after chat creation; create a new chat for E2EE',
+            );
+        }
         return this.prisma.chat.update({
             where: { id: chatId },
             data,
@@ -238,8 +255,14 @@ export class ChatsPrismaRepository implements ChatsRepository {
     }
 
     async delete(chatId: string): Promise<void> {
-        await this.prisma.chat.delete({
-            where: { id: chatId },
+        await this.prisma.$transaction(async tx => {
+            await tx.invitation.updateMany({
+                where: { resolvedChatId: chatId },
+                data: { resolvedChatId: null },
+            });
+            await tx.chat.delete({
+                where: { id: chatId },
+            });
         });
     }
 
@@ -266,6 +289,13 @@ export class ChatsPrismaRepository implements ChatsRepository {
             data: {
                 lastReadAt: new Date(),
             },
+        });
+    }
+
+    async touchActivity(chatId: string): Promise<void> {
+        await this.prisma.chat.update({
+            where: { id: chatId },
+            data: { updatedAt: new Date() },
         });
     }
 }

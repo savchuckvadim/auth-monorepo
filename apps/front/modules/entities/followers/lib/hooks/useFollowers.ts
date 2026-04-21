@@ -14,13 +14,19 @@ export const useAllUsers = () => {
     });
 };
 
-export const useUserById = (userId: string) => {
+export const useUserById = (
+    userId: string,
+    options?: { enabled?: boolean },
+) => {
     const { currentUser } = useAuth();
 
     return useQuery({
         queryKey: ['followers', 'user', userId],
         queryFn: () => followersApi.followersGetUserById(userId),
-        enabled: !!currentUser?.id && !!userId,
+        enabled:
+            !!currentUser?.id &&
+            !!userId &&
+            (options?.enabled !== undefined ? options.enabled : true),
     });
 };
 
@@ -63,17 +69,22 @@ export const useFollow = () => {
             queryClient.setQueryData<UserDto[]>(
                 ['users'],
                 (users) =>
-                    users?.map(user => {
-
-                        const result = user.id === userId
-                            ? { ...user, isFollowing: true, isFriend: user.isFollower }
-                            : user
-
-                        return result
-
-                    }
-                    )
+                    users?.map((user) => {
+                        const result =
+                            user.id === userId
+                                ? {
+                                      ...user,
+                                      isFollowing: true,
+                                      isFriend: user.isFollower,
+                                  }
+                                : user;
+                        return result;
+                    }),
             );
+            void queryClient.invalidateQueries({ queryKey: ['followers'] });
+            void queryClient.invalidateQueries({
+                queryKey: ['followers', 'user', userId],
+            });
         },
     });
 };
@@ -87,12 +98,16 @@ export const useUnfollow = () => {
             queryClient.setQueryData<UserDto[]>(
                 ['users'],
                 (users) =>
-                    users?.map(user =>
+                    users?.map((user) =>
                         user.id === userId
                             ? { ...user, isFollowing: false, isFriend: false }
-                            : user
-                    )
+                            : user,
+                    ),
             );
+            void queryClient.invalidateQueries({ queryKey: ['followers'] });
+            void queryClient.invalidateQueries({
+                queryKey: ['followers', 'user', userId],
+            });
         },
     });
 };

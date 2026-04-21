@@ -19,6 +19,16 @@ export class ResponseInterceptor<T> implements NestInterceptor<
         next: CallHandler<T>,
     ): Observable<ApiResponse<T>> {
         const req = context.switchToHttp().getRequest<Request>();
+        const res = context
+            .switchToHttp()
+            .getResponse<{ setHeader: (k: string, v: string) => void }>();
+        /** JSON API не должны отдавать 304 из кэша браузера — иначе axios/DevTools ведут себя неочевидно. */
+        res.setHeader(
+            'Cache-Control',
+            'private, no-store, no-cache, must-revalidate',
+        );
+        res.setHeader('Pragma', 'no-cache');
+
         // 🔥 Пропускаем без обертки, если это /metrics
         if (req.url === '/api/metrics') {
             return next.handle() as Observable<ApiResponse<T>>;

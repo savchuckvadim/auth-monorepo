@@ -5,16 +5,18 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/modules/processes';
 import { LoadingScreen } from '@/modules/shared/ui';
 import { Chat, ChatType, CreateChat, useCreateChat, useUserChats } from '@/modules/entities/chats';
-import { ChatDto, ChatMemberDto, CreateChatDto } from '@workspace/nest-api';
+import { ChatDtoEncryptionMode, CreateChatDto } from '@workspace/nest-api';
 
 
-import { ChatListWidget, CreateChatDialogWidget } from '@/modules/widgetes/chat';
+import { ChatListWidget, CreateChatDialogWidget } from '@/modules/widgets/chat';
 import { useAllUsers } from '@/modules/entities/followers';
 import { ChatListManager } from '@/modules/entities/chats/ui/ChatsList/ChatListManager';
+import { IncomingInvitationsBanner } from '@/modules/features/invitations';
 
 export default function ChatListPage() {
 
     const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+    const [securePrivateChat, setSecurePrivateChat] = useState(false);
     const [showNewChatDialog, setShowNewChatDialog] = useState(false);
     const createChatMutation = useCreateChat();
 
@@ -64,28 +66,31 @@ export default function ChatListPage() {
                 memberIds: selectedUserIds,
                 name: '',
                 description: '',
+                encryptionMode:
+                    selectedUserIds.length === 1 && securePrivateChat
+                        ? ChatDtoEncryptionMode.SIGNAL
+                        : undefined,
             };
             const chat = await createChatMutation.mutateAsync(chatData as CreateChatDto);
             router.push(`/network/chats/${chat.id}`);
-            // setSelectedChatId((chat as unknown as Chat).id);
-            // setShowNewChatDialog(false);
-            // setSelectedUserIds([]);
+            setShowNewChatDialog(false);
+            setSelectedUserIds([]);
+            setSecurePrivateChat(false);
         } catch (error) {
             console.error('Failed to create chat:', error);
         }
     };
 
     const handleUserToggle = (userId: string) => {
-        // setSelectedUserIds((prev) =>
-        //     prev.includes(userId)
-        //         ? prev.filter((id) => id !== userId)
-        //         : [...prev, userId]
-        // );
-        const chatId = chats?.find((c: ChatDto) =>
-            c.members?.some((m: ChatMemberDto) => m.userId === userId))?.id;
-        if (chatId) {
-            router.push(`/network/chats/${chatId}`);
-        }
+        setSelectedUserIds((prev) => {
+            const next = prev.includes(userId)
+                ? prev.filter((id) => id !== userId)
+                : [...prev, userId];
+            if (next.length !== 1) {
+                setSecurePrivateChat(false);
+            }
+            return next;
+        });
     };
 
 
@@ -98,6 +103,8 @@ export default function ChatListPage() {
                 setSearchQuery={setSearchQuery}
                 setShowNewChatDialog={setShowNewChatDialog}
             />
+
+            <IncomingInvitationsBanner />
 
             <ChatListWidget
                 chats={filteredChats}
@@ -114,8 +121,11 @@ export default function ChatListPage() {
                 onCancel={() => {
                     setShowNewChatDialog(false);
                     setSelectedUserIds([]);
+                    setSecurePrivateChat(false);
                 }}
                 isPending={createChatMutation.isPending}
+                securePrivateChat={securePrivateChat}
+                onSecurePrivateChatChange={setSecurePrivateChat}
             />
         </div>
     );

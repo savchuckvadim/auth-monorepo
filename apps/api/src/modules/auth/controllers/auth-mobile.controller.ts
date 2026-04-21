@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import {
+    ApiBadRequestResponse,
     ApiBody,
     ApiOperation,
     ApiParam,
@@ -20,6 +21,8 @@ import { ConfigService } from '@nestjs/config';
 import { AuthenticatedUserDto, LoginDto } from '../dtos/login.dto';
 import { RefreshTokenDto } from '../dtos/refresh-token.dto';
 import { CookieService } from '@/core/cookie';
+import { CreateUserDto } from '@/modules/user';
+import { ErrorResponseDto } from '@/core';
 
 /**
  * AuthController для мобильного приложения
@@ -39,7 +42,23 @@ export class AuthMobileController {
     ) {
         this.clientUrl = this.configService.getOrThrow<string>('CLIENT_URL');
     }
-
+    @ApiOperation({ summary: 'Registration' })
+    @ApiBody({ type: CreateUserDto, description: 'Registration' })
+    @ApiResponse({
+        status: 200,
+        description: 'User',
+        type: AuthenticatedUserDto,
+    })
+    @ApiBadRequestResponse({
+        description: 'Validation failed',
+        type: ErrorResponseDto,
+    })
+    @Post('registration')
+    async registration(
+        @Body() registerDto: CreateUserDto,
+    ): Promise<AuthenticatedUserDto> {
+        return await this.authService.registration(registerDto);
+    }
     @ApiOperation({ summary: 'Login for mobile app' })
     @ApiBody({ type: LoginDto, description: 'Login for mobile app' })
     @ApiResponse({
@@ -48,9 +67,7 @@ export class AuthMobileController {
         type: AuthenticatedUserDto,
     })
     @Post('mobile/login')
-    async mobileLogin(
-        @Body() loginDto: LoginDto,
-    ): Promise<AuthenticatedUserDto> {
+    async login(@Body() loginDto: LoginDto): Promise<AuthenticatedUserDto> {
         const user = await this.authService.login(loginDto);
         console.log('login', user);
         return user;

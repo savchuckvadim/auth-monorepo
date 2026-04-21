@@ -1,47 +1,15 @@
-import { io, Socket } from 'socket.io-client';
+import type { Socket } from 'socket.io-client';
+import { socketManager } from './web-socket-manager';
 
-let socket: Socket | null = null;
-const SOCKET_URL = process.env.NEXT_PUBLIC_API_URL ||   'https://api.sociopath-network.ru' //  //|| 'https://api.sociopath-network.ru'}/messages`
+/** Default-namespace socket (same connection as posts/presence). */
 export const connectMessagesSocket = (userId: string): Socket => {
-    if (socket?.connected) {
-        return socket;
-    }
-    const socketUrl = `${SOCKET_URL}/messages`;
-    socket = io(socketUrl, {
-        query: {
-            userId,
-        },
-        transports: ['websocket'],
-        withCredentials: true, // Важно для отправки cookies (httpOnly cookies отправятся автоматически)
-    });
-
-    // Логирование событий для отладки
-    socket.on('connect', () => {
-        console.log('🔌 Messages WebSocket connected');
-    });
-
-    socket.on('disconnect', () => {
-        console.log('🔌 Messages WebSocket disconnected');
-    });
-
-    socket.on('connect_error', (error) => {
-
-        console.error('❌ Messages WebSocket connection error:', error);
-    });
-
-    return socket;
+    return socketManager.connect(userId);
 };
 
-export const disconnectMessagesSocket = () => {
-
-    if (socket) {
-
-        socket.disconnect();
-        socket = null;
-    }
+export const disconnectMessagesSocket = (): void => {
+    socketManager.disconnect();
 };
 
 export const getMessagesSocket = (): Socket | null => {
-    return socket;
+    return socketManager.getSocketSafe();
 };
-

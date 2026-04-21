@@ -2,11 +2,11 @@
 import React from 'react';
 
 import { cn } from '@workspace/ui/lib/utils';
-import { useAuth } from '@/modules/processes/auth';
-import { LoadingScreen } from '@/modules/shared';
-import { Header, Navigation } from '@/modules/widgetes';
+import { useAuth } from '@/modules/processes/auth/lib/hooks/auth.hook';
+import { LoadingScreen } from '@/modules/shared/ui';
+import { Header, Navigation } from '@/modules/widgets';
 import { GlobalCallProvider } from '@/modules/features/call/lib/context/global-call-provider';
-import { CallWrapperWidget } from '@/modules/widgetes/call/CallWrapper/CallWrapperWidget';
+import { CallWrapperWidget } from '@/modules/widgets/call/CallWrapper/CallWrapperWidget';
 
 
 

@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useAuth } from '@/modules/processes';
+import { useAuth } from '@/modules/processes/auth/lib/hooks/auth.hook';
 import { LoadingScreen } from '@/modules/shared/ui';
-import { ChatMessagesWidget, ChatInputWidget, CreateChatDialogWidget } from '@/modules/widgetes/chat';
+import { ChatMessagesWidget, ChatInputWidget, CreateChatDialogWidget } from '@/modules/widgets/chat';
 import { useUserChats, useCreateChat, useMarkChatAsRead, useChatSocket, useSendMessage } from '@/modules/entities/chats';
 import { scrollToBottom } from '@/modules/entities/messages/lib/utils/scroll-to-bottom.util';
 import { Chat, ChatType, CreateChat } from '@/modules/entities/chats';
 import { useAllUsers } from '@/modules/entities/followers';
-import { ChatMemberDto, CreateChatDto } from '@workspace/nest-api';
+import { ChatDtoEncryptionMode, CreateChatDto } from '@workspace/nest-api';
 //TODO: страница чатов не используется и надо ее удалить теперь в чат попадаем через chat/[chatId]
 
 
@@ -18,6 +18,7 @@ export default function ChatsPage() {
     const [messageText, setMessageText] = useState('');
     const [showNewChatDialog, setShowNewChatDialog] = useState(false);
     const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+    const [securePrivateChat, setSecurePrivateChat] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const lastMarkedChatIdRef = useRef<string | null>(null);
 
@@ -36,10 +37,15 @@ export default function ChatsPage() {
     });
 
     // Send message hook
-    const { sendMessage, isPending: isSendingMessage } = useSendMessage({
+    const {
+        sendMessage,
+        retryFailedMessage,
+        isPending: isSendingMessage,
+    } = useSendMessage({
         chatId: selectedChatId,
         currentUser,
         messagesEndRef,
+        chat: selectedChat,
     });
 
     // Mark chat as read when selected (only once per chat)
@@ -66,15 +72,13 @@ export default function ChatsPage() {
         return <LoadingScreen />;
     }
 
-    const handleSendMessage = async () => {
-        if (!messageText.trim()) return;
-        try {
-            await sendMessage(messageText);
-            setMessageText('');
-        } catch (error) {
+    const handleSendMessage = () => {
+        const text = messageText.trim();
+        if (!text) return;
+        setMessageText('');
+        void sendMessage(text).catch((error) => {
             console.error('Failed to send message:', error);
-            // Error handling is done in the hook
-        }
+        });
     };
 
     const handleCreateChat = async () => {
@@ -86,46 +90,53 @@ export default function ChatsPage() {
                 memberIds: selectedUserIds,
                 name: '',
                 description: '',
+                encryptionMode:
+                    selectedUserIds.length === 1 && securePrivateChat
+                        ? ChatDtoEncryptionMode.SIGNAL
+                        : undefined,
             };
             const chat = await createChatMutation.mutateAsync(chatData as CreateChatDto);
             setSelectedChatId((chat as unknown as Chat).id);
             setShowNewChatDialog(false);
             setSelectedUserIds([]);
+            setSecurePrivateChat(false);
         } catch (error) {
             console.error('Failed to create chat:', error);
         }
     };
 
     const handleUserToggle = (userId: string) => {
-        setSelectedUserIds((prev) =>
-            prev.includes(userId)
+        setSelectedUserIds((prev) => {
+            const next = prev.includes(userId)
                 ? prev.filter((id) => id !== userId)
-                : [...prev, userId]
-        );
+                : [...prev, userId];
+            if (next.length !== 1) {
+                setSecurePrivateChat(false);
+            }
+            return next;
+        });
     };
-    const otherUserId = selectedChat?.members?.find((m: ChatMemberDto) => m.userId !== currentUser?.id)?.userId || '';
     return (
         <div className="md:h-[88vh] h-[calc(100dvh-10rem)] bg-background flex overflow-hidden border-2 rounded-3xl">
 
 
-                <div className=" flex flex-col h-full overflow-hidden bg-card">
-                    <ChatMessagesWidget
-                        chatId={selectedChatId}
-                        currentUserId={currentUser.id}
-                        selectedChat={selectedChat}
-                        messagesEndRef={messagesEndRef}
+            <div className=" flex flex-col h-full overflow-hidden bg-card">
+                <ChatMessagesWidget
+                    chatId={selectedChatId}
+                    messagesEndRef={messagesEndRef}
+                    onRetryFailed={retryFailedMessage}
+                />
+
+                {selectedChatId && (
+                    <ChatInputWidget
+                        messageText={messageText}
+                        onMessageTextChange={setMessageText}
+                        onSendMessage={handleSendMessage}
+                        isPending={isSendingMessage}
                     />
 
-                    {selectedChatId && (
-                        <ChatInputWidget
-                            messageText={messageText}
-                            onMessageTextChange={setMessageText}
-                            onSendMessage={handleSendMessage}
-                            isPending={isSendingMessage}
-                        />
-
-                    )}
-                </div>
+                )}
+            </div>
 
             <CreateChatDialogWidget
                 isOpen={showNewChatDialog}
@@ -137,8 +148,11 @@ export default function ChatsPage() {
                 onCancel={() => {
                     setShowNewChatDialog(false);
                     setSelectedUserIds([]);
+                    setSecurePrivateChat(false);
                 }}
                 isPending={createChatMutation.isPending}
+                securePrivateChat={securePrivateChat}
+                onSecurePrivateChatChange={setSecurePrivateChat}
             />
 
         </div>

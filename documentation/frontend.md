@@ -51,7 +51,9 @@ modules/
 
 7. **[Чат и WebRTC](./frontend/docs/chat-webrtc.md)** - работа с чатами, WebRTC для секретных чатов, переход на LiveKit
 
-8. **[Задачи](./frontend/tasks/tasks.md)** - список задач для выполнения
+8. **[Signal E2EE и защищённые чаты](./frontend/docs/encryption/signal-e2ee-messenger.md)** - Signal на веб-клиенте, режимы `NONE` / `SIGNAL`, multi-device, карта файлов
+
+9. **[Задачи](./frontend/tasks/tasks.md)** - список задач для выполнения
 
 ## Основные модули
 
@@ -74,10 +76,10 @@ modules/
 ### Мессенджер
 - **Чаты** - список чатов и переписки
 - **Сообщения** - отправка и получение сообщений в реальном времени
-- **Secret Chat** - зашифрованные чаты через WebRTC
+- **Защищённый диалог (Signal E2EE)** - отдельный приватный чат с `encryptionMode: SIGNAL`, ciphertext на сервере; подробнее: [Signal E2EE](./frontend/docs/encryption/signal-e2ee-messenger.md)
 - **Presence** - статус онлайн/офлайн пользователей
 
-Подробнее: [Чат и WebRTC](./frontend/docs/chat-webrtc.md)
+Подробнее: [Чат и WebRTC](./frontend/docs/chat-webrtc.md), [Signal E2EE](./frontend/docs/encryption/signal-e2ee-messenger.md)
 
 ### Звонки
 - **Видеозвонки** - через LiveKit

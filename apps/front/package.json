@@ -14,6 +14,7 @@
     "dependencies": {
         "@livekit/components-react": "^2.9.17",
         "@livekit/components-styles": "^1.2.0",
+        "@privacyresearch/libsignal-protocol-typescript": "^0.0.16",
         "@tanstack/react-query": "^5.90.8",
         "@tanstack/react-query-devtools": "^5.90.2",
         "@workspace/nest-api": "workspace:*",
@@ -22,6 +23,7 @@
         "add": "^2.0.6",
         "axios": "^1.10.0",
         "framer-motion": "^12.6.4",
+        "idb": "^8.0.3",
         "livekit-client": "^2.17.0",
         "lucide-react": "^0.475.0",
         "next": "^15.5.7",
@@ -32,7 +34,8 @@
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
         "react-hook-form": "^7.56.3",
-        "socket.io-client": "^4.8.1"
+        "socket.io-client": "^4.8.1",
+        "uuid": "^13.0.0"
     },
     "devDependencies": {
         "@tanstack/eslint-plugin-query": "^5.91.2",
@@ -40,6 +43,7 @@
         "@types/node": "^20",
         "@types/react": "^19",
         "@types/react-dom": "^19",
+        "@types/uuid": "^11.0.0",
         "@workspace/eslint-config": "workspace:^",
         "@workspace/typescript-config": "workspace:*",
         "prettier": "^3.8.1",

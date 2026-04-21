@@ -7,8 +7,11 @@
  */
 import type {
     CreateMessageDto,
+    CreateSystemMessageDto,
     MessageDto,
     MessagesGetChatMessagesParams,
+    UnreadCountResponseDto,
+    UnreadTotalResponseDto,
 } from '.././model';
 
 import { customAxios } from '../../lib/back-api';
@@ -26,6 +29,19 @@ export const getMessages = () => {
         });
     };
     /**
+     * @summary Create a system line in chat (policy / service notice; rendered as SYSTEM)
+     */
+    const messagesCreateSystemMessage = (
+        createSystemMessageDto: CreateSystemMessageDto,
+    ) => {
+        return customAxios<MessageDto>({
+            url: `/api/messages/system`,
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            data: createSystemMessageDto,
+        });
+    };
+    /**
      * @summary Get messages for a chat
      */
     const messagesGetChatMessages = (
@@ -36,6 +52,15 @@ export const getMessages = () => {
             url: `/api/messages/chat/${chatId}`,
             method: 'GET',
             params,
+        });
+    };
+    /**
+     * @summary Total unread messages for current user (all chats)
+     */
+    const messagesGetTotalUnread = () => {
+        return customAxios<UnreadTotalResponseDto>({
+            url: `/api/messages/unread/total`,
+            method: 'GET',
         });
     };
     /**
@@ -87,14 +112,16 @@ export const getMessages = () => {
      * @summary Get unread count for a chat
      */
     const messagesGetUnreadCount = (chatId: string) => {
-        return customAxios<number>({
+        return customAxios<UnreadCountResponseDto>({
             url: `/api/messages/chat/${chatId}/unread`,
             method: 'GET',
         });
     };
     return {
         messagesCreateMessage,
+        messagesCreateSystemMessage,
         messagesGetChatMessages,
+        messagesGetTotalUnread,
         messagesGetMessageById,
         messagesUpdateMessage,
         messagesDeleteMessage,
@@ -106,9 +133,21 @@ export const getMessages = () => {
 export type MessagesCreateMessageResult = NonNullable<
     Awaited<ReturnType<ReturnType<typeof getMessages>['messagesCreateMessage']>>
 >;
+export type MessagesCreateSystemMessageResult = NonNullable<
+    Awaited<
+        ReturnType<
+            ReturnType<typeof getMessages>['messagesCreateSystemMessage']
+        >
+    >
+>;
 export type MessagesGetChatMessagesResult = NonNullable<
     Awaited<
         ReturnType<ReturnType<typeof getMessages>['messagesGetChatMessages']>
+    >
+>;
+export type MessagesGetTotalUnreadResult = NonNullable<
+    Awaited<
+        ReturnType<ReturnType<typeof getMessages>['messagesGetTotalUnread']>
     >
 >;
 export type MessagesGetMessageByIdResult = NonNullable<
