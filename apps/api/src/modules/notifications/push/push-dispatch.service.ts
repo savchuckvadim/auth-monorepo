@@ -39,6 +39,11 @@ export class PushDispatchService {
     ): Promise<void> {
         const devices =
             await this.notificationsService.getActiveVoipDevicesForUser(userId);
+        if (devices.length === 0) {
+            this.logger.warn(
+                `sendIncomingCallVoip no devices userId=${userId} (expected APNS_VOIP or voipToken)`,
+            );
+        }
         this.logger.log(
             `sendIncomingCallVoip userId=${userId} devices=${devices.length} providers=[${devices.map(d => d.provider).join(',')}]`,
         );
@@ -46,7 +51,7 @@ export class PushDispatchService {
             devices.map(device =>
                 this.sendWithProvider(
                     PushProvider.APNS_VOIP,
-                    device.token,
+                    device.voipToken || device.token,
                     payload,
                 ),
             ),
