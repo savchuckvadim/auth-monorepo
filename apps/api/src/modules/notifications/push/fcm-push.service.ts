@@ -64,21 +64,32 @@ export class FcmPushService {
             return;
         }
 
-        await messaging.send({
-            token,
-            notification: {
-                title: payload.title,
-                body: payload.body,
-            },
-            data: payload.data,
-            android: {
-                priority: 'high',
-            },
-            apns: {
-                headers: {
-                    'apns-priority': '10',
+        try {
+            const messageId = await messaging.send({
+                token,
+                notification: {
+                    title: payload.title,
+                    body: payload.body,
                 },
-            },
-        });
+                data: payload.data,
+                android: {
+                    priority: 'high',
+                },
+                apns: {
+                    headers: {
+                        'apns-priority': '10',
+                    },
+                },
+            });
+            this.logger.log(
+                `FCM send success tokenPrefix=${token.slice(0, 12)} messageId=${messageId}`,
+            );
+        } catch (error) {
+            const firebaseError = error as admin.FirebaseError;
+            this.logger.error(
+                `FCM send failed tokenPrefix=${token.slice(0, 12)} code=${firebaseError?.code ?? 'unknown'} message=${firebaseError?.message ?? String(error)}`,
+            );
+            throw error;
+        }
     }
 }
