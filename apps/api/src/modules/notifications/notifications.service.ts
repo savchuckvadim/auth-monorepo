@@ -78,14 +78,22 @@ export class NotificationsService {
     }
 
     async getActiveVoipDevicesForUser(userId: string) {
-        return this.prisma.pushDevice.findMany({
+        const devices = await this.prisma.pushDevice.findMany({
             where: {
                 userId,
                 isActive: true,
-                provider: PushProvider.APNS_VOIP,
+                OR: [
+                    { provider: PushProvider.APNS_VOIP },
+                    // Some clients register APNS provider but pass dedicated voipToken.
+                    { voipToken: { not: null } },
+                ],
             },
             orderBy: { updatedAt: 'desc' },
         });
+        this.logger.log(
+            `getActiveVoipDevicesForUser userId=${userId} count=${devices.length} providers=[${devices.map(d => d.provider).join(',')}] voipTokenPresent=${devices.filter(d => Boolean(d.voipToken)).length}`,
+        );
+        return devices;
     }
 
     async deactivateToken(token: string) {
