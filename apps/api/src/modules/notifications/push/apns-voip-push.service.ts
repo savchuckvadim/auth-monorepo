@@ -52,19 +52,26 @@ export class ApnsVoipPushService {
             `${process.env.APNS_BUNDLE_ID || ''}.voip`;
         notification.priority = 10;
         notification.expiry = Math.floor(Date.now() / 1000) + 30;
-        const voipNotification = notification as apn.Notification & {
-            pushType?: 'voip' | 'alert';
-            headers?: Record<string, string>;
-        };
-        voipNotification.headers = {
-            ...(voipNotification.headers || {}),
-            'apns-push-type': 'voip',
-        };
-        voipNotification.pushType = 'voip';
         notification.payload = {
             ...payload.data,
             title: payload.title,
             body: payload.body,
+        };
+
+        // apn@2.2 does not emit `apns-push-type`. Wrap the prototype method on this instance
+        // so the library emits `apns-push-type: voip` required by iOS 13+ PushKit.
+        type HeadersFn = () => Record<string, string | number>;
+        const notificationWithHeaders = notification as unknown as {
+            headers: HeadersFn;
+        };
+        const originalHeaders: HeadersFn = notificationWithHeaders.headers.bind(
+            notificationWithHeaders,
+        ) as HeadersFn;
+        notificationWithHeaders.headers = function headers() {
+            return {
+                ...originalHeaders(),
+                'apns-push-type': 'voip',
+            };
         };
 
         const response = await provider.send(notification, token);
