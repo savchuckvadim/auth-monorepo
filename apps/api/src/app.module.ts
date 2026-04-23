@@ -24,6 +24,7 @@ import { PresenceModule } from './modules/presence';
 import { ScheduleModule } from '@nestjs/schedule';
 import { EncryptionModule } from './modules/encryption';
 import { InvitationsModule } from './modules/invitations';
+import { MobileLogsModule } from './modules/mobile-logs';
 
 @Module({
     imports: [
@@ -61,6 +62,7 @@ import { InvitationsModule } from './modules/invitations';
         PresenceModule,
         EncryptionModule,
         InvitationsModule,
+        MobileLogsModule,
     ],
 
     providers: [GlobalExceptionFilter],

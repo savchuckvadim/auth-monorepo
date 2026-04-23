@@ -67,6 +67,13 @@ export class ApnsVoipPushService {
             body: payload.body,
         };
 
-        await provider.send(notification, token);
+        const response = await provider.send(notification, token);
+        const failedReasons = response.failed
+            .map(item => item.response?.reason || item.error?.message)
+            .filter(Boolean)
+            .join(',');
+        this.logger.log(
+            `APNS_VOIP send response tokenPrefix=${token.slice(0, 12)} sent=${response.sent.length} failed=${response.failed.length} reasons=[${failedReasons || 'none'}]`,
+        );
     }
 }

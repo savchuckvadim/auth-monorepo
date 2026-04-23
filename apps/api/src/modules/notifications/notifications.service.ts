@@ -1,19 +1,32 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '@/core';
 import { PushProvider } from 'generated/prisma';
 import { RegisterPushDeviceDto } from './dto/register-push-device.dto';
 
 @Injectable()
 export class NotificationsService {
+    private readonly logger = new Logger(NotificationsService.name);
+
     constructor(private readonly prisma: PrismaService) {}
 
+    private tokenPrefix(token?: string | null): string {
+        return token ? token.slice(0, 12) : 'none';
+    }
+
     async registerDevice(userId: string, dto: RegisterPushDeviceDto) {
+        this.logger.log(
+            `registerDevice:start userId=${userId} provider=${dto.provider} platform=${dto.platform} tokenPrefix=${this.tokenPrefix(dto.token)} voipTokenPrefix=${this.tokenPrefix(dto.voipToken)}`,
+        );
+
         const existing = await this.prisma.pushDevice.findUnique({
             where: { token: dto.token },
         });
 
         if (existing) {
-            return this.prisma.pushDevice.update({
+            this.logger.log(
+                `registerDevice:mode=update userId=${userId} provider=${dto.provider} platform=${dto.platform} tokenPrefix=${this.tokenPrefix(dto.token)}`,
+            );
+            const updated = await this.prisma.pushDevice.update({
                 where: { token: dto.token },
                 data: {
                     userId,
@@ -24,9 +37,16 @@ export class NotificationsService {
                     lastSeenAt: new Date(),
                 },
             });
+            this.logger.log(
+                `registerDevice:done mode=update userId=${userId} pushDeviceId=${updated.id}`,
+            );
+            return updated;
         }
 
-        return this.prisma.pushDevice.create({
+        this.logger.log(
+            `registerDevice:mode=create userId=${userId} provider=${dto.provider} platform=${dto.platform} tokenPrefix=${this.tokenPrefix(dto.token)}`,
+        );
+        const created = await this.prisma.pushDevice.create({
             data: {
                 userId,
                 platform: dto.platform,
@@ -36,6 +56,10 @@ export class NotificationsService {
                 isActive: true,
             },
         });
+        this.logger.log(
+            `registerDevice:done mode=create userId=${userId} pushDeviceId=${created.id}`,
+        );
+        return created;
     }
 
     async deactivateDevice(userId: string, token: string) {
