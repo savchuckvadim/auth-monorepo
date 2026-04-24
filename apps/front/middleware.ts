@@ -13,9 +13,22 @@ export async function middleware(req: NextRequest) {
         return NextResponse.next();
     }
     const isConfirmPage = url.pathname.startsWith('/auth/confirm');
-    const isAuthPage = url.pathname.startsWith('/auth') && !isConfirmPage;
+    // Восстановление пароля — сценарий, в котором пользователь может быть как
+    // неавторизован (типовой кейс), так и уже авторизован (открыл письмо в том
+    // же браузере). В обоих случаях мы должны пропускать его на страницу, иначе
+    // middleware перекинет на /network/me и сценарий сброса сломается.
+    const isPasswordRecoveryPage =
+        url.pathname.startsWith('/auth/forgot-password') ||
+        url.pathname.startsWith('/auth/reset-password');
+    const isAuthPage =
+        url.pathname.startsWith('/auth') && !isConfirmPage && !isPasswordRecoveryPage;
     const isProtected = url.pathname.startsWith('/network');
-    const isUndefinedPath = !isAuthPage && !isProtected && !isConfirmPage;
+    const isUndefinedPath =
+        !isAuthPage && !isProtected && !isConfirmPage && !isPasswordRecoveryPage;
+
+    if (isPasswordRecoveryPage) {
+        return NextResponse.next();
+    }
 
     // Если нет токена — редирект на логин
     if (!hasToken && (isProtected || isUndefinedPath)) {

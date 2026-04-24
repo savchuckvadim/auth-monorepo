@@ -5,7 +5,17 @@
  * API for auth backend for monorepo
  * OpenAPI spec version: 1.0
  */
-import type { AuthenticatedUserDto, CreateUserDto, LoginDto } from '.././model';
+import type {
+    AuthenticatedUserDto,
+    ChangePasswordDto,
+    CreateUserDto,
+    ForgotPasswordDto,
+    LoginDto,
+    PasswordActionResultDto,
+    ResetPasswordDto,
+    SessionDto,
+    SessionsBulkResultDto,
+} from '.././model';
 
 import { customAxios } from '../../lib/back-api';
 
@@ -27,17 +37,6 @@ export const getAuth = () => {
     const authLogin = (loginDto: LoginDto) => {
         return customAxios<AuthenticatedUserDto>({
             url: `/api/auth/login`,
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            data: loginDto,
-        });
-    };
-    /**
-     * @summary Login for mobile app
-     */
-    const authMobileLogin = (loginDto: LoginDto) => {
-        return customAxios<AuthenticatedUserDto>({
-            url: `/api/auth/mobile/login`,
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             data: loginDto,
@@ -67,13 +66,84 @@ export const getAuth = () => {
             method: 'POST',
         });
     };
+    /**
+     * Возвращает все неистёкшие refresh-сессии (одна сессия = одно устройство/браузер). У той, из которой сделан текущий запрос, `isCurrent = true`.
+     * @summary Получить список активных сессий текущего пользователя
+     */
+    const authListSessions = () => {
+        return customAxios<SessionDto[]>({
+            url: `/api/auth/sessions`,
+            method: 'GET',
+        });
+    };
+    /**
+     * Удаляет ВСЕ refresh-сессии текущего пользователя, включая текущую. После вызова клиент получит 401 на следующем `refresh` и будет перенаправлен на /auth/login.
+     * @summary Выйти со всех устройств
+     */
+    const authRevokeAllSessions = () => {
+        return customAxios<SessionsBulkResultDto>({
+            url: `/api/auth/sessions`,
+            method: 'DELETE',
+        });
+    };
+    /**
+     * Удаляет одну refresh-сессию по её ID. Сервер сверяет `userId` — чужую сессию ревокнуть нельзя, даже передав её id.
+     * @summary Ревокнуть конкретную сессию (другое устройство)
+     */
+    const authRevokeSession = (id: string) => {
+        return customAxios<SessionsBulkResultDto>({
+            url: `/api/auth/sessions/${id}`,
+            method: 'DELETE',
+        });
+    };
+    /**
+     * Всегда отвечает `{ success: true }` независимо от того, существует ли пользователь с таким email — чтобы не раскрывать наличие учётных записей.
+     * @summary Запросить письмо со ссылкой для сброса пароля
+     */
+    const authForgotPassword = (forgotPasswordDto: ForgotPasswordDto) => {
+        return customAxios<PasswordActionResultDto>({
+            url: `/api/auth/forgot-password`,
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            data: forgotPasswordDto,
+        });
+    };
+    /**
+     * Потребляет токен, обновляет пароль пользователя и ревокает ВСЕ refresh-сессии. Пользователь должен заново войти везде.
+     * @summary Установить новый пароль по одноразовому токену из письма
+     */
+    const authResetPassword = (resetPasswordDto: ResetPasswordDto) => {
+        return customAxios<PasswordActionResultDto>({
+            url: `/api/auth/reset-password`,
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            data: resetPasswordDto,
+        });
+    };
+    /**
+     * Требует подтверждения старого пароля. Ревокает все refresh-сессии пользователя КРОМЕ текущей (из cookie), чтобы пользователь не был разлогинен на своём же устройстве.
+     * @summary Сменить пароль авторизованным пользователем
+     */
+    const authChangePassword = (changePasswordDto: ChangePasswordDto) => {
+        return customAxios<PasswordActionResultDto>({
+            url: `/api/auth/change-password`,
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            data: changePasswordDto,
+        });
+    };
     return {
         authRegistration,
         authLogin,
-        authMobileLogin,
         authActivate,
         authLogout,
         authRefreshToken,
+        authListSessions,
+        authRevokeAllSessions,
+        authRevokeSession,
+        authForgotPassword,
+        authResetPassword,
+        authChangePassword,
     };
 };
 export type AuthRegistrationResult = NonNullable<
@@ -81,9 +151,6 @@ export type AuthRegistrationResult = NonNullable<
 >;
 export type AuthLoginResult = NonNullable<
     Awaited<ReturnType<ReturnType<typeof getAuth>['authLogin']>>
->;
-export type AuthMobileLoginResult = NonNullable<
-    Awaited<ReturnType<ReturnType<typeof getAuth>['authMobileLogin']>>
 >;
 export type AuthActivateResult = NonNullable<
     Awaited<ReturnType<ReturnType<typeof getAuth>['authActivate']>>
@@ -93,4 +160,22 @@ export type AuthLogoutResult = NonNullable<
 >;
 export type AuthRefreshTokenResult = NonNullable<
     Awaited<ReturnType<ReturnType<typeof getAuth>['authRefreshToken']>>
+>;
+export type AuthListSessionsResult = NonNullable<
+    Awaited<ReturnType<ReturnType<typeof getAuth>['authListSessions']>>
+>;
+export type AuthRevokeAllSessionsResult = NonNullable<
+    Awaited<ReturnType<ReturnType<typeof getAuth>['authRevokeAllSessions']>>
+>;
+export type AuthRevokeSessionResult = NonNullable<
+    Awaited<ReturnType<ReturnType<typeof getAuth>['authRevokeSession']>>
+>;
+export type AuthForgotPasswordResult = NonNullable<
+    Awaited<ReturnType<ReturnType<typeof getAuth>['authForgotPassword']>>
+>;
+export type AuthResetPasswordResult = NonNullable<
+    Awaited<ReturnType<ReturnType<typeof getAuth>['authResetPassword']>>
+>;
+export type AuthChangePasswordResult = NonNullable<
+    Awaited<ReturnType<ReturnType<typeof getAuth>['authChangePassword']>>
 >;

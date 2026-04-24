@@ -10,12 +10,16 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { ILoginForm } from '../../type/auth.type';
 import { useAuth } from '../../lib/hooks/auth.hook';
 import { FormField } from '@/modules/shared/ui';
+import { saveForgotEmailHint } from '@/modules/features/password';
 
 export const LoginForm = () => {
     const [showPassword, setShowPassword] = useState(false);
     const { login, isLoading, error } = useAuth();
     const { control, handleSubmit } = useForm<ILoginForm>();
-    const onSubmit: SubmitHandler<ILoginForm> = (data) => login(data);
+    const onSubmit: SubmitHandler<ILoginForm> = (data) => {
+        saveForgotEmailHint(data.email);
+        login(data);
+    };
 
     return (
         <form
