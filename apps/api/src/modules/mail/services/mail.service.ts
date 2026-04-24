@@ -2,10 +2,12 @@ import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
 import { Injectable, Logger } from '@nestjs/common';
 import { render } from '@react-email/components';
 import { EmailVerificationTemplate } from '../templates/email-verification.template';
+import { PasswordResetTemplate } from '../templates/password-reset.template';
 // import { InjectQueue } from '@nestjs/bull';
 // import { Queue } from 'bull';
 import { ConfigService } from '@nestjs/config';
 import { SendMailActivationLinkDto } from '../dtos/activation-link.dto';
+import { SendMailPasswordResetDto } from '../dtos/password-reset.dto';
 
 @Injectable()
 export class MailService {
@@ -35,6 +37,32 @@ export class MailService {
             context: {
                 name: name,
             },
+        });
+        return true;
+    }
+
+    public async sendPasswordReset({
+        email,
+        name,
+        resetLink,
+        expiresInMinutes,
+    }: SendMailPasswordResetDto) {
+        const clientUrl = this.configService.getOrThrow<string>('CLIENT_URL');
+
+        const html = await render(
+            PasswordResetTemplate({
+                name,
+                resetLink,
+                clientUrl,
+                expiresInMinutes,
+            }),
+        );
+
+        await this.sendEmail({
+            subject: `Сброс пароля на сайте ${clientUrl}`,
+            html,
+            to: [email],
+            context: { name },
         });
         return true;
     }

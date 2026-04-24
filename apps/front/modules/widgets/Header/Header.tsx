@@ -4,6 +4,7 @@ import { CurrentUser } from "@/modules/entities/user";
 import { Logout } from "@/modules/processes/"
 import { ThemeToggle } from "@/modules/shared";
 
+import { Settings } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 // import { usePathname } from "next/navigation";
@@ -48,6 +49,14 @@ export const Header = () => {
 
                             <CurrentUser />
                         </div>
+                        <Link
+                            href="/network/settings"
+                            className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-card hover:text-primary"
+                            aria-label="Настройки"
+                            title="Настройки"
+                        >
+                            <Settings className="h-5 w-5" />
+                        </Link>
                         <Logout />
                     </div>
                 </div>

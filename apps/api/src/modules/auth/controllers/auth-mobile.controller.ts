@@ -1,28 +1,47 @@
 import {
     Body,
     Controller,
+    Delete,
     Get,
+    HttpCode,
     HttpStatus,
     Param,
     Post,
+    Req,
     Res,
+    UseGuards,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import {
     ApiBadRequestResponse,
+    ApiBearerAuth,
     ApiBody,
     ApiOperation,
     ApiParam,
     ApiResponse,
     ApiTags,
+    ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { AuthService } from '../services/auth.service';
+import { SessionsService } from '../services/sessions.service';
+import { PasswordResetService } from '../password-reset/password-reset.service';
 import { ConfigService } from '@nestjs/config';
 import { AuthenticatedUserDto, LoginDto } from '../dtos/login.dto';
 import { RefreshTokenDto } from '../dtos/refresh-token.dto';
+import { SessionDto, SessionsBulkResultDto } from '../dtos/session.dto';
+import {
+    ChangePasswordMobileDto,
+    ForgotPasswordDto,
+    PasswordActionResultDto,
+    ResetPasswordDto,
+} from '../dtos/password.dto';
 import { CookieService } from '@/core/cookie';
 import { CreateUserDto } from '@/modules/user';
 import { ErrorResponseDto } from '@/core';
+import { AccessTokenGuard } from '@/core/guards/access-token.guard';
+import { CurrentUser } from '@/core/decorators/auth/current-user.decorator';
+import { TokenPayloadDto } from '@/modules/token';
+import { resolveAuthRequestInfo, resolveDeviceIdFromHeaders } from '@/lib';
 
 /**
  * AuthController для мобильного приложения
@@ -37,6 +56,8 @@ export class AuthMobileController {
     clientUrl: string;
     constructor(
         private readonly authService: AuthService,
+        private readonly sessionsService: SessionsService,
+        private readonly passwordResetService: PasswordResetService,
         private readonly configService: ConfigService,
         private readonly cookieService: CookieService,
     ) {
@@ -56,8 +77,12 @@ export class AuthMobileController {
     @Post('registration')
     async registration(
         @Body() registerDto: CreateUserDto,
+        @Req() req: Request,
     ): Promise<AuthenticatedUserDto> {
-        return await this.authService.registration(registerDto);
+        return await this.authService.registration(
+            registerDto,
+            resolveAuthRequestInfo(req),
+        );
     }
     @ApiOperation({ summary: 'Login for mobile app' })
     @ApiBody({ type: LoginDto, description: 'Login for mobile app' })
@@ -67,18 +92,29 @@ export class AuthMobileController {
         type: AuthenticatedUserDto,
     })
     @Post('mobile/login')
-    async login(@Body() loginDto: LoginDto): Promise<AuthenticatedUserDto> {
-        const user = await this.authService.login(loginDto);
-        console.log('login', user);
-        return user;
+    async login(
+        @Body() loginDto: LoginDto,
+        @Req() req: Request,
+    ): Promise<AuthenticatedUserDto> {
+        return await this.authService.login(
+            loginDto,
+            resolveAuthRequestInfo(req),
+        );
     }
 
     @ApiOperation({ summary: 'Activate' })
     @ApiParam({ name: 'link', description: 'Activate link' })
     // @SetAuthCookie() // вызов interceptor через декоратор. декоратор просто обертка для UseInterceptors(AuthCookieInterceptor)
     @Get('activate/:link')
-    async activate(@Param('link') link: string, @Res() res: Response) {
-        const user = await this.authService.activate(link);
+    async activate(
+        @Param('link') link: string,
+        @Req() req: Request,
+        @Res() res: Response,
+    ) {
+        const user = await this.authService.activate(
+            link,
+            resolveAuthRequestInfo(req),
+        );
         const redirectUrl = `${this.clientUrl}/auth/login`;
         this.cookieService.setRefreshToken(res, user.tokens.refreshToken);
         this.cookieService.setAccessToken(res, user.tokens.accessToken);
@@ -90,7 +126,8 @@ export class AuthMobileController {
     @ApiResponse({ status: 200, description: 'Logout success', type: Boolean })
     @Post('logout')
     async logout(@Body() refreshTokenDto: RefreshTokenDto): Promise<boolean> {
-        // Для мобильного приложения токен приходит в body, а не в куках
+        // Для мобильного приложения токен приходит в body, а не в куках.
+        // Идемпотентно: если токена нет в БД — просто возвращаем true.
         await this.authService.logout(refreshTokenDto.refreshToken);
         return true;
     }
@@ -105,15 +142,182 @@ export class AuthMobileController {
         description: 'User with tokens',
         type: AuthenticatedUserDto,
     })
-    // @SetAuthCookie() // НЕ используем для мобильного приложения - токены возвращаются в ответе, а не в куках
     @Post('refresh')
     async refreshToken(
         @Body() refreshTokenDto: RefreshTokenDto,
+        @Req() req: Request,
     ): Promise<AuthenticatedUserDto> {
-        // Для мобильного приложения токен приходит в body, а не в куках
-        const user = await this.authService.refreshToken(
+        return await this.authService.refreshToken(
             refreshTokenDto.refreshToken,
+            undefined,
+            resolveAuthRequestInfo(req),
         );
-        return user;
+    }
+
+    // ============ Sessions management (mobile) ============
+
+    @ApiOperation({
+        summary: 'Mobile: список активных сессий',
+        description:
+            'Текущая сессия определяется по заголовку `x-device-id` (мобилка шлёт его на каждом запросе).',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Список сессий',
+        type: [SessionDto],
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Access token отсутствует или невалиден',
+    })
+    @ApiBearerAuth()
+    @UseGuards(AccessTokenGuard)
+    @Get('sessions')
+    async listSessions(
+        @CurrentUser() user: TokenPayloadDto,
+        @Req() req: Request,
+    ): Promise<SessionDto[]> {
+        return await this.sessionsService.listSessions(user.userId, {
+            deviceId: resolveDeviceIdFromHeaders(req.headers),
+        });
+    }
+
+    @ApiOperation({ summary: 'Mobile: ревок конкретной сессии' })
+    @ApiParam({
+        name: 'id',
+        description: 'ID сессии (tokens.id)',
+        example: '3fbe2a6a-1234-4a3b-9c7e-1234567890ab',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Сессия удалена',
+        type: SessionsBulkResultDto,
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Access token отсутствует или невалиден',
+    })
+    @ApiBearerAuth()
+    @UseGuards(AccessTokenGuard)
+    @Delete('sessions/:id')
+    async revokeSession(
+        @CurrentUser() user: TokenPayloadDto,
+        @Param('id') id: string,
+    ): Promise<SessionsBulkResultDto> {
+        return await this.sessionsService.revokeSession(user.userId, id);
+    }
+
+    @ApiOperation({
+        summary: 'Mobile: выйти со всех устройств',
+        description:
+            'Удаляет все refresh-сессии пользователя, включая текущую. Мобильное приложение само очистит SecureStore после 401 на следующем refresh.',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Все сессии удалены',
+        type: SessionsBulkResultDto,
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Access token отсутствует или невалиден',
+    })
+    @ApiBearerAuth()
+    @UseGuards(AccessTokenGuard)
+    @Delete('sessions')
+    async revokeAllSessions(
+        @CurrentUser() user: TokenPayloadDto,
+    ): Promise<SessionsBulkResultDto> {
+        return await this.sessionsService.revokeAllSessions(user.userId);
+    }
+
+    // ============ Password flow (mobile) ============
+
+    @ApiOperation({
+        summary: 'Mobile: запросить письмо со ссылкой для сброса пароля',
+        description:
+            'Отвечает одинаково независимо от того, существует ли аккаунт. Ссылка в письме ведёт на web-страницу `${CLIENT_URL}/auth/reset-password`.',
+    })
+    @ApiBody({ type: ForgotPasswordDto })
+    @ApiResponse({
+        status: 200,
+        description: 'Письмо поставлено в очередь',
+        type: PasswordActionResultDto,
+    })
+    @ApiBadRequestResponse({
+        description: 'Validation failed',
+        type: ErrorResponseDto,
+    })
+    @HttpCode(HttpStatus.OK)
+    @Post('forgot-password')
+    async forgotPassword(
+        @Body() dto: ForgotPasswordDto,
+        @Req() req: Request,
+    ): Promise<PasswordActionResultDto> {
+        await this.passwordResetService.requestReset(
+            dto.email,
+            resolveAuthRequestInfo(req),
+        );
+        return { success: true };
+    }
+
+    @ApiOperation({
+        summary: 'Mobile: установить новый пароль по токену из письма',
+        description:
+            'Потребляет токен и ревокает все refresh-сессии. Мобилка при следующем запросе получит 401 и очистит SecureStore.',
+    })
+    @ApiBody({ type: ResetPasswordDto })
+    @ApiResponse({
+        status: 200,
+        description: 'Пароль обновлён',
+        type: PasswordActionResultDto,
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Токен невалиден/использован/истёк',
+        type: ErrorResponseDto,
+    })
+    @ApiBadRequestResponse({
+        description: 'Validation failed',
+        type: ErrorResponseDto,
+    })
+    @HttpCode(HttpStatus.OK)
+    @Post('reset-password')
+    async resetPassword(
+        @Body() dto: ResetPasswordDto,
+    ): Promise<PasswordActionResultDto> {
+        await this.passwordResetService.resetPassword(dto.token, dto.password);
+        return { success: true };
+    }
+
+    @ApiOperation({
+        summary: 'Mobile: сменить пароль (авторизованный пользователь)',
+        description:
+            'Ревокает все сессии, кроме текущей (если передан refreshToken). Иначе ревокает ВСЕ сессии.',
+    })
+    @ApiBody({ type: ChangePasswordMobileDto })
+    @ApiResponse({
+        status: 200,
+        description: 'Пароль изменён',
+        type: PasswordActionResultDto,
+    })
+    @ApiUnauthorizedResponse({
+        description: 'Неверный текущий пароль',
+        type: ErrorResponseDto,
+    })
+    @ApiBadRequestResponse({
+        description: 'Validation failed',
+        type: ErrorResponseDto,
+    })
+    @ApiBearerAuth()
+    @UseGuards(AccessTokenGuard)
+    @HttpCode(HttpStatus.OK)
+    @Post('change-password')
+    async changePassword(
+        @CurrentUser() user: TokenPayloadDto,
+        @Body() dto: ChangePasswordMobileDto,
+    ): Promise<PasswordActionResultDto> {
+        await this.passwordResetService.changePassword(
+            user.userId,
+            dto.oldPassword,
+            dto.newPassword,
+            dto.refreshToken ?? null,
+        );
+        return { success: true };
     }
 }

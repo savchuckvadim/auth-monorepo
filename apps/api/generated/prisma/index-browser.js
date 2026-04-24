@@ -137,8 +137,23 @@ exports.Prisma.TokenScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   refreshToken: 'refreshToken',
+  deviceId: 'deviceId',
+  userAgent: 'userAgent',
+  ipAddress: 'ipAddress',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  expiresAt: 'expiresAt'
+};
+
+exports.Prisma.PasswordResetTokenScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  tokenHash: 'tokenHash',
+  expiresAt: 'expiresAt',
+  consumedAt: 'consumedAt',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.ChatScalarFieldEnum = {
@@ -335,7 +350,18 @@ exports.Prisma.UserOrderByRelevanceFieldEnum = {
 exports.Prisma.TokenOrderByRelevanceFieldEnum = {
   id: 'id',
   userId: 'userId',
-  refreshToken: 'refreshToken'
+  refreshToken: 'refreshToken',
+  deviceId: 'deviceId',
+  userAgent: 'userAgent',
+  ipAddress: 'ipAddress'
+};
+
+exports.Prisma.PasswordResetTokenOrderByRelevanceFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  tokenHash: 'tokenHash',
+  ipAddress: 'ipAddress',
+  userAgent: 'userAgent'
 };
 
 exports.Prisma.ChatOrderByRelevanceFieldEnum = {
@@ -541,6 +567,7 @@ exports.InvitationStatus = exports.$Enums.InvitationStatus = {
 exports.Prisma.ModelName = {
   User: 'User',
   Token: 'Token',
+  PasswordResetToken: 'PasswordResetToken',
   Chat: 'Chat',
   ChatMember: 'ChatMember',
   Message: 'Message',

@@ -7,9 +7,15 @@
  */
 import type {
     AuthenticatedUserDto,
+    ChangePasswordMobileDto,
     CreateUserDto,
+    ForgotPasswordDto,
     LoginDto,
+    PasswordActionResultDto,
     RefreshTokenDto,
+    ResetPasswordDto,
+    SessionDto,
+    SessionsBulkResultDto,
 } from '.././model';
 
 import { customAxios } from '../../lib/back-api';
@@ -68,12 +74,85 @@ export const getAuthMobile = () => {
             data: refreshTokenDto,
         });
     };
+    /**
+     * Текущая сессия определяется по заголовку `x-device-id` (мобилка шлёт его на каждом запросе).
+     * @summary Mobile: список активных сессий
+     */
+    const authMobileListSessions = () => {
+        return customAxios<SessionDto[]>({
+            url: `/api/auth-mobile/sessions`,
+            method: 'GET',
+        });
+    };
+    /**
+     * Удаляет все refresh-сессии пользователя, включая текущую. Мобильное приложение само очистит SecureStore после 401 на следующем refresh.
+     * @summary Mobile: выйти со всех устройств
+     */
+    const authMobileRevokeAllSessions = () => {
+        return customAxios<SessionsBulkResultDto>({
+            url: `/api/auth-mobile/sessions`,
+            method: 'DELETE',
+        });
+    };
+    /**
+     * @summary Mobile: ревок конкретной сессии
+     */
+    const authMobileRevokeSession = (id: string) => {
+        return customAxios<SessionsBulkResultDto>({
+            url: `/api/auth-mobile/sessions/${id}`,
+            method: 'DELETE',
+        });
+    };
+    /**
+     * Отвечает одинаково независимо от того, существует ли аккаунт. Ссылка в письме ведёт на web-страницу `${CLIENT_URL}/auth/reset-password`.
+     * @summary Mobile: запросить письмо со ссылкой для сброса пароля
+     */
+    const authMobileForgotPassword = (forgotPasswordDto: ForgotPasswordDto) => {
+        return customAxios<PasswordActionResultDto>({
+            url: `/api/auth-mobile/forgot-password`,
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            data: forgotPasswordDto,
+        });
+    };
+    /**
+     * Потребляет токен и ревокает все refresh-сессии. Мобилка при следующем запросе получит 401 и очистит SecureStore.
+     * @summary Mobile: установить новый пароль по токену из письма
+     */
+    const authMobileResetPassword = (resetPasswordDto: ResetPasswordDto) => {
+        return customAxios<PasswordActionResultDto>({
+            url: `/api/auth-mobile/reset-password`,
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            data: resetPasswordDto,
+        });
+    };
+    /**
+     * Ревокает все сессии, кроме текущей (если передан refreshToken). Иначе ревокает ВСЕ сессии.
+     * @summary Mobile: сменить пароль (авторизованный пользователь)
+     */
+    const authMobileChangePassword = (
+        changePasswordMobileDto: ChangePasswordMobileDto,
+    ) => {
+        return customAxios<PasswordActionResultDto>({
+            url: `/api/auth-mobile/change-password`,
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            data: changePasswordMobileDto,
+        });
+    };
     return {
         authMobileRegistration,
         authMobileLogin,
         authMobileActivate,
         authMobileLogout,
         authMobileRefreshToken,
+        authMobileListSessions,
+        authMobileRevokeAllSessions,
+        authMobileRevokeSession,
+        authMobileForgotPassword,
+        authMobileResetPassword,
+        authMobileChangePassword,
     };
 };
 export type AuthMobileRegistrationResult = NonNullable<
@@ -93,5 +172,37 @@ export type AuthMobileLogoutResult = NonNullable<
 export type AuthMobileRefreshTokenResult = NonNullable<
     Awaited<
         ReturnType<ReturnType<typeof getAuthMobile>['authMobileRefreshToken']>
+    >
+>;
+export type AuthMobileListSessionsResult = NonNullable<
+    Awaited<
+        ReturnType<ReturnType<typeof getAuthMobile>['authMobileListSessions']>
+    >
+>;
+export type AuthMobileRevokeAllSessionsResult = NonNullable<
+    Awaited<
+        ReturnType<
+            ReturnType<typeof getAuthMobile>['authMobileRevokeAllSessions']
+        >
+    >
+>;
+export type AuthMobileRevokeSessionResult = NonNullable<
+    Awaited<
+        ReturnType<ReturnType<typeof getAuthMobile>['authMobileRevokeSession']>
+    >
+>;
+export type AuthMobileForgotPasswordResult = NonNullable<
+    Awaited<
+        ReturnType<ReturnType<typeof getAuthMobile>['authMobileForgotPassword']>
+    >
+>;
+export type AuthMobileResetPasswordResult = NonNullable<
+    Awaited<
+        ReturnType<ReturnType<typeof getAuthMobile>['authMobileResetPassword']>
+    >
+>;
+export type AuthMobileChangePasswordResult = NonNullable<
+    Awaited<
+        ReturnType<ReturnType<typeof getAuthMobile>['authMobileChangePassword']>
     >
 >;

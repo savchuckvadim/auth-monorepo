@@ -1,9 +1,16 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JsonWebTokenError, JwtService, TokenExpiredError } from '@nestjs/jwt';
-import { TokenRepository } from './token.repository';
+import { SaveTokenInput, TokenRepository } from './token.repository';
 import { TokenPayloadDto, TokensDto } from './token.dto';
-import { EnumAuthErrorCode, EnumAuthSecrets } from './token.type';
+import {
+    AUTH_DEFAULT_TTL,
+    EnumAuthErrorCode,
+    EnumAuthSecrets,
+    EnumAuthTtlEnv,
+} from './token.type';
+import { parseDurationToMs } from '@/lib/utils/duration.util';
+
 @Injectable()
 export class TokenService {
     constructor(
@@ -13,40 +20,98 @@ export class TokenService {
     ) {}
 
     public generateTokens(payload: TokenPayloadDto): TokensDto {
-        const result: TokensDto = {
+        return {
             accessToken: this.generateAccessToken(payload),
             refreshToken: this.generateRefreshToken(payload),
         };
-        return result;
     }
 
     private generateAccessToken(payload: TokenPayloadDto) {
         return this.jwtService.sign(payload, {
             secret: this.configService.get(EnumAuthSecrets.ACCESS_TOKEN),
-            expiresIn: '15m',
+            expiresIn: Math.floor(this.getAccessTtlMs() / 1000),
         });
     }
+
     private generateRefreshToken(payload: TokenPayloadDto) {
         return this.jwtService.sign(payload, {
             secret: this.configService.get(EnumAuthSecrets.REFRESH_TOKEN),
-            expiresIn: '30d',
+            expiresIn: Math.floor(this.getRefreshTtlMs() / 1000),
         });
     }
 
-    public async saveToken(userId: string, refreshToken: string) {
-        return await this.tokenRepository.saveToken(userId, refreshToken);
+    public getAccessTtl(): string {
+        return (
+            this.configService.get<string>(EnumAuthTtlEnv.ACCESS) ??
+            AUTH_DEFAULT_TTL.ACCESS
+        );
     }
 
-    public async findToken(userId: string) {
-        return await this.tokenRepository.findToken(userId);
+    public getRefreshTtl(): string {
+        return (
+            this.configService.get<string>(EnumAuthTtlEnv.REFRESH) ??
+            AUTH_DEFAULT_TTL.REFRESH
+        );
+    }
+
+    public getAccessTtlMs(): number {
+        return parseDurationToMs(
+            this.getAccessTtl(),
+            parseDurationToMs(AUTH_DEFAULT_TTL.ACCESS),
+        );
+    }
+
+    public getRefreshTtlMs(): number {
+        return parseDurationToMs(
+            this.getRefreshTtl(),
+            parseDurationToMs(AUTH_DEFAULT_TTL.REFRESH),
+        );
+    }
+
+    public getRefreshExpiresAt(from: Date = new Date()): Date {
+        return new Date(from.getTime() + this.getRefreshTtlMs());
+    }
+
+    public async saveToken(input: SaveTokenInput) {
+        return await this.tokenRepository.saveToken(input);
     }
 
     public async findTokenByRefreshToken(refreshToken: string) {
         return await this.tokenRepository.findTokenByRefreshToken(refreshToken);
     }
 
+    public async findTokensByUserId(userId: string) {
+        return await this.tokenRepository.findTokensByUserId(userId);
+    }
+
     public async removeToken(refreshToken: string) {
         return await this.tokenRepository.removeToken(refreshToken);
+    }
+
+    public async claimRefreshToken(refreshToken: string) {
+        return await this.tokenRepository.claimRefreshToken(refreshToken);
+    }
+
+    public async removeAllUserTokens(userId: string) {
+        return await this.tokenRepository.removeAllUserTokens(userId);
+    }
+
+    public async removeTokenByIdForUser(id: string, userId: string) {
+        return await this.tokenRepository.removeTokenByIdForUser(id, userId);
+    }
+
+    public async removeAllUserTokensExceptRefreshToken(
+        userId: string,
+        exceptRefreshToken: string | null | undefined,
+    ) {
+        return await this.tokenRepository.removeAllUserTokensExceptRefreshToken(
+            userId,
+            exceptRefreshToken,
+        );
+    }
+
+    public async removeExpiredTokens(batchSize?: number) {
+        return await this.tokenRepository.removeExpiredTokens(batchSize);
     }
 
     public async validateAccessToken(
@@ -66,6 +131,7 @@ export class TokenService {
         );
         return await this.verifyToken(refreshToken, secret, 'REFRESH');
     }
+
     private async verifyToken(
         token: string,
         secret: string,
