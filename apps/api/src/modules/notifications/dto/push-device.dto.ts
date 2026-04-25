@@ -8,6 +8,9 @@ export class PushDeviceDto {
     @ApiProperty({ type: String })
     userId: string;
 
+    @ApiPropertyOptional({ type: String })
+    installationId?: string;
+
     @ApiProperty({ enum: PushPlatform, enumName: 'PushPlatform' })
     platform: PushPlatform;
 

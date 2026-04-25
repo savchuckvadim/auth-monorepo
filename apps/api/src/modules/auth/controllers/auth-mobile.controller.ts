@@ -28,6 +28,7 @@ import { PasswordResetService } from '../password-reset/password-reset.service';
 import { ConfigService } from '@nestjs/config';
 import { AuthenticatedUserDto, LoginDto } from '../dtos/login.dto';
 import { RefreshTokenDto } from '../dtos/refresh-token.dto';
+import { MobileLogoutDto } from '../dtos/mobile-logout.dto';
 import { SessionDto, SessionsBulkResultDto } from '../dtos/session.dto';
 import {
     ChangePasswordMobileDto,
@@ -40,7 +41,8 @@ import { CreateUserDto } from '@/modules/user';
 import { ErrorResponseDto } from '@/core';
 import { AccessTokenGuard } from '@/core/guards/access-token.guard';
 import { CurrentUser } from '@/core/decorators/auth/current-user.decorator';
-import { TokenPayloadDto } from '@/modules/token';
+import { TokenPayloadDto, TokenService } from '@/modules/token';
+import { NotificationsService } from '@/modules/notifications/notifications.service';
 import { resolveAuthRequestInfo, resolveDeviceIdFromHeaders } from '@/lib';
 
 /**
@@ -60,6 +62,8 @@ export class AuthMobileController {
         private readonly passwordResetService: PasswordResetService,
         private readonly configService: ConfigService,
         private readonly cookieService: CookieService,
+        private readonly tokenService: TokenService,
+        private readonly notificationsService: NotificationsService,
     ) {
         this.clientUrl = this.configService.getOrThrow<string>('CLIENT_URL');
     }
@@ -121,15 +125,53 @@ export class AuthMobileController {
         return res.redirect(HttpStatus.FOUND, redirectUrl);
     }
 
-    @ApiOperation({ summary: 'Logout for mobile app' })
-    @ApiBody({ type: RefreshTokenDto, description: 'Logout for mobile app' })
+    @ApiOperation({
+        summary: 'Logout for mobile app',
+        description:
+            'Идемпотентно ревокает refresh-сессию. Если передан `installationId` ' +
+            '(PushDevice.id), запись push-устройства жёстко удаляется, чтобы бэк ' +
+            'сразу прекратил слать пуши на это устройство и не ждал, когда ' +
+            'APNS/FCM вернёт 410/NotRegistered на следующей отправке.',
+    })
+    @ApiBody({ type: MobileLogoutDto, description: 'Logout for mobile app' })
     @ApiResponse({ status: 200, description: 'Logout success', type: Boolean })
     @Post('logout')
-    async logout(@Body() refreshTokenDto: RefreshTokenDto): Promise<boolean> {
+    async logout(@Body() body: MobileLogoutDto): Promise<boolean> {
+        // Удаляем push-устройство ДО ревокации refresh-токена, пока он ещё валиден
+        // и можно безопасно достать userId. Сначала пробуем по записи в БД (быстро
+        // и не зависит от валидности подписи), затем фоллбэк на верификацию JWT.
+        if (body.installationId) {
+            const userId = await this.resolveUserIdFromRefreshToken(
+                body.refreshToken,
+            );
+            if (userId) {
+                try {
+                    await this.notificationsService.removeDevice(
+                        userId,
+                        body.installationId,
+                    );
+                } catch {
+                    // logout не должен падать из-за ошибок чистки push-устройств
+                }
+            }
+        }
+
         // Для мобильного приложения токен приходит в body, а не в куках.
         // Идемпотентно: если токена нет в БД — просто возвращаем true.
-        await this.authService.logout(refreshTokenDto.refreshToken);
+        await this.authService.logout(body.refreshToken);
         return true;
+    }
+
+    private async resolveUserIdFromRefreshToken(
+        refreshToken: string,
+    ): Promise<string | null> {
+        const stored =
+            await this.tokenService.findTokenByRefreshToken(refreshToken);
+        if (stored?.userId) return stored.userId;
+
+        const payload =
+            await this.tokenService.validateRefreshToken(refreshToken);
+        return payload?.userId ?? null;
     }
 
     @ApiOperation({ summary: 'Refresh token for mobile app' })

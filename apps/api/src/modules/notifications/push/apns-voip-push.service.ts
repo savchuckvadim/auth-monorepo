@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PushPayload } from './fcm-push.service';
 import * as apn from 'apn';
 import { readFileSync } from 'node:fs';
+import { apnsFatalReason } from './push-token-error.util';
 
 @Injectable()
 export class ApnsVoipPushService {
@@ -82,5 +83,12 @@ export class ApnsVoipPushService {
         this.logger.log(
             `APNS_VOIP send response tokenPrefix=${token.slice(0, 12)} sent=${response.sent.length} failed=${response.failed.length} reasons=[${failedReasons || 'none'}]`,
         );
+
+        for (const item of response.failed) {
+            const reason = item.response?.reason;
+            if (apnsFatalReason(reason)) {
+                throw new Error(`APNS:${reason}`);
+            }
+        }
     }
 }

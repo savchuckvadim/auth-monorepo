@@ -28,6 +28,31 @@ export class CallsService {
         });
     }
 
+    async getCallerName(userId: string): Promise<string | null> {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: { name: true },
+        });
+        return user?.name ?? null;
+    }
+
+    async getCallerInfo(userId: string): Promise<{
+        name: string | null;
+        avatar: string | null;
+    }> {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                name: true,
+                profile: { select: { avatar: true } },
+            },
+        });
+        return {
+            name: user?.name ?? null,
+            avatar: user?.profile?.avatar ?? null,
+        };
+    }
+
     async updateCallStatus(
         callId: string,
         status: CallStatus,

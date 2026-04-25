@@ -19,4 +19,15 @@ export class RegisterPushDeviceDto {
     @IsOptional()
     @IsString()
     voipToken?: string;
+
+    @ApiPropertyOptional({
+        description:
+            'Stable id of this app installation (e.g. UUID in SecureStore). ' +
+            'When set, register upserts by (userId, installationId) so the same ' +
+            'physical device keeps one PushDevice row when FCM/APNS tokens rotate.',
+        example: '7b2c9f1a-4e3d-4c1b-9f0a-1234567890ab',
+    })
+    @IsOptional()
+    @IsString()
+    installationId?: string;
 }

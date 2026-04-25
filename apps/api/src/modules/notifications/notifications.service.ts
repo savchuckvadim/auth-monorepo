@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '@/core';
-import { PushProvider } from 'generated/prisma';
+import { PushPlatform, PushProvider } from 'generated/prisma';
 import { RegisterPushDeviceDto } from './dto/register-push-device.dto';
 
 @Injectable()
@@ -15,8 +15,35 @@ export class NotificationsService {
 
     async registerDevice(userId: string, dto: RegisterPushDeviceDto) {
         this.logger.log(
-            `registerDevice:start userId=${userId} provider=${dto.provider} platform=${dto.platform} tokenPrefix=${this.tokenPrefix(dto.token)} voipTokenPrefix=${this.tokenPrefix(dto.voipToken)}`,
+            `registerDevice:start userId=${userId} provider=${dto.provider} platform=${dto.platform} tokenPrefix=${this.tokenPrefix(dto.token)} voipTokenPrefix=${this.tokenPrefix(dto.voipToken)} installationId=${dto.installationId ?? 'none'}`,
         );
+
+        if (dto.installationId) {
+            const byInstallation = await this.prisma.pushDevice.findFirst({
+                where: { userId, installationId: dto.installationId },
+            });
+            if (byInstallation) {
+                this.logger.log(
+                    `registerDevice:mode=updateByInstallation userId=${userId} pushDeviceId=${byInstallation.id}`,
+                );
+                const updated = await this.prisma.pushDevice.update({
+                    where: { id: byInstallation.id },
+                    data: {
+                        platform: dto.platform,
+                        provider: dto.provider,
+                        token: dto.token,
+                        voipToken: dto.voipToken,
+                        installationId: dto.installationId,
+                        isActive: true,
+                        lastSeenAt: new Date(),
+                    },
+                });
+                this.logger.log(
+                    `registerDevice:done mode=updateByInstallation userId=${userId} pushDeviceId=${updated.id}`,
+                );
+                return updated;
+            }
+        }
 
         const existing = await this.prisma.pushDevice.findUnique({
             where: { token: dto.token },
@@ -33,6 +60,7 @@ export class NotificationsService {
                     platform: dto.platform,
                     provider: dto.provider,
                     voipToken: dto.voipToken,
+                    installationId: dto.installationId ?? undefined,
                     isActive: true,
                     lastSeenAt: new Date(),
                 },
@@ -49,6 +77,7 @@ export class NotificationsService {
         const created = await this.prisma.pushDevice.create({
             data: {
                 userId,
+                installationId: dto.installationId ?? null,
                 platform: dto.platform,
                 provider: dto.provider,
                 token: dto.token,
@@ -70,11 +99,52 @@ export class NotificationsService {
         return { success: true };
     }
 
+    /**
+     * Hard-deletes a push device by its database id, scoped to the owning user.
+     *
+     * Called by the mobile client on logout so the backend stops dispatching
+     * pushes to that installation immediately, instead of waiting for APNS/FCM
+     * to report the token as unregistered (410 / NotRegistered) on next send.
+     *
+     * Idempotent: returns `{ success: true }` even if no row matches.
+     */
+    async removeDevice(userId: string, installationId: string) {
+        const result = await this.prisma.pushDevice.deleteMany({
+            where: { id: installationId, userId },
+        });
+        this.logger.log(
+            `removeDevice userId=${userId} installationId=${installationId} deleted=${result.count}`,
+        );
+        return { success: true, deleted: result.count };
+    }
+
     async getActiveDevicesForUser(userId: string) {
         return this.prisma.pushDevice.findMany({
             where: { userId, isActive: true },
             orderBy: { updatedAt: 'desc' },
         });
+    }
+
+    /**
+     * All active mobile push devices (iOS + Android).
+     *
+     * Used for incoming-call delivery: a registered mobile device must
+     * always receive a push (regardless of whether the user is online on web),
+     * because mobile clients never receive incoming-call signaling via WS.
+     */
+    async getActiveMobilePushDevicesForUser(userId: string) {
+        const devices = await this.prisma.pushDevice.findMany({
+            where: {
+                userId,
+                isActive: true,
+                platform: { in: [PushPlatform.IOS, PushPlatform.ANDROID] },
+            },
+            orderBy: { updatedAt: 'desc' },
+        });
+        this.logger.log(
+            `getActiveMobilePushDevicesForUser userId=${userId} count=${devices.length} platforms=[${devices.map(d => d.platform).join(',')}] providers=[${devices.map(d => d.provider).join(',')}]`,
+        );
+        return devices;
     }
 
     async getActiveVoipDevicesForUser(userId: string) {
@@ -97,9 +167,44 @@ export class NotificationsService {
     }
 
     async deactivateToken(token: string) {
-        await this.prisma.pushDevice.updateMany({
-            where: { token },
+        await this.deactivateByPushCredential(token);
+    }
+
+    /**
+     * Marks push device rows inactive when either the primary `token` or the
+     * optional `voip_token` matches the credential that failed at APNS/FCM.
+     */
+    async deactivateByPushCredential(credential: string): Promise<void> {
+        const result = await this.prisma.pushDevice.updateMany({
+            where: {
+                OR: [{ token: credential }, { voipToken: credential }],
+            },
             data: { isActive: false },
         });
+        this.logger.log(
+            `deactivateByPushCredential tokenPrefix=${this.tokenPrefix(credential)} updated=${result.count}`,
+        );
+    }
+
+    /**
+     * Soft-deactivates push devices whose lastSeenAt is older than `maxAgeDays`.
+     * Used by a daily cron so stale installations stop receiving pushes.
+     */
+    async deactivateStalePushDevices(maxAgeDays: number): Promise<number> {
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - maxAgeDays);
+        const result = await this.prisma.pushDevice.updateMany({
+            where: {
+                isActive: true,
+                lastSeenAt: { lt: cutoff },
+            },
+            data: { isActive: false },
+        });
+        if (result.count > 0) {
+            this.logger.log(
+                `deactivateStalePushDevices maxAgeDays=${maxAgeDays} cutoff=${cutoff.toISOString()} deactivated=${result.count}`,
+            );
+        }
+        return result.count;
     }
 }

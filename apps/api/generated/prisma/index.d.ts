@@ -16972,6 +16972,7 @@ export namespace Prisma {
   export type PushDeviceMinAggregateOutputType = {
     id: string | null
     userId: string | null
+    installationId: string | null
     platform: $Enums.PushPlatform | null
     provider: $Enums.PushProvider | null
     token: string | null
@@ -16985,6 +16986,7 @@ export namespace Prisma {
   export type PushDeviceMaxAggregateOutputType = {
     id: string | null
     userId: string | null
+    installationId: string | null
     platform: $Enums.PushPlatform | null
     provider: $Enums.PushProvider | null
     token: string | null
@@ -16998,6 +17000,7 @@ export namespace Prisma {
   export type PushDeviceCountAggregateOutputType = {
     id: number
     userId: number
+    installationId: number
     platform: number
     provider: number
     token: number
@@ -17013,6 +17016,7 @@ export namespace Prisma {
   export type PushDeviceMinAggregateInputType = {
     id?: true
     userId?: true
+    installationId?: true
     platform?: true
     provider?: true
     token?: true
@@ -17026,6 +17030,7 @@ export namespace Prisma {
   export type PushDeviceMaxAggregateInputType = {
     id?: true
     userId?: true
+    installationId?: true
     platform?: true
     provider?: true
     token?: true
@@ -17039,6 +17044,7 @@ export namespace Prisma {
   export type PushDeviceCountAggregateInputType = {
     id?: true
     userId?: true
+    installationId?: true
     platform?: true
     provider?: true
     token?: true
@@ -17125,6 +17131,7 @@ export namespace Prisma {
   export type PushDeviceGroupByOutputType = {
     id: string
     userId: string
+    installationId: string | null
     platform: $Enums.PushPlatform
     provider: $Enums.PushProvider
     token: string
@@ -17155,6 +17162,7 @@ export namespace Prisma {
   export type PushDeviceSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
+    installationId?: boolean
     platform?: boolean
     provider?: boolean
     token?: boolean
@@ -17171,6 +17179,7 @@ export namespace Prisma {
   export type PushDeviceSelectScalar = {
     id?: boolean
     userId?: boolean
+    installationId?: boolean
     platform?: boolean
     provider?: boolean
     token?: boolean
@@ -17181,7 +17190,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type PushDeviceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "platform" | "provider" | "token" | "voipToken" | "isActive" | "lastSeenAt" | "createdAt" | "updatedAt", ExtArgs["result"]["pushDevice"]>
+  export type PushDeviceOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "installationId" | "platform" | "provider" | "token" | "voipToken" | "isActive" | "lastSeenAt" | "createdAt" | "updatedAt", ExtArgs["result"]["pushDevice"]>
   export type PushDeviceInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -17194,6 +17203,10 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       userId: string
+      /**
+       * Stable per-app-install id from the client (e.g. keychain UUID). Optional for legacy rows.
+       */
+      installationId: string | null
       platform: $Enums.PushPlatform
       provider: $Enums.PushProvider
       token: string
@@ -17574,6 +17587,7 @@ export namespace Prisma {
   interface PushDeviceFieldRefs {
     readonly id: FieldRef<"PushDevice", 'String'>
     readonly userId: FieldRef<"PushDevice", 'String'>
+    readonly installationId: FieldRef<"PushDevice", 'String'>
     readonly platform: FieldRef<"PushDevice", 'PushPlatform'>
     readonly provider: FieldRef<"PushDevice", 'PushProvider'>
     readonly token: FieldRef<"PushDevice", 'String'>
@@ -23107,6 +23121,7 @@ export namespace Prisma {
   export const PushDeviceScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
+    installationId: 'installationId',
     platform: 'platform',
     provider: 'provider',
     token: 'token',
@@ -23378,6 +23393,7 @@ export namespace Prisma {
   export const PushDeviceOrderByRelevanceFieldEnum: {
     id: 'id',
     userId: 'userId',
+    installationId: 'installationId',
     token: 'token',
     voipToken: 'voipToken'
   };
@@ -24757,6 +24773,7 @@ export namespace Prisma {
     NOT?: PushDeviceWhereInput | PushDeviceWhereInput[]
     id?: StringFilter<"PushDevice"> | string
     userId?: StringFilter<"PushDevice"> | string
+    installationId?: StringNullableFilter<"PushDevice"> | string | null
     platform?: EnumPushPlatformFilter<"PushDevice"> | $Enums.PushPlatform
     provider?: EnumPushProviderFilter<"PushDevice"> | $Enums.PushProvider
     token?: StringFilter<"PushDevice"> | string
@@ -24771,6 +24788,7 @@ export namespace Prisma {
   export type PushDeviceOrderByWithRelationInput = {
     id?: SortOrder
     userId?: SortOrder
+    installationId?: SortOrderInput | SortOrder
     platform?: SortOrder
     provider?: SortOrder
     token?: SortOrder
@@ -24786,10 +24804,12 @@ export namespace Prisma {
   export type PushDeviceWhereUniqueInput = Prisma.AtLeast<{
     id?: string
     token?: string
+    userId_installationId?: PushDeviceUserIdInstallationIdCompoundUniqueInput
     AND?: PushDeviceWhereInput | PushDeviceWhereInput[]
     OR?: PushDeviceWhereInput[]
     NOT?: PushDeviceWhereInput | PushDeviceWhereInput[]
     userId?: StringFilter<"PushDevice"> | string
+    installationId?: StringNullableFilter<"PushDevice"> | string | null
     platform?: EnumPushPlatformFilter<"PushDevice"> | $Enums.PushPlatform
     provider?: EnumPushProviderFilter<"PushDevice"> | $Enums.PushProvider
     voipToken?: StringNullableFilter<"PushDevice"> | string | null
@@ -24798,11 +24818,12 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"PushDevice"> | Date | string
     updatedAt?: DateTimeFilter<"PushDevice"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
-  }, "id" | "token">
+  }, "id" | "token" | "userId_installationId">
 
   export type PushDeviceOrderByWithAggregationInput = {
     id?: SortOrder
     userId?: SortOrder
+    installationId?: SortOrderInput | SortOrder
     platform?: SortOrder
     provider?: SortOrder
     token?: SortOrder
@@ -24822,6 +24843,7 @@ export namespace Prisma {
     NOT?: PushDeviceScalarWhereWithAggregatesInput | PushDeviceScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"PushDevice"> | string
     userId?: StringWithAggregatesFilter<"PushDevice"> | string
+    installationId?: StringNullableWithAggregatesFilter<"PushDevice"> | string | null
     platform?: EnumPushPlatformWithAggregatesFilter<"PushDevice"> | $Enums.PushPlatform
     provider?: EnumPushProviderWithAggregatesFilter<"PushDevice"> | $Enums.PushProvider
     token?: StringWithAggregatesFilter<"PushDevice"> | string
@@ -26452,6 +26474,7 @@ export namespace Prisma {
 
   export type PushDeviceCreateInput = {
     id?: string
+    installationId?: string | null
     platform: $Enums.PushPlatform
     provider: $Enums.PushProvider
     token: string
@@ -26466,6 +26489,7 @@ export namespace Prisma {
   export type PushDeviceUncheckedCreateInput = {
     id?: string
     userId: string
+    installationId?: string | null
     platform: $Enums.PushPlatform
     provider: $Enums.PushProvider
     token: string
@@ -26478,6 +26502,7 @@ export namespace Prisma {
 
   export type PushDeviceUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    installationId?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPushPlatformFieldUpdateOperationsInput | $Enums.PushPlatform
     provider?: EnumPushProviderFieldUpdateOperationsInput | $Enums.PushProvider
     token?: StringFieldUpdateOperationsInput | string
@@ -26492,6 +26517,7 @@ export namespace Prisma {
   export type PushDeviceUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    installationId?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPushPlatformFieldUpdateOperationsInput | $Enums.PushPlatform
     provider?: EnumPushProviderFieldUpdateOperationsInput | $Enums.PushProvider
     token?: StringFieldUpdateOperationsInput | string
@@ -26505,6 +26531,7 @@ export namespace Prisma {
   export type PushDeviceCreateManyInput = {
     id?: string
     userId: string
+    installationId?: string | null
     platform: $Enums.PushPlatform
     provider: $Enums.PushProvider
     token: string
@@ -26517,6 +26544,7 @@ export namespace Prisma {
 
   export type PushDeviceUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    installationId?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPushPlatformFieldUpdateOperationsInput | $Enums.PushPlatform
     provider?: EnumPushProviderFieldUpdateOperationsInput | $Enums.PushProvider
     token?: StringFieldUpdateOperationsInput | string
@@ -26530,6 +26558,7 @@ export namespace Prisma {
   export type PushDeviceUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    installationId?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPushPlatformFieldUpdateOperationsInput | $Enums.PushPlatform
     provider?: EnumPushProviderFieldUpdateOperationsInput | $Enums.PushProvider
     token?: StringFieldUpdateOperationsInput | string
@@ -28195,9 +28224,15 @@ export namespace Prisma {
     search: string
   }
 
+  export type PushDeviceUserIdInstallationIdCompoundUniqueInput = {
+    userId: string
+    installationId: string
+  }
+
   export type PushDeviceCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
+    installationId?: SortOrder
     platform?: SortOrder
     provider?: SortOrder
     token?: SortOrder
@@ -28211,6 +28246,7 @@ export namespace Prisma {
   export type PushDeviceMaxOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
+    installationId?: SortOrder
     platform?: SortOrder
     provider?: SortOrder
     token?: SortOrder
@@ -28224,6 +28260,7 @@ export namespace Prisma {
   export type PushDeviceMinOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
+    installationId?: SortOrder
     platform?: SortOrder
     provider?: SortOrder
     token?: SortOrder
@@ -31115,6 +31152,7 @@ export namespace Prisma {
 
   export type PushDeviceCreateWithoutUserInput = {
     id?: string
+    installationId?: string | null
     platform: $Enums.PushPlatform
     provider: $Enums.PushProvider
     token: string
@@ -31127,6 +31165,7 @@ export namespace Prisma {
 
   export type PushDeviceUncheckedCreateWithoutUserInput = {
     id?: string
+    installationId?: string | null
     platform: $Enums.PushPlatform
     provider: $Enums.PushProvider
     token: string
@@ -31776,6 +31815,7 @@ export namespace Prisma {
     NOT?: PushDeviceScalarWhereInput | PushDeviceScalarWhereInput[]
     id?: StringFilter<"PushDevice"> | string
     userId?: StringFilter<"PushDevice"> | string
+    installationId?: StringNullableFilter<"PushDevice"> | string | null
     platform?: EnumPushPlatformFilter<"PushDevice"> | $Enums.PushPlatform
     provider?: EnumPushProviderFilter<"PushDevice"> | $Enums.PushProvider
     token?: StringFilter<"PushDevice"> | string
@@ -37067,6 +37107,7 @@ export namespace Prisma {
 
   export type PushDeviceCreateManyUserInput = {
     id?: string
+    installationId?: string | null
     platform: $Enums.PushPlatform
     provider: $Enums.PushProvider
     token: string
@@ -37450,6 +37491,7 @@ export namespace Prisma {
 
   export type PushDeviceUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
+    installationId?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPushPlatformFieldUpdateOperationsInput | $Enums.PushPlatform
     provider?: EnumPushProviderFieldUpdateOperationsInput | $Enums.PushProvider
     token?: StringFieldUpdateOperationsInput | string
@@ -37462,6 +37504,7 @@ export namespace Prisma {
 
   export type PushDeviceUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
+    installationId?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPushPlatformFieldUpdateOperationsInput | $Enums.PushPlatform
     provider?: EnumPushProviderFieldUpdateOperationsInput | $Enums.PushProvider
     token?: StringFieldUpdateOperationsInput | string
@@ -37474,6 +37517,7 @@ export namespace Prisma {
 
   export type PushDeviceUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
+    installationId?: NullableStringFieldUpdateOperationsInput | string | null
     platform?: EnumPushPlatformFieldUpdateOperationsInput | $Enums.PushPlatform
     provider?: EnumPushProviderFieldUpdateOperationsInput | $Enums.PushProvider
     token?: StringFieldUpdateOperationsInput | string
