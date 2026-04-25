@@ -4,40 +4,22 @@ import { Alert, AlertDescription } from '@workspace/ui/components/alert';
 import { AppButton } from '@/modules/shared';
 import {
     AlertTriangle,
-    Eye,
-    EyeOff,
     Lock,
     Mail,
     User,
     UserPlus,
 } from 'lucide-react';
-import { useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { useAuth } from '../../lib/hooks/auth.hook';
 import { IRegisterForm } from '../../type/auth.type';
 import { FormField } from '@/modules/shared/ui';
 
 export const RegistrationForm = () => {
-    const [showPassword, setShowPassword] = useState(false);
     const { register: registerUser, isLoading, error } = useAuth();
 
     const { control, handleSubmit } = useForm<IRegisterForm>();
     const onSubmit: SubmitHandler<IRegisterForm> = (data) =>
         registerUser(data);
-
-    const passwordToggle = (
-        <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent group-focus-within:text-primary"
-        >
-            {showPassword ? (
-                <EyeOff className="h-4 w-4" />
-            ) : (
-                <Eye className="h-4 w-4" />
-            )}
-        </button>
-    );
 
     return (
         <form
@@ -52,7 +34,7 @@ export const RegistrationForm = () => {
                 id="register-name"
                 type="text"
                 // label="Имя"
-                placeholder="Имя"
+                placeholder="Name"
                 autoComplete="name"
                 required
                 startSlot={<User className="size-4 shrink-0" strokeWidth={2} />}
@@ -72,21 +54,22 @@ export const RegistrationForm = () => {
                 control={control}
                 name="password"
                 id="register-password"
-                type={showPassword ? 'text' : 'password'}
+                type="password"
+                passwordRevealToggle
                 // label="Пароль"
-                placeholder="Введите пароль"
+                placeholder="Enter password"
                 autoComplete="new-password"
                 required
                 startSlot={<Lock className="size-4 shrink-0" strokeWidth={2} />}
-                endSlot={passwordToggle}
             />
             <FormField
                 control={control}
                 name="confirmPassword"
                 id="register-confirm"
-                type={showPassword ? 'text' : 'password'}
+                type="password"
+                passwordRevealToggle
                 // label="Подтвердите пароль"
-                placeholder="Подтвердите пароль"
+                placeholder="Confirm password"
                 autoComplete="new-password"
                 required
                 startSlot={<Lock className="size-4 shrink-0" strokeWidth={2} />}
@@ -101,10 +84,10 @@ export const RegistrationForm = () => {
                 type="submit"
                 appSize="auth"
                 isLoading={isLoading}
-                loadingLabel="Регистрация..."
+                loadingLabel="Registration..."
                 leadIcon={<UserPlus />}
             >
-                Зарегистрироваться
+                Sign up
             </AppButton>
         </form>
     );

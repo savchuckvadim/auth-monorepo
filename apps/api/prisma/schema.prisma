@@ -30,6 +30,7 @@ model User {
     sentCalls     Call[]              @relation("CallInitiator")
     receivedCalls Call[]              @relation("CallReceiver")
     messageReads  MessageReadStatus[]
+    messageLikes  MessageLike[]
     chats         Chat[]
 
     // Followers relations
@@ -163,6 +164,10 @@ model Message {
     replyToId String?     @map("reply_to_id") @db.VarChar(255)
     editedAt  DateTime?   @map("edited_at")
     deletedAt DateTime?   @map("deleted_at")
+    /// Для `CALL_EVENT` — { direction: 'outgoing'|'incoming', reason: 'missed'|'accepted'|..., callType: 'audio'|'video', durationMs?, callId?, initiatorId? }
+    metadata  Json?       @map("metadata")
+    /// Денормализованный счётчик лайков. Инкрементируется / декрементируется в транзакции с записью/удалением `MessageLike`.
+    likesCount Int        @default(0) @map("likes_count")
     createdAt DateTime    @default(now())
     updatedAt DateTime    @updatedAt
 
@@ -183,6 +188,8 @@ model Message {
     readStatus MessageReadStatus[]
     toDevice   Device?             @relation("MessageTargetDevice", fields: [toDeviceId], references: [id], onDelete: SetNull)
     fromDevice Device?             @relation("MessageSenderDevice", fields: [senderDeviceId], references: [id], onDelete: SetNull)
+    likes      MessageLike[]
+    attachments MessageAttachment[]
 
     @@index([chatId, createdAt])
     @@index([senderId])
@@ -266,6 +273,67 @@ model MessageReadStatus {
     @@map("message_read_status")
 }
 
+/// Лайк сообщения. Уникальность `(messageId,userId)` гарантирует
+/// идемпотентность — повторный `POST /messages/:id/like` работает как toggle.
+model MessageLike {
+    id        String   @id @default(uuid())
+    messageId String   @map("message_id") @db.VarChar(255)
+    userId    String   @map("user_id") @db.VarChar(255)
+    createdAt DateTime @default(now()) @map("created_at")
+
+    message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+    user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([messageId, userId])
+    @@index([messageId])
+    @@index([userId])
+    @@map("message_likes")
+}
+
+/// Полиморфное вложение к сообщению. Один `Message` может иметь N штук.
+/// `messageId = null` допустим временно — upload эндпоинт создаёт
+/// «висячий» attachment, который клиент привяжет через `POST /messages`
+/// в `attachmentIds`. Orphan’ы подчищает cron (TTL 1 час).
+model MessageAttachment {
+    id           String                @id @default(uuid())
+    messageId    String?               @map("message_id") @db.VarChar(255)
+    uploaderId   String                @map("uploader_id") @db.VarChar(255)
+    kind         MessageAttachmentKind
+    /// URL в S3 / CDN (для MEDIA/VOICE/CIRCLE/FILE). Для POST_SHARE/FORWARD_SNAPSHOT обычно null.
+    url          String?               @db.VarChar(500)
+    name         String?               @db.VarChar(255)
+    size         Int?
+    mimeType     String?               @map("mime_type") @db.VarChar(100)
+    durationMs   Int?                  @map("duration_ms")
+    width        Int?
+    height       Int?
+    thumbnailUrl String?               @map("thumbnail_url") @db.VarChar(500)
+    /// Для VOICE — массив peaks (waveform), для FORWARD_SNAPSHOT — снапшот исходника,
+    /// для POST_SHARE — оставляем null (postId хранится в колонке `postId`).
+    metadata     Json?
+    /// Для POST_SHARE. По нему строится индекс — быстрый поиск «где репостили этот пост».
+    postId       String?               @map("post_id") @db.VarChar(255)
+    createdAt    DateTime              @default(now()) @map("created_at")
+
+    message Message? @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+    @@index([messageId])
+    @@index([uploaderId])
+    @@index([postId])
+    @@map("message_attachments")
+}
+
+enum MessageAttachmentKind {
+    IMAGE
+    VIDEO
+    AUDIO
+    VOICE
+    CIRCLE
+    FILE
+    POST_SHARE
+    FORWARD_SNAPSHOT
+}
+
 model Call {
     id          String     @id @default(uuid())
     chatId      String     @map("chat_id") @db.VarChar(255)
@@ -314,6 +382,9 @@ enum MessageType {
     AUDIO
     FILE
     SYSTEM
+    /// Специализированное системное сообщение о событии звонка — рендерится
+    /// клиентом по `Message.metadata` (direction/reason/callType/durationMs).
+    CALL_EVENT
 }
 
 enum CallType {

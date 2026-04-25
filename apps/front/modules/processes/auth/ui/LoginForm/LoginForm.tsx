@@ -73,10 +73,10 @@ export const LoginForm = () => {
                 type="submit"
                 appSize="auth"
                 isLoading={isLoading}
-                loadingLabel="Вход..."
+                loadingLabel="Signing in..."
                 leadIcon={<LogIn />}
             >
-                Войти
+                Sign in
             </AppButton>
         </form>
     );

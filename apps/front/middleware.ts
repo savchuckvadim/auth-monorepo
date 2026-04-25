@@ -6,12 +6,22 @@ export async function middleware(req: NextRequest) {
     const accessToken = await req.cookies.get(AUTH_ACCESS_TOKEN_NAME_PUBLIC);
     const refreshToken = await req.cookies.get(AUTH_REFRESH_TOKEN_NAME_PUBLIC);
 
-    const hasToken = accessToken || refreshToken;
+    const hasToken = Boolean(accessToken || refreshToken);
     const url = req.nextUrl;
-    const isStartPage = url.pathname.startsWith('/start');
-    if (isStartPage) {
+
+    // Легаси-редирект: старый /start теперь доступен в корне.
+    if (url.pathname === '/start' || url.pathname.startsWith('/start/')) {
+        return NextResponse.redirect(new URL('/', req.url));
+    }
+
+    // Корень — публичный лендинг. Авторизованных аккуратно уводим в сеть.
+    if (url.pathname === '/') {
+        if (hasToken) {
+            return NextResponse.redirect(new URL('/network/me', req.url));
+        }
         return NextResponse.next();
     }
+
     const isConfirmPage = url.pathname.startsWith('/auth/confirm');
     // Восстановление пароля — сценарий, в котором пользователь может быть как
     // неавторизован (типовой кейс), так и уже авторизован (открыл письмо в том
@@ -32,28 +42,18 @@ export async function middleware(req: NextRequest) {
 
     // Если нет токена — редирект на логин
     if (!hasToken && (isProtected || isUndefinedPath)) {
-        console.log('redirect to login');
         return NextResponse.redirect(new URL('/auth/login', req.url));
     }
 
     if (hasToken && (isAuthPage || isUndefinedPath)) {
-        console.log('redirect to profile');
         return NextResponse.redirect(new URL('/network/me', req.url));
     }
-    if (!hasToken && isAuthPage || isConfirmPage) {
-
+    if ((!hasToken && isAuthPage) || isConfirmPage) {
         return NextResponse.next();
     }
-    // Если есть токен, пропускаем
     return NextResponse.next();
 }
 
 export const config = {
-    matcher: [
-        '/',
-        '/network/:path*',
-        '/auth/:path*',
-        '/start/:path*',
-
-    ],
+    matcher: ['/', '/network/:path*', '/auth/:path*', '/start', '/start/:path*'],
 };

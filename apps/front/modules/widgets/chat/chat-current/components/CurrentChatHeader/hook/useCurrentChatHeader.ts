@@ -1,6 +1,5 @@
 import { usePresence } from "@/modules/entities";
-import { Chat, ChatMemberDto, ChatType, useEnsurePrivateChat } from "@/modules/entities/chats";
-import { ChatDtoEncryptionMode } from "@workspace/nest-api";
+import { Chat, ChatMemberDto, ChatType, useEnsurePrivateChat, useIsSignalChat } from "@/modules/entities/chats";
 
 export function useCurrentChatHeader(
     currentUserId: string,
@@ -23,8 +22,7 @@ export function useCurrentChatHeader(
     const otherUserId = otherUser?.userId || '';
     const isOnline = getIsUserOnline(otherUserId);
     const isPrivate = selectedChat?.type === ChatType.PRIVATE;
-    const isSignal =
-        selectedChat?.encryptionMode === ChatDtoEncryptionMode.SIGNAL;
+    const isSignal = useIsSignalChat(selectedChat);
     const hasScheduledChatDeletion = Boolean(selectedChat?.scheduledDeletionAt);
     const disappearingSec = selectedChat?.disappearingMessageSeconds ?? 0;
     const hasDisappearingMessages = disappearingSec > 0;

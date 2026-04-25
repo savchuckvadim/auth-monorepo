@@ -27,9 +27,13 @@ export {
     useChatInputComposer,
     CHAT_INPUT_TEXTAREA_MIN_PX,
     CHAT_INPUT_TEXTAREA_MAX_PX,
+    CurrentChatComposerProvider,
+    useCurrentChatComposer,
     type CurrentChatWidgetProps,
     type CurrentChatHeaderProps,
     type ChatMessagesWidgetProps,
+    type ComposerReplyTarget,
+    type ComposerEditTarget,
 } from './chat-current';
 
 export { SecretChatSettingsMenu, type SecretChatSettingsMenuProps } from './SecretChatSettingsMenu';

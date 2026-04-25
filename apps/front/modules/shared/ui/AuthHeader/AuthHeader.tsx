@@ -10,10 +10,10 @@ import Link from 'next/link';
  */
 export function AuthHeader() {
     return (
-        <header className="relative z-20 w-full shrink-0 border-b border-border/60 bg-background/85 backdrop-blur-md">
+        <header className="relative z-20 w-full shrink-0 border-b border-border/60 bg-card backdrop-blur-md">
             <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
                 <Link
-                    href="/start"
+                    href="/"
                     className="flex items-center gap-2.5 rounded-md outline-none ring-offset-background transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-ring"
                 >
                     <Image

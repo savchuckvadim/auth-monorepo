@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 import type { CreateMessageDtoType } from './createMessageDtoType';
+import type { MessageAttachmentInputDto } from './messageAttachmentInputDto';
 
 export interface CreateMessageDto {
     /** Chat ID */
@@ -44,4 +45,14 @@ export interface CreateMessageDto {
     signalMessageType?: string;
     /** Signal registration id (metadata only) */
     registrationId?: number;
+    /**
+     * ID уже загруженных через `POST /messages/attachments/upload` вложений. Сервер привяжет их к созданному сообщению.
+     * @maxItems 10
+     */
+    attachmentIds?: string[];
+    /**
+     * Inline-вложения: POST_SHARE (через postId) или FORWARD_SNAPSHOT (через metadata). Медиа надо заливать через upload endpoint и слать как `attachmentIds`.
+     * @maxItems 10
+     */
+    attachmentInputs?: MessageAttachmentInputDto[];
 }

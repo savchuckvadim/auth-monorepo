@@ -15,7 +15,7 @@ export function FormFieldControlBox({
     return (
         <div
             className={cn(
-                'group rounded-2xl border border-input text-foreground transition-colors duration-200',
+                'outline-primary group rounded-2xl border-none text-foreground transition-colors duration-200',
                 'bg-muted/55 dark:bg-muted/35',
                 'focus-within:bg-background dark:focus-within:bg-card',
                 'focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50',

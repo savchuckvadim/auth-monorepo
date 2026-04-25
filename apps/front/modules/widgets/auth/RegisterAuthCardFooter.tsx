@@ -18,7 +18,7 @@ export function RegisterAuthCardFooter({
 }: RegisterAuthCardFooterProps) {
     return (
         <AuthCardFooter>
-            <p className="text-center text-xs leading-relaxed text-muted-foreground">
+            <p className="text-center text-xs leading-relaxed text-muted-foreground mb-4">
                 By pressing Sign Up, you agree to the{' '}
                 <Link
                     href={termsHref}
@@ -26,6 +26,7 @@ export function RegisterAuthCardFooter({
                 >
                     Terms of Service
                 </Link>{' '}
+                <br className="mb-0"></br>
                 and{' '}
                 <Link
                     href={privacyHref}

@@ -35,7 +35,7 @@ export function CurrentChatWidget({
     }
 
     return (
-        <div className="flex h-full min-h-0 flex-col overflow-hidden">
+        <div className="flex h-full min-h-0 flex-col overflow-hidden   bg-card">
             <CurrentChatHeader
                 chatId={chatId}
                 currentUserId={currentUserId}
@@ -45,6 +45,7 @@ export function CurrentChatWidget({
                 messages={messages}
                 messagesLoading={messagesLoading}
                 currentUserId={currentUserId}
+                chatId={chatId}
                 messagesEndRef={messagesEndRef}
                 onRetryFailed={onRetryFailed}
             />

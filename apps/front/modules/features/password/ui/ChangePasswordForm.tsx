@@ -1,7 +1,5 @@
 'use client';
-
-import { useState } from 'react';
-import { AlertTriangle, CheckCircle2, Eye, EyeOff, KeyRound, Lock } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, KeyRound, Lock } from 'lucide-react';
 import { SubmitHandler, useForm, useWatch } from 'react-hook-form';
 
 import { Alert, AlertDescription } from '@workspace/ui/components/alert';
@@ -24,7 +22,6 @@ type ChangePasswordFormValues = {
  * текущей вкладки.
  */
 export function ChangePasswordForm() {
-    const [showPassword, setShowPassword] = useState(false);
     const mutation = useChangePasswordMutation();
     const { control, handleSubmit, getValues, reset } = useForm<ChangePasswordFormValues>({
         defaultValues: { oldPassword: '', newPassword: '', confirmPassword: '' },
@@ -43,22 +40,12 @@ export function ChangePasswordForm() {
         );
     };
 
-    const passwordToggle = (
-        <button
-            type="button"
-            onClick={() => setShowPassword((v) => !v)}
-            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent group-focus-within:text-primary"
-        >
-            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-        </button>
-    );
-
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" method="post">
             <div className="space-y-1">
-                <h2 className="text-lg font-semibold text-foreground">Сменить пароль</h2>
+                <h2 className="text-lg font-semibold text-foreground">Change password</h2>
                 <p className="text-sm text-muted-foreground">
-                    После смены пароля мы завершим все остальные сессии, кроме этой.
+                    After changing the password, we will end all other sessions, except this one.
                 </p>
             </div>
 
@@ -66,27 +53,28 @@ export function ChangePasswordForm() {
                 control={control}
                 name="oldPassword"
                 id="change-old-password"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Текущий пароль"
+                type="password"
+                passwordRevealToggle
+                placeholder="Current password"
                 autoComplete="current-password"
                 required
                 startSlot={<KeyRound className="size-4 shrink-0" strokeWidth={2} />}
-                rules={{ required: 'Укажите текущий пароль' }}
+                rules={{ required: 'Specify current password' }}
             />
             <FormField
                 control={control}
                 name="newPassword"
                 id="change-new-password"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Новый пароль (мин. 8 символов)"
+                type="password"
+                passwordRevealToggle
+                placeholder="New password (minimum 8 characters)"
                 autoComplete="new-password"
                 required
                 startSlot={<Lock className="size-4 shrink-0" strokeWidth={2} />}
-                endSlot={passwordToggle}
                 rules={{
-                    required: 'Укажите новый пароль',
-                    minLength: { value: 8, message: 'Минимум 8 символов' },
-                    maxLength: { value: 32, message: 'Максимум 32 символа' },
+                    required: 'Specify new password',
+                    minLength: { value: 8, message: 'Minimum 8 characters' },
+                    maxLength: { value: 32, message: 'Maximum 32 characters' },
                 }}
             />
             <PasswordStrengthMeter value={newPasswordValue} />
@@ -94,15 +82,16 @@ export function ChangePasswordForm() {
                 control={control}
                 name="confirmPassword"
                 id="change-confirm-password"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Повторите новый пароль"
+                type="password"
+                passwordRevealToggle
+                placeholder="Repeat new password"
                 autoComplete="new-password"
                 required
                 startSlot={<Lock className="size-4 shrink-0" strokeWidth={2} />}
                 rules={{
-                    required: 'Повторите новый пароль',
+                    required: 'Repeat new password',
                     validate: (value) =>
-                        value === getValues('newPassword') || 'Пароли не совпадают',
+                        value === getValues('newPassword') || 'Passwords do not match',
                 }}
             />
 
@@ -119,7 +108,7 @@ export function ChangePasswordForm() {
                 <Alert>
                     <CheckCircle2 className="h-4 w-4" />
                     <AlertDescription>
-                        Пароль обновлён. Все остальные сессии завершены.
+                        Password updated. All other sessions are ended.
                     </AlertDescription>
                 </Alert>
             )}
@@ -132,7 +121,7 @@ export function ChangePasswordForm() {
                 leadIcon={<Lock />}
                 className="w-full sm:w-auto"
             >
-                Обновить пароль
+                Update password
             </AppButton>
         </form>
     );

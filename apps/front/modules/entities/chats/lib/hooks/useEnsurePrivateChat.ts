@@ -33,12 +33,12 @@ export function useEnsurePrivateChat() {
     const { data: chats } = useUserChats();
     const createChatMutation = useCreateChat();
 
-    const navigateToPrivateChat = useCallback(
+    const ensurePrivateChat = useCallback(
         async (
             peerUserId: string,
             encryptionMode: ChatDtoEncryptionMode,
-        ): Promise<void> => {
-            if (!currentUser?.id) return;
+        ): Promise<{ id: string } | null> => {
+            if (!currentUser?.id) return null;
             const list = chats as PrivateChatLookup[] | undefined;
             const existing = findPrivateChatWithPeer(
                 list,
@@ -47,8 +47,7 @@ export function useEnsurePrivateChat() {
                 encryptionMode,
             );
             if (existing) {
-                router.push(getNetworkChatPath(existing.id));
-                return;
+                return { id: existing.id };
             }
             const body: CreateChatDto = {
                 type: CreateChatDtoType.PRIVATE,
@@ -58,17 +57,30 @@ export function useEnsurePrivateChat() {
                 encryptionMode,
             };
             try {
-                const chat = await createChatMutation.mutateAsync(body);
-                router.push(getNetworkChatPath(chat.id));
+                return await createChatMutation.mutateAsync(body);
             } catch (error) {
                 window.alert(getApiErrorMessage(error));
                 throw error;
             }
         },
-        [chats, createChatMutation, currentUser?.id, router],
+        [chats, createChatMutation, currentUser?.id],
+    );
+
+    const navigateToPrivateChat = useCallback(
+        async (
+            peerUserId: string,
+            encryptionMode: ChatDtoEncryptionMode,
+        ): Promise<void> => {
+            const chat = await ensurePrivateChat(peerUserId, encryptionMode);
+            if (chat) {
+                router.push(getNetworkChatPath(chat.id));
+            }
+        },
+        [ensurePrivateChat, router],
     );
 
     return {
+        ensurePrivateChat,
         navigateToPrivateChat,
         isPending: createChatMutation.isPending,
     };

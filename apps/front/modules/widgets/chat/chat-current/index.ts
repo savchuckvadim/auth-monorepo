@@ -6,6 +6,12 @@ export {
     CHAT_INPUT_TEXTAREA_MIN_PX,
     CHAT_INPUT_TEXTAREA_MAX_PX,
 } from './lib/hooks';
+export {
+    CurrentChatComposerProvider,
+    useCurrentChatComposer,
+    type ComposerReplyTarget,
+    type ComposerEditTarget,
+} from './lib/context';
 export { CurrentChatHeader, type CurrentChatHeaderProps } from './components/CurrentChatHeader';
 export {
     CurrentChatMessages,

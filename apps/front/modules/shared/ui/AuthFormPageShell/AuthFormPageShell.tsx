@@ -34,8 +34,8 @@ export function AuthFormPageShell({
                     <p className="text-sm text-muted-foreground">{description}</p>
                 ) : null}
             </div>
-            <AppCard className={cn('shadow-sm', cardClassName)}>
-                <CardContent className="p-2 sm:p-5 sm:pt-2">{children}</CardContent>
+            <AppCard className={cardClassName}>
+                <CardContent className="p-4 py-0 sm:p-5 sm:py-0">{children}</CardContent>
             </AppCard>
         </div>
     );

@@ -61,8 +61,30 @@ export const useSendMessage = ({
     }, [chatId, currentUser?.id, currentUser?.name, currentUser?.email, queryClient]);
 
     const sendMessageBody = useCallback(
-        async (content: string) => {
-            if (!chatId || !content.trim() || !currentUser) return;
+        async (
+            content: string,
+            options?: {
+                replyToId?: string | null;
+                attachmentIds?: string[];
+                attachmentInputs?: Array<{
+                    kind: string;
+                    postId?: string;
+                    snapshot?: unknown;
+                }>;
+            },
+        ) => {
+            if (!chatId || !currentUser) return;
+            const attachmentIds = options?.attachmentIds ?? [];
+            const attachmentInputs = options?.attachmentInputs ?? [];
+            // Пустое содержание допустимо, если есть хотя бы одно вложение
+            // (картинка/видео/файл без подписи).
+            if (
+                !content.trim() &&
+                attachmentIds.length === 0 &&
+                attachmentInputs.length === 0
+            ) {
+                return;
+            }
 
             const messageText = content.trim();
             if (messageText.length > MAX_CHAT_MESSAGE_LENGTH) {
@@ -73,6 +95,15 @@ export const useSendMessage = ({
                 chat?.encryptionMode ?? ChatDtoEncryptionMode.NONE;
 
             const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
+            const replyToId = options?.replyToId ?? undefined;
+
+            const cachedMessages =
+                queryClient.getQueryData<Message[]>(messagesQueryKey(chatId)) ??
+                [];
+            const replyToMessage = replyToId
+                ? cachedMessages.find((m) => m.id === replyToId)
+                : undefined;
 
             const tempMessage: Message = {
                 id: tempId,
@@ -88,6 +119,8 @@ export const useSendMessage = ({
                     email: currentUser.email || '',
                 },
                 isEncrypted: false,
+                replyToId,
+                replyTo: replyToMessage,
                 _clientStatus: 'sending',
             };
 
@@ -134,8 +167,12 @@ export const useSendMessage = ({
                             senderDeviceId: p.senderDeviceId,
                             signalMessageType: p.signalMessageType,
                             registrationId: p.registrationId,
+                            replyToId,
                         });
-                        const row = m as Message;
+                        const row = {
+                            ...(m as Message),
+                            replyTo: (m as Message).replyTo ?? replyToMessage,
+                        };
                         sent.push(row);
                         if (row?.id) {
                             rememberSentPlaintext(row.id, messageText);
@@ -157,11 +194,26 @@ export const useSendMessage = ({
                         },
                     );
                 } else {
+                    // attachmentIds пока не в orval-типе CreateMessageDto —
+                    // прокидываем через приведение, бэк-DTO уже расширен.
                     const sentMessage = await createMessageMutation.mutateAsync({
                         chatId,
                         content: messageText,
-                    });
-                    const messageData = sentMessage as Message;
+                        replyToId,
+                        ...(attachmentIds.length > 0
+                            ? { attachmentIds }
+                            : {}),
+                        ...(attachmentInputs.length > 0
+                            ? { attachmentInputs }
+                            : {}),
+                    } as unknown as Parameters<
+                        typeof createMessageMutation.mutateAsync
+                    >[0]);
+                    const messageData = {
+                        ...(sentMessage as Message),
+                        replyTo:
+                            (sentMessage as Message).replyTo ?? replyToMessage,
+                    };
                     queryClient.setQueryData(
                         messagesQueryKey(chatId),
                         (oldData: Message[] | undefined) => {

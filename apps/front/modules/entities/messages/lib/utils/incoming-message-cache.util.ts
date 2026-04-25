@@ -21,15 +21,20 @@ export function mergeIncomingMessageIntoChatCache(
             if (exists) {
                 return oldData;
             }
-            const filtered = oldData.filter(
+            const matchingTemp = oldData.find(
                 (msg: Message) =>
-                    !(
-                        msg.id?.startsWith('temp-') &&
-                        msg.content === newMessage.content &&
-                        msg.senderId === newMessage.senderId
-                    ),
+                    msg.id?.startsWith('temp-') &&
+                    msg.content === newMessage.content &&
+                    msg.senderId === newMessage.senderId,
             );
-            const merged = [...filtered, newMessage];
+            const messageWithLocalRelations = {
+                ...newMessage,
+                replyTo: newMessage.replyTo ?? matchingTemp?.replyTo,
+            };
+            const filtered = oldData.filter(
+                (msg: Message) => msg.id !== matchingTemp?.id,
+            );
+            const merged = [...filtered, messageWithLocalRelations];
             const seen = new Set<string>();
             return merged.filter((m) => {
                 if (seen.has(m.id)) return false;

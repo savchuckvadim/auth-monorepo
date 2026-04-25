@@ -8,16 +8,14 @@ import { getNetworkChatPath } from '@/modules/entities/chats/lib/routes/network-
 import { socketManager } from '@/modules/shared';
 import { connectNotificationsSocket } from '@/modules/shared/lib/socket/notifications-socket';
 import { useAuth } from '@/modules/processes';
-import { useAppDispatch } from '@/modules/app';
 import { usePostNotification } from './post-notification.hook';
-import { addNotification } from '../../model/NotificationSlice';
-import { EnumNotificationContentType, EnumNotificationType } from '../../type/notification.consts';
 import type { NotificationNewMessagePayload } from '../../type/notifications-socket.types';
+import { useAppToast } from '@/modules/shared/ui';
 
 export const useNotificationsSocket = () => {
     const { currentUser } = useAuth();
     const { handlePostCreated } = usePostNotification();
-    const dispatch = useAppDispatch();
+    const { showToast } = useAppToast();
     const pathname = usePathname();
     const queryClient = useQueryClient();
 
@@ -45,22 +43,17 @@ export const useNotificationsSocket = () => {
                 return;
             }
 
-            dispatch(
-                addNotification({
-                    id: msg.id,
-                    title: msg.sender?.name
-                        ? `Сообщение от ${msg.sender.name}`
-                        : 'Новое сообщение',
-                    message:
-                        msg.content?.length > 120
-                            ? `${msg.content.slice(0, 117)}…`
-                            : msg.content,
-                    type: EnumNotificationType.MESSAGE,
-                    contentType: EnumNotificationContentType.MESSAGE,
-                    url: getNetworkChatPath(msg.chatId),
-                    createdAt: new Date().toISOString(),
-                }),
-            );
+            showToast({
+                dedupeKey: `message:${msg.id}`,
+                title: msg.sender?.name
+                    ? `Сообщение от ${msg.sender.name}`
+                    : 'Новое сообщение',
+                description:
+                    msg.content?.length > 120
+                        ? `${msg.content.slice(0, 117)}…`
+                        : msg.content,
+                href: getNetworkChatPath(msg.chatId),
+            });
             queryClient.invalidateQueries({ queryKey: ['chats', 'user'] });
             queryClient.invalidateQueries({
                 queryKey: ['messages', 'unread', 'total'],
@@ -73,5 +66,5 @@ export const useNotificationsSocket = () => {
             socket.off(EnumPostSocketEvent.CREATED, handlePostCreated);
             notifSocket.off('notification:new-message', handleNewMessage);
         };
-    }, [currentUser?.id, handlePostCreated, dispatch, pathname, queryClient]);
+    }, [currentUser?.id, handlePostCreated, pathname, queryClient, showToast]);
 };

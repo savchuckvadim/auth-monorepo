@@ -3,12 +3,13 @@
 import { Button } from "@workspace/ui/components/button";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { getCurrentYear } from "@/modules/shared/lib";
 
 
 export default function Page() {
   const router = useRouter();
   return (
-    <div className="flex w-full flex-row justify-center items-center h-screen">
+    <div className="flex w-full flex-row justify-center items-center h-screen bg-brand-dark">
       <div className="flex w-xl flex-col justify-between gap-3 h-screen p-3 ">
         <div className="flex flex-row items-center justify-center gap-3 pt-5">
           <Image
@@ -32,7 +33,7 @@ export default function Page() {
         </div>
 
         <div className="flex flex-row justify-center items-center gap-3 w-full">
-          <p className="text-xs text-background">© 2025 Sociopath. All rights reserved.</p>
+          <p className="text-xs text-background">© {getCurrentYear()} Sociopath. All rights reserved.</p>
         </div>
 
       </div>

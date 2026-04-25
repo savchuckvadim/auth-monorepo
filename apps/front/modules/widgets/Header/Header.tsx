@@ -1,6 +1,7 @@
 'use client'
 import { APP_TITLE } from "@/modules/app";
 import { CurrentUser } from "@/modules/entities/user";
+import { SettingsButton } from "@/modules/features/settings/ui/SettingsButton";
 import { Logout } from "@/modules/processes/"
 import { ThemeToggle } from "@/modules/shared";
 
@@ -20,8 +21,8 @@ export const Header = () => {
     // }
 
     return (
-        <div className="absolute top-0 left-0 right-0 z-50 bg-card ">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-4 py-4">
+        <div className="absolute top-0 left-0 right-0 z-50 bg-card">
+            <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-4 py-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center  gap-8">
                         <Link href="/network/me">
@@ -43,20 +44,22 @@ export const Header = () => {
 
                     </div>
 
-                    <div className="flex items-center gap-4">
-                        <ThemeToggle />
+                    <div className="flex items-center gap-1">
+
                         <div className="hidden md:block ">
 
                             <CurrentUser />
                         </div>
-                        <Link
+                        {/* <Link
                             href="/network/settings"
                             className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-card hover:text-primary"
                             aria-label="Настройки"
                             title="Настройки"
                         >
                             <Settings className="h-5 w-5" />
-                        </Link>
+                        </Link> */}
+                          <ThemeToggle />
+                          <SettingsButton />
                         <Logout />
                     </div>
                 </div>

@@ -6,6 +6,8 @@
  * OpenAPI spec version: 1.0
  */
 import type { MessageDtoType } from './messageDtoType';
+import type { CallEventMetadataDto } from './callEventMetadataDto';
+import type { MessageAttachmentDto } from './messageAttachmentDto';
 import type { UserDto } from './userDto';
 import type { MessageDto as __MessageDto } from './messageDto';
 
@@ -30,8 +32,18 @@ export interface MessageDto {
     replyToId?: string;
     /** Edited At */
     editedAt?: string;
+    /** Derived flag: true if the message was edited at least once. Computed from `editedAt`. */
+    isEdited?: boolean;
     /** Deleted At */
     deletedAt?: string;
+    /** Произвольные метаданные сообщения. Для `type=CALL_EVENT` содержит `CallEventMetadataDto`. */
+    metadata?: CallEventMetadataDto;
+    /** Денормализованный счётчик лайков (быстрые выборки списка сообщений). */
+    likesCount: number;
+    /** Лайкнул ли это сообщение текущий зритель (viewer). `undefined` если не загружено. */
+    isLiked?: boolean;
+    /** Вложения сообщения (IMAGE/VIDEO/AUDIO/VOICE/CIRCLE/FILE/POST_SHARE/FORWARD_SNAPSHOT). Пусто, если вложений нет. */
+    attachments: MessageAttachmentDto[];
     /** Created At */
     createdAt: string;
     /** Updated At */

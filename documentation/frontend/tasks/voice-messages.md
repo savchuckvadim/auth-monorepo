@@ -115,3 +115,38 @@ const {
 - Обновить компоненты отображения сообщений - добавить поддержку голосовых сообщений
 - Backend: создать endpoint для загрузки голосовых сообщений
 - Backend: обновить DTO для постов и сообщений
+
+## Реализация (итерация 8, 2026-04)
+
+Волна `messenger-features-expansion` закрыла голосовые сообщения для чатов
+(посты — по-прежнему follow-up). Без Redux, через React Query.
+
+### Что готово
+
+- `apps/front/modules/entities/messages/lib/hooks/useVoiceRecorder.ts` —
+  `MediaRecorder` + `AnalyserNode` для сбора пиков (RMS). Автостоп по
+  `MAX_DURATION_MS=60_000`. Лицензионный blob `audio/webm;codecs=opus`,
+  сжатие даёт ~24 kbps.
+- `apps/front/modules/widgets/chat/chat-current/ChatInputWidget/VoiceRecordButton.tsx`
+  — hold-to-record: `pointerdown` старт, `pointerup` отправляет blob в
+  `useUploadMessageAttachment` с `kind=VOICE`, `durationMs`, `waveform`. На
+  `pointerleave`/ESC — отмена.
+- `apps/front/modules/entities/messages/ui/VoiceMessage/VoiceMessagePlayer.tsx`
+  — play/pause + простой equalizer-style bar-chart (24 бара из peaks),
+  таймер mm:ss.
+- Рендерятся через `MessageAttachmentList` как отдельный kind `VOICE`.
+
+### Отличия от исходной спеки
+
+- Нет `VoiceMessageSlice` / Redux — вся запись live-state в `useVoiceRecorder`,
+  upload — через React Query. Это консистентно с остальным мессенджером.
+- Формат — `audio/webm`, не OGG (поддержка Safari 17+ из коробки).
+- Пока нет интеграции в `CreatePost` — это остаётся follow-up, паттерн
+  переиспользуемый.
+
+### Известные ограничения
+
+- Safari &lt; 17.4 не поддерживает `MediaRecorder` с webm — нужен polyfill
+  (`opus-recorder`) в будущей волне.
+- Waveform рассчитывается на клиенте и сохраняется как JSON peaks, сервер
+  не перегенерирует.

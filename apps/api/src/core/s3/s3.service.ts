@@ -1,4 +1,11 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
+import { MessageAttachmentKind } from 'generated/prisma';
+
+/** В S3 грузим только файловые kind’ы (не POST_SHARE / FORWARD_SNAPSHOT). */
+type MessageMediaUploadKind = Exclude<
+    MessageAttachmentKind,
+    'POST_SHARE' | 'FORWARD_SNAPSHOT'
+>;
 import {
     S3Client,
     PutObjectCommand,
@@ -166,6 +173,38 @@ export class S3Service {
         await this.s3!.send(command);
 
         // Формируем URL с правильным регионом
+        const url = `https://${this.bucket}.s3.${this.region}.amazonaws.com/${key}`;
+        return { url };
+    }
+
+    /**
+     * Загружает медиа-вложение к сообщению. Разводим папки по `kind`, чтобы
+     * можно было задавать разные lifecycle-правила S3 (voice — короче TTL,
+     * file — длиннее, и т.п.). URL — публичный CDN-like, без presign.
+     */
+    async uploadMessageMedia(
+        file: Express.Multer.File,
+        userId: string,
+        kind: MessageMediaUploadKind,
+    ): Promise<{ url: string }> {
+        this.validateS3Config();
+
+        const fileExtension = file.originalname.split('.').pop();
+        const fileName = `${userId}-${randomUUID()}${
+            fileExtension ? `.${fileExtension}` : ''
+        }`;
+        const folder = `messages/${kind.toLowerCase()}`;
+        const key = `${folder}/${fileName}`;
+
+        const command = new PutObjectCommand({
+            Bucket: this.bucket,
+            Key: key,
+            Body: file.buffer,
+            ContentType: file.mimetype,
+        });
+
+        await this.s3!.send(command);
+
         const url = `https://${this.bucket}.s3.${this.region}.amazonaws.com/${key}`;
         return { url };
     }

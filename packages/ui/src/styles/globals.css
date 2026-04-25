@@ -79,6 +79,17 @@
 }
 
 @import './themes/themes.css';
+
+/*
+ * Глобальные brand-константы, не зависящие от активной темы.
+ * Используются для страниц/блоков, которые должны оставаться в фиксированной
+ * палитре (например, лендинг /), независимо от light/dark/sociopath-*.
+ */
+@theme {
+    --color-brand-dark: oklch(0.25 0 0);
+    --color-brand-light: oklch(0.96 0 0);
+}
+
 @theme inline {
     --color-background: var(--background);
     --color-foreground: var(--foreground);
