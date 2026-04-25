@@ -14,7 +14,7 @@ type AppCardProps = {
  */
 export function AppCard({ className, children }: AppCardProps) {
     return (
-        <Card className={cn('w-full max-w-md', className)}>{children}</Card>
+        <Card className={cn('w-full max-w-md border-none', className)}>{children}</Card>
     );
 }
 

@@ -96,8 +96,8 @@ export const Users = () => {
 
     return (
         <div className="flex flex-col gap-4 h-[75vh] min-h-0">
-            <h1 className="text-2xl font-bold">Пользователи</h1>
-            <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-bold">People</h1>
+            {/* <div className="flex flex-wrap items-center gap-2">
                 <Button variant="ghost" onClick={() => router.back()}>
                     <ArrowLeft className="w-4 h-4" />
                     Назад
@@ -109,7 +109,7 @@ export const Users = () => {
                     onChange={(e) => setSearch(e.target.value)}
                     className="min-h-10 min-w-0 flex-1"
                 />
-            </div>
+            </div> */}
             <FilterSegmentStrip<PeopleFilter>
                 value={filter}
                 onChange={setFilter}

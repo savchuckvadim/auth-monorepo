@@ -1,75 +1,146 @@
 'use client';
 
-import { Textarea } from '@workspace/ui/components/textarea';
-import { Send } from 'lucide-react';
-import { cn } from '@workspace/ui/lib/utils';
 import { MAX_CHAT_MESSAGE_LENGTH } from '@/modules/entities/messages';
-import { AppButton } from '@/modules/shared';
 import {
-    CHAT_INPUT_TEXTAREA_MAX_PX,
-    CHAT_INPUT_TEXTAREA_MIN_PX,
     useChatInputComposer,
+    useChatInput,
 } from '../lib/hooks';
+import { AttachmentDraftsPreview } from './AttachmentDraftsPreview';
+import { VideoCircleRecorderModal } from './VideoCircleRecorderModal';
+import { ChatAttachmentActions } from './ChatAttachmentActions';
+import { ChatComposerNoticeBar } from './ChatComposerNoticeBar';
+import { ChatComposerTextArea } from './ChatComposerTextArea';
+import { ChatSendButton } from './ChatSendButton';
 
 type ChatInputWidgetProps = {
+    chatId?: string | null;
+    currentUserId?: string | null;
     messageText: string;
     onMessageTextChange: (text: string) => void;
     onSendMessage: () => void;
     isPending: boolean;
 };
 
+/**
+ * Поле ввода текущего чата: кроме обычной отправки умеет reply (читает цель из
+ * composer-контекста, бар-превью + replyToId передаётся в `onSendMessage` через
+ * тот же контекст) и edit (собственный локальный стейт + `useUpdateMessage`).
+ * Edit-ветка полностью изолирована от parent-стейта `messageText`, чтобы не
+ * стирать черновик ответа.
+ */
 export function ChatInputWidget({
+    chatId,
+    currentUserId,
     messageText,
     onMessageTextChange,
     onSendMessage,
     isPending,
 }: ChatInputWidgetProps) {
-    const { textareaRef, handleKeyDown } = useChatInputComposer({
+    const {
+        isSignal,
+        replyTarget,
+        editTarget,
+        attachmentDrafts,
+        setReplyTarget,
+        clearComposer,
+        removeAttachmentDraft,
+        addAttachmentDraft,
+        updateAttachmentDraft,
+        fileInputRef,
+        circleModalOpen,
+        setCircleModalOpen,
+        isEditMode,
+        activeText,
+        hasAnyDraft,
+        hasUploadedAttachments,
+        isPrimaryBusy,
+        primaryDisabled,
+        handleActiveTextChange,
+        handlePrimaryAction,
+        handlePickFiles,
+        handleFilesSelected,
+    } = useChatInput({
+        chatId,
+        currentUserId,
         messageText,
+        onMessageTextChange,
         onSendMessage,
         isPending,
     });
 
+    const { textareaRef, handleKeyDown } = useChatInputComposer({
+        messageText: activeText,
+        onSendMessage: handlePrimaryAction,
+        isPending: isPrimaryBusy,
+    });
+
     return (
-        <div className="flex-shrink-0 border-t bg-card p-4">
-            <div className="flex items-end gap-2">
-                <Textarea
-                    ref={textareaRef}
-                    placeholder="Введите сообщение..."
-                    value={messageText}
-                    maxLength={MAX_CHAT_MESSAGE_LENGTH}
-                    onChange={(e) => {
-                        const v = e.target.value;
-                        onMessageTextChange(
-                            v.length > MAX_CHAT_MESSAGE_LENGTH
-                                ? v.slice(0, MAX_CHAT_MESSAGE_LENGTH)
-                                : v,
-                        );
-                    }}
-                    onKeyDown={handleKeyDown}
-                    className={cn(
-                        'min-w-0 flex-1 resize-none break-words py-2 leading-5 [overflow-wrap:anywhere]',
-                    )}
-                    style={{
-                        minHeight: CHAT_INPUT_TEXTAREA_MIN_PX,
-                        maxHeight: CHAT_INPUT_TEXTAREA_MAX_PX,
-                    }}
-                    rows={1}
+        <div className="flex-shrink-0 border-t border-background/90 bg-card p-4">
+            {replyTarget && !isEditMode ? (
+                <ChatComposerNoticeBar
+                    tone="reply"
+                    title={`Ответ: ${replyTarget.senderName || 'Пользователь'}`}
+                    text={replyTarget.snippet}
+                    onClear={() => setReplyTarget(null)}
                 />
-                <AppButton
-                    type="button"
-                    appSize="md"
-                    className="mb-0 h-10 w-10 shrink-0 p-0"
-                    disabled={!messageText.trim() || isPending}
-                    onClick={onSendMessage}
-                    aria-label="Отправить"
-                >
-                    <Send className="h-4 w-4" />
-                </AppButton>
+            ) : null}
+
+            {hasAnyDraft && !isEditMode ? (
+                <AttachmentDraftsPreview
+                    drafts={attachmentDrafts}
+                    onRemove={removeAttachmentDraft}
+                />
+            ) : null}
+
+            {editTarget ? (
+                <ChatComposerNoticeBar
+                    tone="edit"
+                    title="Редактирование сообщения"
+                    text={editTarget.originalContent}
+                    onClear={clearComposer}
+                />
+            ) : null}
+
+            <div className="flex items-end gap-2">
+                {!isEditMode && !isSignal ? (
+                    <ChatAttachmentActions
+                        fileInputRef={fileInputRef}
+                        disabled={isPrimaryBusy}
+                        onPickFiles={handlePickFiles}
+                        onFilesSelected={handleFilesSelected}
+                        onCircleOpen={() => setCircleModalOpen(true)}
+                        onUploaded={addAttachmentDraft}
+                        onDraftUpdate={updateAttachmentDraft}
+                    />
+                ) : null}
+                <ChatComposerTextArea
+                    textareaRef={textareaRef}
+                    value={activeText}
+                    isEditMode={isEditMode}
+                    onChange={handleActiveTextChange}
+                    onKeyDown={handleKeyDown}
+                />
+                {!isEditMode && !activeText.trim() && !hasUploadedAttachments ? (
+                    null
+                ) : (
+                    <ChatSendButton
+                        isEditMode={isEditMode}
+                        disabled={primaryDisabled}
+                        onClick={handlePrimaryAction}
+                    />
+                )}
             </div>
             <p className="mt-1 text-right text-[11px] text-muted-foreground">
-                {messageText.length}/{MAX_CHAT_MESSAGE_LENGTH}
+                {activeText.length}/{MAX_CHAT_MESSAGE_LENGTH}
             </p>
+
+            <VideoCircleRecorderModal
+                open={circleModalOpen}
+                onClose={() => setCircleModalOpen(false)}
+                onUploaded={addAttachmentDraft}
+                onDraftUpdate={updateAttachmentDraft}
+            />
+
         </div>
     );
 }

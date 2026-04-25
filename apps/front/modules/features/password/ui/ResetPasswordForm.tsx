@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { AlertTriangle, CheckCircle2, Eye, EyeOff, Lock, LogIn } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Lock, LogIn } from 'lucide-react';
 import { SubmitHandler, useForm, useWatch } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 
@@ -25,7 +24,6 @@ type ResetPasswordFormProps = {
 
 export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
     const router = useRouter();
-    const [showPassword, setShowPassword] = useState(false);
     const { control, handleSubmit, getValues } = useForm<ResetPasswordFormValues>({
         defaultValues: { password: '', confirmPassword: '' },
     });
@@ -42,7 +40,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
             <Alert variant="destructive">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
-                    Ссылка неполная — в URL отсутствует токен. Запросите новое письмо.
+                    Link is incomplete — token is missing in the URL. Request a new email.
                 </AlertDescription>
             </Alert>
         );
@@ -54,8 +52,8 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
                 <Alert>
                     <CheckCircle2 className="h-4 w-4" />
                     <AlertDescription>
-                        Пароль обновлён. Все предыдущие сессии завершены — войдите
-                        заново с новым паролем.
+                        Password updated.
+                        All previous sessions are ended — sign in again with the new password.
                     </AlertDescription>
                 </Alert>
                 <AppButton
@@ -69,32 +67,22 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
         );
     }
 
-    const passwordToggle = (
-        <button
-            type="button"
-            onClick={() => setShowPassword((v) => !v)}
-            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent group-focus-within:text-primary"
-        >
-            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-        </button>
-    );
-
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" method="post">
             <FormField
                 control={control}
                 name="password"
                 id="reset-password"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Новый пароль (мин. 8 символов)"
+                type="password"
+                passwordRevealToggle
+                placeholder="New password (minimum 8 characters)"
                 autoComplete="new-password"
                 required
                 startSlot={<Lock className="size-4 shrink-0" strokeWidth={2} />}
-                endSlot={passwordToggle}
                 rules={{
-                    required: 'Укажите новый пароль',
-                    minLength: { value: 8, message: 'Минимум 8 символов' },
-                    maxLength: { value: 32, message: 'Максимум 32 символа' },
+                    required: 'Specify new password',
+                    minLength: { value: 8, message: 'Minimum 8 characters' },
+                    maxLength: { value: 32, message: 'Maximum 32 characters' },
                 }}
             />
             <PasswordStrengthMeter value={passwordValue} />
@@ -102,15 +90,16 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
                 control={control}
                 name="confirmPassword"
                 id="reset-confirm"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Повторите пароль"
+                type="password"
+                passwordRevealToggle
+                placeholder="Repeat password"
                 autoComplete="new-password"
                 required
                 startSlot={<Lock className="size-4 shrink-0" strokeWidth={2} />}
                 rules={{
-                    required: 'Повторите пароль',
+                    required: 'Repeat password',
                     validate: (value) =>
-                        value === getValues('password') || 'Пароли не совпадают',
+                        value === getValues('password') || 'Passwords do not match',
                 }}
             />
 
@@ -127,10 +116,10 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
                 type="submit"
                 appSize="auth"
                 isLoading={mutation.isPending}
-                loadingLabel="Сохраняем..."
+                loadingLabel="Saving..."
                 leadIcon={<Lock />}
             >
-                Сохранить новый пароль
+                Save new password
             </AppButton>
         </form>
     );

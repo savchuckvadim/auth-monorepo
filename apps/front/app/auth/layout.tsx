@@ -14,7 +14,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden bg-mainBackground">
             <Image
                 className="pointer-events-none absolute inset-0 z-0 object-contain opacity-10"
-                src="/logo.svg"
+                src="/grey-logo.svg"
                 alt=""
                 fill
                 priority

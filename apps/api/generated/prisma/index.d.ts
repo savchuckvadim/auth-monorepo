@@ -66,6 +66,20 @@ export type OneTimePreKey = $Result.DefaultSelection<Prisma.$OneTimePreKeyPayloa
  */
 export type MessageReadStatus = $Result.DefaultSelection<Prisma.$MessageReadStatusPayload>
 /**
+ * Model MessageLike
+ * Лайк сообщения. Уникальность `(messageId,userId)` гарантирует
+ * идемпотентность — повторный `POST /messages/:id/like` работает как toggle.
+ */
+export type MessageLike = $Result.DefaultSelection<Prisma.$MessageLikePayload>
+/**
+ * Model MessageAttachment
+ * Полиморфное вложение к сообщению. Один `Message` может иметь N штук.
+ * `messageId = null` допустим временно — upload эндпоинт создаёт
+ * «висячий» attachment, который клиент привяжет через `POST /messages`
+ * в `attachmentIds`. Orphan’ы подчищает cron (TTL 1 час).
+ */
+export type MessageAttachment = $Result.DefaultSelection<Prisma.$MessageAttachmentPayload>
+/**
  * Model Call
  * 
  */
@@ -114,6 +128,20 @@ export namespace $Enums {
 export type user_roles = (typeof user_roles)[keyof typeof user_roles]
 
 
+export const MessageAttachmentKind: {
+  IMAGE: 'IMAGE',
+  VIDEO: 'VIDEO',
+  AUDIO: 'AUDIO',
+  VOICE: 'VOICE',
+  CIRCLE: 'CIRCLE',
+  FILE: 'FILE',
+  POST_SHARE: 'POST_SHARE',
+  FORWARD_SNAPSHOT: 'FORWARD_SNAPSHOT'
+};
+
+export type MessageAttachmentKind = (typeof MessageAttachmentKind)[keyof typeof MessageAttachmentKind]
+
+
 export const ChatType: {
   PRIVATE: 'PRIVATE',
   GROUP: 'GROUP',
@@ -146,7 +174,8 @@ export const MessageType: {
   VIDEO: 'VIDEO',
   AUDIO: 'AUDIO',
   FILE: 'FILE',
-  SYSTEM: 'SYSTEM'
+  SYSTEM: 'SYSTEM',
+  CALL_EVENT: 'CALL_EVENT'
 };
 
 export type MessageType = (typeof MessageType)[keyof typeof MessageType]
@@ -224,6 +253,10 @@ export type InvitationStatus = (typeof InvitationStatus)[keyof typeof Invitation
 export type user_roles = $Enums.user_roles
 
 export const user_roles: typeof $Enums.user_roles
+
+export type MessageAttachmentKind = $Enums.MessageAttachmentKind
+
+export const MessageAttachmentKind: typeof $Enums.MessageAttachmentKind
 
 export type ChatType = $Enums.ChatType
 
@@ -486,6 +519,26 @@ export class PrismaClient<
     * ```
     */
   get messageReadStatus(): Prisma.MessageReadStatusDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.messageLike`: Exposes CRUD operations for the **MessageLike** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more MessageLikes
+    * const messageLikes = await prisma.messageLike.findMany()
+    * ```
+    */
+  get messageLike(): Prisma.MessageLikeDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.messageAttachment`: Exposes CRUD operations for the **MessageAttachment** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more MessageAttachments
+    * const messageAttachments = await prisma.messageAttachment.findMany()
+    * ```
+    */
+  get messageAttachment(): Prisma.MessageAttachmentDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.call`: Exposes CRUD operations for the **Call** model.
@@ -1007,6 +1060,8 @@ export namespace Prisma {
     PreKey: 'PreKey',
     OneTimePreKey: 'OneTimePreKey',
     MessageReadStatus: 'MessageReadStatus',
+    MessageLike: 'MessageLike',
+    MessageAttachment: 'MessageAttachment',
     Call: 'Call',
     PushDevice: 'PushDevice',
     Follow: 'Follow',
@@ -1032,7 +1087,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "token" | "passwordResetToken" | "chat" | "chatMember" | "message" | "device" | "preKey" | "oneTimePreKey" | "messageReadStatus" | "call" | "pushDevice" | "follow" | "profile" | "post" | "postLike" | "invitation"
+      modelProps: "user" | "token" | "passwordResetToken" | "chat" | "chatMember" | "message" | "device" | "preKey" | "oneTimePreKey" | "messageReadStatus" | "messageLike" | "messageAttachment" | "call" | "pushDevice" | "follow" | "profile" | "post" | "postLike" | "invitation"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1696,6 +1751,138 @@ export namespace Prisma {
           }
         }
       }
+      MessageLike: {
+        payload: Prisma.$MessageLikePayload<ExtArgs>
+        fields: Prisma.MessageLikeFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.MessageLikeFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageLikePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.MessageLikeFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageLikePayload>
+          }
+          findFirst: {
+            args: Prisma.MessageLikeFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageLikePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.MessageLikeFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageLikePayload>
+          }
+          findMany: {
+            args: Prisma.MessageLikeFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageLikePayload>[]
+          }
+          create: {
+            args: Prisma.MessageLikeCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageLikePayload>
+          }
+          createMany: {
+            args: Prisma.MessageLikeCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.MessageLikeDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageLikePayload>
+          }
+          update: {
+            args: Prisma.MessageLikeUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageLikePayload>
+          }
+          deleteMany: {
+            args: Prisma.MessageLikeDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.MessageLikeUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.MessageLikeUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageLikePayload>
+          }
+          aggregate: {
+            args: Prisma.MessageLikeAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateMessageLike>
+          }
+          groupBy: {
+            args: Prisma.MessageLikeGroupByArgs<ExtArgs>
+            result: $Utils.Optional<MessageLikeGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.MessageLikeCountArgs<ExtArgs>
+            result: $Utils.Optional<MessageLikeCountAggregateOutputType> | number
+          }
+        }
+      }
+      MessageAttachment: {
+        payload: Prisma.$MessageAttachmentPayload<ExtArgs>
+        fields: Prisma.MessageAttachmentFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.MessageAttachmentFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageAttachmentPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.MessageAttachmentFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageAttachmentPayload>
+          }
+          findFirst: {
+            args: Prisma.MessageAttachmentFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageAttachmentPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.MessageAttachmentFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageAttachmentPayload>
+          }
+          findMany: {
+            args: Prisma.MessageAttachmentFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageAttachmentPayload>[]
+          }
+          create: {
+            args: Prisma.MessageAttachmentCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageAttachmentPayload>
+          }
+          createMany: {
+            args: Prisma.MessageAttachmentCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          delete: {
+            args: Prisma.MessageAttachmentDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageAttachmentPayload>
+          }
+          update: {
+            args: Prisma.MessageAttachmentUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageAttachmentPayload>
+          }
+          deleteMany: {
+            args: Prisma.MessageAttachmentDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.MessageAttachmentUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.MessageAttachmentUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MessageAttachmentPayload>
+          }
+          aggregate: {
+            args: Prisma.MessageAttachmentAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateMessageAttachment>
+          }
+          groupBy: {
+            args: Prisma.MessageAttachmentGroupByArgs<ExtArgs>
+            result: $Utils.Optional<MessageAttachmentGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.MessageAttachmentCountArgs<ExtArgs>
+            result: $Utils.Optional<MessageAttachmentCountAggregateOutputType> | number
+          }
+        }
+      }
       Call: {
         payload: Prisma.$CallPayload<ExtArgs>
         fields: Prisma.CallFieldRefs
@@ -2264,6 +2451,8 @@ export namespace Prisma {
     preKey?: PreKeyOmit
     oneTimePreKey?: OneTimePreKeyOmit
     messageReadStatus?: MessageReadStatusOmit
+    messageLike?: MessageLikeOmit
+    messageAttachment?: MessageAttachmentOmit
     call?: CallOmit
     pushDevice?: PushDeviceOmit
     follow?: FollowOmit
@@ -2360,6 +2549,7 @@ export namespace Prisma {
     sentCalls: number
     receivedCalls: number
     messageReads: number
+    messageLikes: number
     chats: number
     followers: number
     following: number
@@ -2381,6 +2571,7 @@ export namespace Prisma {
     sentCalls?: boolean | UserCountOutputTypeCountSentCallsArgs
     receivedCalls?: boolean | UserCountOutputTypeCountReceivedCallsArgs
     messageReads?: boolean | UserCountOutputTypeCountMessageReadsArgs
+    messageLikes?: boolean | UserCountOutputTypeCountMessageLikesArgs
     chats?: boolean | UserCountOutputTypeCountChatsArgs
     followers?: boolean | UserCountOutputTypeCountFollowersArgs
     following?: boolean | UserCountOutputTypeCountFollowingArgs
@@ -2464,6 +2655,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountMessageReadsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: MessageReadStatusWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountMessageLikesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MessageLikeWhereInput
   }
 
   /**
@@ -2586,11 +2784,15 @@ export namespace Prisma {
   export type MessageCountOutputType = {
     replies: number
     readStatus: number
+    likes: number
+    attachments: number
   }
 
   export type MessageCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     replies?: boolean | MessageCountOutputTypeCountRepliesArgs
     readStatus?: boolean | MessageCountOutputTypeCountReadStatusArgs
+    likes?: boolean | MessageCountOutputTypeCountLikesArgs
+    attachments?: boolean | MessageCountOutputTypeCountAttachmentsArgs
   }
 
   // Custom InputTypes
@@ -2616,6 +2818,20 @@ export namespace Prisma {
    */
   export type MessageCountOutputTypeCountReadStatusArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: MessageReadStatusWhereInput
+  }
+
+  /**
+   * MessageCountOutputType without action
+   */
+  export type MessageCountOutputTypeCountLikesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MessageLikeWhereInput
+  }
+
+  /**
+   * MessageCountOutputType without action
+   */
+  export type MessageCountOutputTypeCountAttachmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MessageAttachmentWhereInput
   }
 
 
@@ -2926,6 +3142,7 @@ export namespace Prisma {
     sentCalls?: boolean | User$sentCallsArgs<ExtArgs>
     receivedCalls?: boolean | User$receivedCallsArgs<ExtArgs>
     messageReads?: boolean | User$messageReadsArgs<ExtArgs>
+    messageLikes?: boolean | User$messageLikesArgs<ExtArgs>
     chats?: boolean | User$chatsArgs<ExtArgs>
     followers?: boolean | User$followersArgs<ExtArgs>
     following?: boolean | User$followingArgs<ExtArgs>
@@ -2964,6 +3181,7 @@ export namespace Prisma {
     sentCalls?: boolean | User$sentCallsArgs<ExtArgs>
     receivedCalls?: boolean | User$receivedCallsArgs<ExtArgs>
     messageReads?: boolean | User$messageReadsArgs<ExtArgs>
+    messageLikes?: boolean | User$messageLikesArgs<ExtArgs>
     chats?: boolean | User$chatsArgs<ExtArgs>
     followers?: boolean | User$followersArgs<ExtArgs>
     following?: boolean | User$followingArgs<ExtArgs>
@@ -2989,6 +3207,7 @@ export namespace Prisma {
       sentCalls: Prisma.$CallPayload<ExtArgs>[]
       receivedCalls: Prisma.$CallPayload<ExtArgs>[]
       messageReads: Prisma.$MessageReadStatusPayload<ExtArgs>[]
+      messageLikes: Prisma.$MessageLikePayload<ExtArgs>[]
       chats: Prisma.$ChatPayload<ExtArgs>[]
       followers: Prisma.$FollowPayload<ExtArgs>[]
       following: Prisma.$FollowPayload<ExtArgs>[]
@@ -3359,6 +3578,7 @@ export namespace Prisma {
     sentCalls<T extends User$sentCallsArgs<ExtArgs> = {}>(args?: Subset<T, User$sentCallsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CallPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     receivedCalls<T extends User$receivedCallsArgs<ExtArgs> = {}>(args?: Subset<T, User$receivedCallsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CallPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     messageReads<T extends User$messageReadsArgs<ExtArgs> = {}>(args?: Subset<T, User$messageReadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    messageLikes<T extends User$messageLikesArgs<ExtArgs> = {}>(args?: Subset<T, User$messageLikesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageLikePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     chats<T extends User$chatsArgs<ExtArgs> = {}>(args?: Subset<T, User$chatsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     followers<T extends User$followersArgs<ExtArgs> = {}>(args?: Subset<T, User$followersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     following<T extends User$followingArgs<ExtArgs> = {}>(args?: Subset<T, User$followingArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$FollowPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -3963,6 +4183,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: MessageReadStatusScalarFieldEnum | MessageReadStatusScalarFieldEnum[]
+  }
+
+  /**
+   * User.messageLikes
+   */
+  export type User$messageLikesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageLike
+     */
+    select?: MessageLikeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageLike
+     */
+    omit?: MessageLikeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageLikeInclude<ExtArgs> | null
+    where?: MessageLikeWhereInput
+    orderBy?: MessageLikeOrderByWithRelationInput | MessageLikeOrderByWithRelationInput[]
+    cursor?: MessageLikeWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: MessageLikeScalarFieldEnum | MessageLikeScalarFieldEnum[]
   }
 
   /**
@@ -8278,11 +8522,13 @@ export namespace Prisma {
 
   export type MessageAvgAggregateOutputType = {
     fileSize: number | null
+    likesCount: number | null
     registrationId: number | null
   }
 
   export type MessageSumAggregateOutputType = {
     fileSize: number | null
+    likesCount: number | null
     registrationId: number | null
   }
 
@@ -8298,6 +8544,7 @@ export namespace Prisma {
     replyToId: string | null
     editedAt: Date | null
     deletedAt: Date | null
+    likesCount: number | null
     createdAt: Date | null
     updatedAt: Date | null
     expiresAt: Date | null
@@ -8320,6 +8567,7 @@ export namespace Prisma {
     replyToId: string | null
     editedAt: Date | null
     deletedAt: Date | null
+    likesCount: number | null
     createdAt: Date | null
     updatedAt: Date | null
     expiresAt: Date | null
@@ -8342,6 +8590,8 @@ export namespace Prisma {
     replyToId: number
     editedAt: number
     deletedAt: number
+    metadata: number
+    likesCount: number
     createdAt: number
     updatedAt: number
     expiresAt: number
@@ -8356,11 +8606,13 @@ export namespace Prisma {
 
   export type MessageAvgAggregateInputType = {
     fileSize?: true
+    likesCount?: true
     registrationId?: true
   }
 
   export type MessageSumAggregateInputType = {
     fileSize?: true
+    likesCount?: true
     registrationId?: true
   }
 
@@ -8376,6 +8628,7 @@ export namespace Prisma {
     replyToId?: true
     editedAt?: true
     deletedAt?: true
+    likesCount?: true
     createdAt?: true
     updatedAt?: true
     expiresAt?: true
@@ -8398,6 +8651,7 @@ export namespace Prisma {
     replyToId?: true
     editedAt?: true
     deletedAt?: true
+    likesCount?: true
     createdAt?: true
     updatedAt?: true
     expiresAt?: true
@@ -8420,6 +8674,8 @@ export namespace Prisma {
     replyToId?: true
     editedAt?: true
     deletedAt?: true
+    metadata?: true
+    likesCount?: true
     createdAt?: true
     updatedAt?: true
     expiresAt?: true
@@ -8529,6 +8785,8 @@ export namespace Prisma {
     replyToId: string | null
     editedAt: Date | null
     deletedAt: Date | null
+    metadata: JsonValue | null
+    likesCount: number
     createdAt: Date
     updatedAt: Date
     expiresAt: Date | null
@@ -8570,6 +8828,8 @@ export namespace Prisma {
     replyToId?: boolean
     editedAt?: boolean
     deletedAt?: boolean
+    metadata?: boolean
+    likesCount?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     expiresAt?: boolean
@@ -8585,6 +8845,8 @@ export namespace Prisma {
     readStatus?: boolean | Message$readStatusArgs<ExtArgs>
     toDevice?: boolean | Message$toDeviceArgs<ExtArgs>
     fromDevice?: boolean | Message$fromDeviceArgs<ExtArgs>
+    likes?: boolean | Message$likesArgs<ExtArgs>
+    attachments?: boolean | Message$attachmentsArgs<ExtArgs>
     _count?: boolean | MessageCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["message"]>
 
@@ -8602,6 +8864,8 @@ export namespace Prisma {
     replyToId?: boolean
     editedAt?: boolean
     deletedAt?: boolean
+    metadata?: boolean
+    likesCount?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     expiresAt?: boolean
@@ -8612,7 +8876,7 @@ export namespace Prisma {
     registrationId?: boolean
   }
 
-  export type MessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "chatId" | "senderId" | "content" | "type" | "fileUrl" | "fileName" | "fileSize" | "replyToId" | "editedAt" | "deletedAt" | "createdAt" | "updatedAt" | "expiresAt" | "isEncrypted" | "toDeviceId" | "senderDeviceId" | "signalMessageType" | "registrationId", ExtArgs["result"]["message"]>
+  export type MessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "chatId" | "senderId" | "content" | "type" | "fileUrl" | "fileName" | "fileSize" | "replyToId" | "editedAt" | "deletedAt" | "metadata" | "likesCount" | "createdAt" | "updatedAt" | "expiresAt" | "isEncrypted" | "toDeviceId" | "senderDeviceId" | "signalMessageType" | "registrationId", ExtArgs["result"]["message"]>
   export type MessageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     chat?: boolean | ChatDefaultArgs<ExtArgs>
     sender?: boolean | UserDefaultArgs<ExtArgs>
@@ -8621,6 +8885,8 @@ export namespace Prisma {
     readStatus?: boolean | Message$readStatusArgs<ExtArgs>
     toDevice?: boolean | Message$toDeviceArgs<ExtArgs>
     fromDevice?: boolean | Message$fromDeviceArgs<ExtArgs>
+    likes?: boolean | Message$likesArgs<ExtArgs>
+    attachments?: boolean | Message$attachmentsArgs<ExtArgs>
     _count?: boolean | MessageCountOutputTypeDefaultArgs<ExtArgs>
   }
 
@@ -8634,6 +8900,8 @@ export namespace Prisma {
       readStatus: Prisma.$MessageReadStatusPayload<ExtArgs>[]
       toDevice: Prisma.$DevicePayload<ExtArgs> | null
       fromDevice: Prisma.$DevicePayload<ExtArgs> | null
+      likes: Prisma.$MessageLikePayload<ExtArgs>[]
+      attachments: Prisma.$MessageAttachmentPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -8647,6 +8915,14 @@ export namespace Prisma {
       replyToId: string | null
       editedAt: Date | null
       deletedAt: Date | null
+      /**
+       * Для `CALL_EVENT` — { direction: 'outgoing'|'incoming', reason: 'missed'|'accepted'|..., callType: 'audio'|'video', durationMs?, callId?, initiatorId? }
+       */
+      metadata: Prisma.JsonValue | null
+      /**
+       * Денормализованный счётчик лайков. Инкрементируется / декрементируется в транзакции с записью/удалением `MessageLike`.
+       */
+      likesCount: number
       createdAt: Date
       updatedAt: Date
       /**
@@ -9005,6 +9281,8 @@ export namespace Prisma {
     readStatus<T extends Message$readStatusArgs<ExtArgs> = {}>(args?: Subset<T, Message$readStatusArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageReadStatusPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     toDevice<T extends Message$toDeviceArgs<ExtArgs> = {}>(args?: Subset<T, Message$toDeviceArgs<ExtArgs>>): Prisma__DeviceClient<$Result.GetResult<Prisma.$DevicePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     fromDevice<T extends Message$fromDeviceArgs<ExtArgs> = {}>(args?: Subset<T, Message$fromDeviceArgs<ExtArgs>>): Prisma__DeviceClient<$Result.GetResult<Prisma.$DevicePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    likes<T extends Message$likesArgs<ExtArgs> = {}>(args?: Subset<T, Message$likesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageLikePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    attachments<T extends Message$attachmentsArgs<ExtArgs> = {}>(args?: Subset<T, Message$attachmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageAttachmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -9045,6 +9323,8 @@ export namespace Prisma {
     readonly replyToId: FieldRef<"Message", 'String'>
     readonly editedAt: FieldRef<"Message", 'DateTime'>
     readonly deletedAt: FieldRef<"Message", 'DateTime'>
+    readonly metadata: FieldRef<"Message", 'Json'>
+    readonly likesCount: FieldRef<"Message", 'Int'>
     readonly createdAt: FieldRef<"Message", 'DateTime'>
     readonly updatedAt: FieldRef<"Message", 'DateTime'>
     readonly expiresAt: FieldRef<"Message", 'DateTime'>
@@ -9498,6 +9778,54 @@ export namespace Prisma {
      */
     include?: DeviceInclude<ExtArgs> | null
     where?: DeviceWhereInput
+  }
+
+  /**
+   * Message.likes
+   */
+  export type Message$likesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageLike
+     */
+    select?: MessageLikeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageLike
+     */
+    omit?: MessageLikeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageLikeInclude<ExtArgs> | null
+    where?: MessageLikeWhereInput
+    orderBy?: MessageLikeOrderByWithRelationInput | MessageLikeOrderByWithRelationInput[]
+    cursor?: MessageLikeWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: MessageLikeScalarFieldEnum | MessageLikeScalarFieldEnum[]
+  }
+
+  /**
+   * Message.attachments
+   */
+  export type Message$attachmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageAttachment
+     */
+    select?: MessageAttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageAttachment
+     */
+    omit?: MessageAttachmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageAttachmentInclude<ExtArgs> | null
+    where?: MessageAttachmentWhereInput
+    orderBy?: MessageAttachmentOrderByWithRelationInput | MessageAttachmentOrderByWithRelationInput[]
+    cursor?: MessageAttachmentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: MessageAttachmentScalarFieldEnum | MessageAttachmentScalarFieldEnum[]
   }
 
   /**
@@ -13540,6 +13868,2038 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: MessageReadStatusInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model MessageLike
+   */
+
+  export type AggregateMessageLike = {
+    _count: MessageLikeCountAggregateOutputType | null
+    _min: MessageLikeMinAggregateOutputType | null
+    _max: MessageLikeMaxAggregateOutputType | null
+  }
+
+  export type MessageLikeMinAggregateOutputType = {
+    id: string | null
+    messageId: string | null
+    userId: string | null
+    createdAt: Date | null
+  }
+
+  export type MessageLikeMaxAggregateOutputType = {
+    id: string | null
+    messageId: string | null
+    userId: string | null
+    createdAt: Date | null
+  }
+
+  export type MessageLikeCountAggregateOutputType = {
+    id: number
+    messageId: number
+    userId: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type MessageLikeMinAggregateInputType = {
+    id?: true
+    messageId?: true
+    userId?: true
+    createdAt?: true
+  }
+
+  export type MessageLikeMaxAggregateInputType = {
+    id?: true
+    messageId?: true
+    userId?: true
+    createdAt?: true
+  }
+
+  export type MessageLikeCountAggregateInputType = {
+    id?: true
+    messageId?: true
+    userId?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type MessageLikeAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MessageLike to aggregate.
+     */
+    where?: MessageLikeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MessageLikes to fetch.
+     */
+    orderBy?: MessageLikeOrderByWithRelationInput | MessageLikeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: MessageLikeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MessageLikes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MessageLikes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned MessageLikes
+    **/
+    _count?: true | MessageLikeCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: MessageLikeMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: MessageLikeMaxAggregateInputType
+  }
+
+  export type GetMessageLikeAggregateType<T extends MessageLikeAggregateArgs> = {
+        [P in keyof T & keyof AggregateMessageLike]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateMessageLike[P]>
+      : GetScalarType<T[P], AggregateMessageLike[P]>
+  }
+
+
+
+
+  export type MessageLikeGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MessageLikeWhereInput
+    orderBy?: MessageLikeOrderByWithAggregationInput | MessageLikeOrderByWithAggregationInput[]
+    by: MessageLikeScalarFieldEnum[] | MessageLikeScalarFieldEnum
+    having?: MessageLikeScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: MessageLikeCountAggregateInputType | true
+    _min?: MessageLikeMinAggregateInputType
+    _max?: MessageLikeMaxAggregateInputType
+  }
+
+  export type MessageLikeGroupByOutputType = {
+    id: string
+    messageId: string
+    userId: string
+    createdAt: Date
+    _count: MessageLikeCountAggregateOutputType | null
+    _min: MessageLikeMinAggregateOutputType | null
+    _max: MessageLikeMaxAggregateOutputType | null
+  }
+
+  type GetMessageLikeGroupByPayload<T extends MessageLikeGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<MessageLikeGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof MessageLikeGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], MessageLikeGroupByOutputType[P]>
+            : GetScalarType<T[P], MessageLikeGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type MessageLikeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    messageId?: boolean
+    userId?: boolean
+    createdAt?: boolean
+    message?: boolean | MessageDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["messageLike"]>
+
+
+
+  export type MessageLikeSelectScalar = {
+    id?: boolean
+    messageId?: boolean
+    userId?: boolean
+    createdAt?: boolean
+  }
+
+  export type MessageLikeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "messageId" | "userId" | "createdAt", ExtArgs["result"]["messageLike"]>
+  export type MessageLikeInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    message?: boolean | MessageDefaultArgs<ExtArgs>
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $MessageLikePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "MessageLike"
+    objects: {
+      message: Prisma.$MessagePayload<ExtArgs>
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      messageId: string
+      userId: string
+      createdAt: Date
+    }, ExtArgs["result"]["messageLike"]>
+    composites: {}
+  }
+
+  type MessageLikeGetPayload<S extends boolean | null | undefined | MessageLikeDefaultArgs> = $Result.GetResult<Prisma.$MessageLikePayload, S>
+
+  type MessageLikeCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<MessageLikeFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: MessageLikeCountAggregateInputType | true
+    }
+
+  export interface MessageLikeDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['MessageLike'], meta: { name: 'MessageLike' } }
+    /**
+     * Find zero or one MessageLike that matches the filter.
+     * @param {MessageLikeFindUniqueArgs} args - Arguments to find a MessageLike
+     * @example
+     * // Get one MessageLike
+     * const messageLike = await prisma.messageLike.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends MessageLikeFindUniqueArgs>(args: SelectSubset<T, MessageLikeFindUniqueArgs<ExtArgs>>): Prisma__MessageLikeClient<$Result.GetResult<Prisma.$MessageLikePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one MessageLike that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {MessageLikeFindUniqueOrThrowArgs} args - Arguments to find a MessageLike
+     * @example
+     * // Get one MessageLike
+     * const messageLike = await prisma.messageLike.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends MessageLikeFindUniqueOrThrowArgs>(args: SelectSubset<T, MessageLikeFindUniqueOrThrowArgs<ExtArgs>>): Prisma__MessageLikeClient<$Result.GetResult<Prisma.$MessageLikePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MessageLike that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MessageLikeFindFirstArgs} args - Arguments to find a MessageLike
+     * @example
+     * // Get one MessageLike
+     * const messageLike = await prisma.messageLike.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends MessageLikeFindFirstArgs>(args?: SelectSubset<T, MessageLikeFindFirstArgs<ExtArgs>>): Prisma__MessageLikeClient<$Result.GetResult<Prisma.$MessageLikePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MessageLike that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MessageLikeFindFirstOrThrowArgs} args - Arguments to find a MessageLike
+     * @example
+     * // Get one MessageLike
+     * const messageLike = await prisma.messageLike.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends MessageLikeFindFirstOrThrowArgs>(args?: SelectSubset<T, MessageLikeFindFirstOrThrowArgs<ExtArgs>>): Prisma__MessageLikeClient<$Result.GetResult<Prisma.$MessageLikePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more MessageLikes that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MessageLikeFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all MessageLikes
+     * const messageLikes = await prisma.messageLike.findMany()
+     * 
+     * // Get first 10 MessageLikes
+     * const messageLikes = await prisma.messageLike.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const messageLikeWithIdOnly = await prisma.messageLike.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends MessageLikeFindManyArgs>(args?: SelectSubset<T, MessageLikeFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageLikePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a MessageLike.
+     * @param {MessageLikeCreateArgs} args - Arguments to create a MessageLike.
+     * @example
+     * // Create one MessageLike
+     * const MessageLike = await prisma.messageLike.create({
+     *   data: {
+     *     // ... data to create a MessageLike
+     *   }
+     * })
+     * 
+     */
+    create<T extends MessageLikeCreateArgs>(args: SelectSubset<T, MessageLikeCreateArgs<ExtArgs>>): Prisma__MessageLikeClient<$Result.GetResult<Prisma.$MessageLikePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many MessageLikes.
+     * @param {MessageLikeCreateManyArgs} args - Arguments to create many MessageLikes.
+     * @example
+     * // Create many MessageLikes
+     * const messageLike = await prisma.messageLike.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends MessageLikeCreateManyArgs>(args?: SelectSubset<T, MessageLikeCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a MessageLike.
+     * @param {MessageLikeDeleteArgs} args - Arguments to delete one MessageLike.
+     * @example
+     * // Delete one MessageLike
+     * const MessageLike = await prisma.messageLike.delete({
+     *   where: {
+     *     // ... filter to delete one MessageLike
+     *   }
+     * })
+     * 
+     */
+    delete<T extends MessageLikeDeleteArgs>(args: SelectSubset<T, MessageLikeDeleteArgs<ExtArgs>>): Prisma__MessageLikeClient<$Result.GetResult<Prisma.$MessageLikePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one MessageLike.
+     * @param {MessageLikeUpdateArgs} args - Arguments to update one MessageLike.
+     * @example
+     * // Update one MessageLike
+     * const messageLike = await prisma.messageLike.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends MessageLikeUpdateArgs>(args: SelectSubset<T, MessageLikeUpdateArgs<ExtArgs>>): Prisma__MessageLikeClient<$Result.GetResult<Prisma.$MessageLikePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more MessageLikes.
+     * @param {MessageLikeDeleteManyArgs} args - Arguments to filter MessageLikes to delete.
+     * @example
+     * // Delete a few MessageLikes
+     * const { count } = await prisma.messageLike.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends MessageLikeDeleteManyArgs>(args?: SelectSubset<T, MessageLikeDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more MessageLikes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MessageLikeUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many MessageLikes
+     * const messageLike = await prisma.messageLike.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends MessageLikeUpdateManyArgs>(args: SelectSubset<T, MessageLikeUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one MessageLike.
+     * @param {MessageLikeUpsertArgs} args - Arguments to update or create a MessageLike.
+     * @example
+     * // Update or create a MessageLike
+     * const messageLike = await prisma.messageLike.upsert({
+     *   create: {
+     *     // ... data to create a MessageLike
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the MessageLike we want to update
+     *   }
+     * })
+     */
+    upsert<T extends MessageLikeUpsertArgs>(args: SelectSubset<T, MessageLikeUpsertArgs<ExtArgs>>): Prisma__MessageLikeClient<$Result.GetResult<Prisma.$MessageLikePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of MessageLikes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MessageLikeCountArgs} args - Arguments to filter MessageLikes to count.
+     * @example
+     * // Count the number of MessageLikes
+     * const count = await prisma.messageLike.count({
+     *   where: {
+     *     // ... the filter for the MessageLikes we want to count
+     *   }
+     * })
+    **/
+    count<T extends MessageLikeCountArgs>(
+      args?: Subset<T, MessageLikeCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], MessageLikeCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a MessageLike.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MessageLikeAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends MessageLikeAggregateArgs>(args: Subset<T, MessageLikeAggregateArgs>): Prisma.PrismaPromise<GetMessageLikeAggregateType<T>>
+
+    /**
+     * Group by MessageLike.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MessageLikeGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends MessageLikeGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: MessageLikeGroupByArgs['orderBy'] }
+        : { orderBy?: MessageLikeGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, MessageLikeGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMessageLikeGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the MessageLike model
+   */
+  readonly fields: MessageLikeFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for MessageLike.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__MessageLikeClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    message<T extends MessageDefaultArgs<ExtArgs> = {}>(args?: Subset<T, MessageDefaultArgs<ExtArgs>>): Prisma__MessageClient<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the MessageLike model
+   */
+  interface MessageLikeFieldRefs {
+    readonly id: FieldRef<"MessageLike", 'String'>
+    readonly messageId: FieldRef<"MessageLike", 'String'>
+    readonly userId: FieldRef<"MessageLike", 'String'>
+    readonly createdAt: FieldRef<"MessageLike", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * MessageLike findUnique
+   */
+  export type MessageLikeFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageLike
+     */
+    select?: MessageLikeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageLike
+     */
+    omit?: MessageLikeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageLikeInclude<ExtArgs> | null
+    /**
+     * Filter, which MessageLike to fetch.
+     */
+    where: MessageLikeWhereUniqueInput
+  }
+
+  /**
+   * MessageLike findUniqueOrThrow
+   */
+  export type MessageLikeFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageLike
+     */
+    select?: MessageLikeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageLike
+     */
+    omit?: MessageLikeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageLikeInclude<ExtArgs> | null
+    /**
+     * Filter, which MessageLike to fetch.
+     */
+    where: MessageLikeWhereUniqueInput
+  }
+
+  /**
+   * MessageLike findFirst
+   */
+  export type MessageLikeFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageLike
+     */
+    select?: MessageLikeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageLike
+     */
+    omit?: MessageLikeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageLikeInclude<ExtArgs> | null
+    /**
+     * Filter, which MessageLike to fetch.
+     */
+    where?: MessageLikeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MessageLikes to fetch.
+     */
+    orderBy?: MessageLikeOrderByWithRelationInput | MessageLikeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MessageLikes.
+     */
+    cursor?: MessageLikeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MessageLikes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MessageLikes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MessageLikes.
+     */
+    distinct?: MessageLikeScalarFieldEnum | MessageLikeScalarFieldEnum[]
+  }
+
+  /**
+   * MessageLike findFirstOrThrow
+   */
+  export type MessageLikeFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageLike
+     */
+    select?: MessageLikeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageLike
+     */
+    omit?: MessageLikeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageLikeInclude<ExtArgs> | null
+    /**
+     * Filter, which MessageLike to fetch.
+     */
+    where?: MessageLikeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MessageLikes to fetch.
+     */
+    orderBy?: MessageLikeOrderByWithRelationInput | MessageLikeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MessageLikes.
+     */
+    cursor?: MessageLikeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MessageLikes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MessageLikes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MessageLikes.
+     */
+    distinct?: MessageLikeScalarFieldEnum | MessageLikeScalarFieldEnum[]
+  }
+
+  /**
+   * MessageLike findMany
+   */
+  export type MessageLikeFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageLike
+     */
+    select?: MessageLikeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageLike
+     */
+    omit?: MessageLikeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageLikeInclude<ExtArgs> | null
+    /**
+     * Filter, which MessageLikes to fetch.
+     */
+    where?: MessageLikeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MessageLikes to fetch.
+     */
+    orderBy?: MessageLikeOrderByWithRelationInput | MessageLikeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing MessageLikes.
+     */
+    cursor?: MessageLikeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MessageLikes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MessageLikes.
+     */
+    skip?: number
+    distinct?: MessageLikeScalarFieldEnum | MessageLikeScalarFieldEnum[]
+  }
+
+  /**
+   * MessageLike create
+   */
+  export type MessageLikeCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageLike
+     */
+    select?: MessageLikeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageLike
+     */
+    omit?: MessageLikeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageLikeInclude<ExtArgs> | null
+    /**
+     * The data needed to create a MessageLike.
+     */
+    data: XOR<MessageLikeCreateInput, MessageLikeUncheckedCreateInput>
+  }
+
+  /**
+   * MessageLike createMany
+   */
+  export type MessageLikeCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many MessageLikes.
+     */
+    data: MessageLikeCreateManyInput | MessageLikeCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * MessageLike update
+   */
+  export type MessageLikeUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageLike
+     */
+    select?: MessageLikeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageLike
+     */
+    omit?: MessageLikeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageLikeInclude<ExtArgs> | null
+    /**
+     * The data needed to update a MessageLike.
+     */
+    data: XOR<MessageLikeUpdateInput, MessageLikeUncheckedUpdateInput>
+    /**
+     * Choose, which MessageLike to update.
+     */
+    where: MessageLikeWhereUniqueInput
+  }
+
+  /**
+   * MessageLike updateMany
+   */
+  export type MessageLikeUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update MessageLikes.
+     */
+    data: XOR<MessageLikeUpdateManyMutationInput, MessageLikeUncheckedUpdateManyInput>
+    /**
+     * Filter which MessageLikes to update
+     */
+    where?: MessageLikeWhereInput
+    /**
+     * Limit how many MessageLikes to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * MessageLike upsert
+   */
+  export type MessageLikeUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageLike
+     */
+    select?: MessageLikeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageLike
+     */
+    omit?: MessageLikeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageLikeInclude<ExtArgs> | null
+    /**
+     * The filter to search for the MessageLike to update in case it exists.
+     */
+    where: MessageLikeWhereUniqueInput
+    /**
+     * In case the MessageLike found by the `where` argument doesn't exist, create a new MessageLike with this data.
+     */
+    create: XOR<MessageLikeCreateInput, MessageLikeUncheckedCreateInput>
+    /**
+     * In case the MessageLike was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<MessageLikeUpdateInput, MessageLikeUncheckedUpdateInput>
+  }
+
+  /**
+   * MessageLike delete
+   */
+  export type MessageLikeDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageLike
+     */
+    select?: MessageLikeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageLike
+     */
+    omit?: MessageLikeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageLikeInclude<ExtArgs> | null
+    /**
+     * Filter which MessageLike to delete.
+     */
+    where: MessageLikeWhereUniqueInput
+  }
+
+  /**
+   * MessageLike deleteMany
+   */
+  export type MessageLikeDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MessageLikes to delete
+     */
+    where?: MessageLikeWhereInput
+    /**
+     * Limit how many MessageLikes to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * MessageLike without action
+   */
+  export type MessageLikeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageLike
+     */
+    select?: MessageLikeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageLike
+     */
+    omit?: MessageLikeOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageLikeInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model MessageAttachment
+   */
+
+  export type AggregateMessageAttachment = {
+    _count: MessageAttachmentCountAggregateOutputType | null
+    _avg: MessageAttachmentAvgAggregateOutputType | null
+    _sum: MessageAttachmentSumAggregateOutputType | null
+    _min: MessageAttachmentMinAggregateOutputType | null
+    _max: MessageAttachmentMaxAggregateOutputType | null
+  }
+
+  export type MessageAttachmentAvgAggregateOutputType = {
+    size: number | null
+    durationMs: number | null
+    width: number | null
+    height: number | null
+  }
+
+  export type MessageAttachmentSumAggregateOutputType = {
+    size: number | null
+    durationMs: number | null
+    width: number | null
+    height: number | null
+  }
+
+  export type MessageAttachmentMinAggregateOutputType = {
+    id: string | null
+    messageId: string | null
+    uploaderId: string | null
+    kind: $Enums.MessageAttachmentKind | null
+    url: string | null
+    name: string | null
+    size: number | null
+    mimeType: string | null
+    durationMs: number | null
+    width: number | null
+    height: number | null
+    thumbnailUrl: string | null
+    postId: string | null
+    createdAt: Date | null
+  }
+
+  export type MessageAttachmentMaxAggregateOutputType = {
+    id: string | null
+    messageId: string | null
+    uploaderId: string | null
+    kind: $Enums.MessageAttachmentKind | null
+    url: string | null
+    name: string | null
+    size: number | null
+    mimeType: string | null
+    durationMs: number | null
+    width: number | null
+    height: number | null
+    thumbnailUrl: string | null
+    postId: string | null
+    createdAt: Date | null
+  }
+
+  export type MessageAttachmentCountAggregateOutputType = {
+    id: number
+    messageId: number
+    uploaderId: number
+    kind: number
+    url: number
+    name: number
+    size: number
+    mimeType: number
+    durationMs: number
+    width: number
+    height: number
+    thumbnailUrl: number
+    metadata: number
+    postId: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type MessageAttachmentAvgAggregateInputType = {
+    size?: true
+    durationMs?: true
+    width?: true
+    height?: true
+  }
+
+  export type MessageAttachmentSumAggregateInputType = {
+    size?: true
+    durationMs?: true
+    width?: true
+    height?: true
+  }
+
+  export type MessageAttachmentMinAggregateInputType = {
+    id?: true
+    messageId?: true
+    uploaderId?: true
+    kind?: true
+    url?: true
+    name?: true
+    size?: true
+    mimeType?: true
+    durationMs?: true
+    width?: true
+    height?: true
+    thumbnailUrl?: true
+    postId?: true
+    createdAt?: true
+  }
+
+  export type MessageAttachmentMaxAggregateInputType = {
+    id?: true
+    messageId?: true
+    uploaderId?: true
+    kind?: true
+    url?: true
+    name?: true
+    size?: true
+    mimeType?: true
+    durationMs?: true
+    width?: true
+    height?: true
+    thumbnailUrl?: true
+    postId?: true
+    createdAt?: true
+  }
+
+  export type MessageAttachmentCountAggregateInputType = {
+    id?: true
+    messageId?: true
+    uploaderId?: true
+    kind?: true
+    url?: true
+    name?: true
+    size?: true
+    mimeType?: true
+    durationMs?: true
+    width?: true
+    height?: true
+    thumbnailUrl?: true
+    metadata?: true
+    postId?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type MessageAttachmentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MessageAttachment to aggregate.
+     */
+    where?: MessageAttachmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MessageAttachments to fetch.
+     */
+    orderBy?: MessageAttachmentOrderByWithRelationInput | MessageAttachmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: MessageAttachmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MessageAttachments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MessageAttachments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned MessageAttachments
+    **/
+    _count?: true | MessageAttachmentCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: MessageAttachmentAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: MessageAttachmentSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: MessageAttachmentMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: MessageAttachmentMaxAggregateInputType
+  }
+
+  export type GetMessageAttachmentAggregateType<T extends MessageAttachmentAggregateArgs> = {
+        [P in keyof T & keyof AggregateMessageAttachment]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateMessageAttachment[P]>
+      : GetScalarType<T[P], AggregateMessageAttachment[P]>
+  }
+
+
+
+
+  export type MessageAttachmentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MessageAttachmentWhereInput
+    orderBy?: MessageAttachmentOrderByWithAggregationInput | MessageAttachmentOrderByWithAggregationInput[]
+    by: MessageAttachmentScalarFieldEnum[] | MessageAttachmentScalarFieldEnum
+    having?: MessageAttachmentScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: MessageAttachmentCountAggregateInputType | true
+    _avg?: MessageAttachmentAvgAggregateInputType
+    _sum?: MessageAttachmentSumAggregateInputType
+    _min?: MessageAttachmentMinAggregateInputType
+    _max?: MessageAttachmentMaxAggregateInputType
+  }
+
+  export type MessageAttachmentGroupByOutputType = {
+    id: string
+    messageId: string | null
+    uploaderId: string
+    kind: $Enums.MessageAttachmentKind
+    url: string | null
+    name: string | null
+    size: number | null
+    mimeType: string | null
+    durationMs: number | null
+    width: number | null
+    height: number | null
+    thumbnailUrl: string | null
+    metadata: JsonValue | null
+    postId: string | null
+    createdAt: Date
+    _count: MessageAttachmentCountAggregateOutputType | null
+    _avg: MessageAttachmentAvgAggregateOutputType | null
+    _sum: MessageAttachmentSumAggregateOutputType | null
+    _min: MessageAttachmentMinAggregateOutputType | null
+    _max: MessageAttachmentMaxAggregateOutputType | null
+  }
+
+  type GetMessageAttachmentGroupByPayload<T extends MessageAttachmentGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<MessageAttachmentGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof MessageAttachmentGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], MessageAttachmentGroupByOutputType[P]>
+            : GetScalarType<T[P], MessageAttachmentGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type MessageAttachmentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    messageId?: boolean
+    uploaderId?: boolean
+    kind?: boolean
+    url?: boolean
+    name?: boolean
+    size?: boolean
+    mimeType?: boolean
+    durationMs?: boolean
+    width?: boolean
+    height?: boolean
+    thumbnailUrl?: boolean
+    metadata?: boolean
+    postId?: boolean
+    createdAt?: boolean
+    message?: boolean | MessageAttachment$messageArgs<ExtArgs>
+  }, ExtArgs["result"]["messageAttachment"]>
+
+
+
+  export type MessageAttachmentSelectScalar = {
+    id?: boolean
+    messageId?: boolean
+    uploaderId?: boolean
+    kind?: boolean
+    url?: boolean
+    name?: boolean
+    size?: boolean
+    mimeType?: boolean
+    durationMs?: boolean
+    width?: boolean
+    height?: boolean
+    thumbnailUrl?: boolean
+    metadata?: boolean
+    postId?: boolean
+    createdAt?: boolean
+  }
+
+  export type MessageAttachmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "messageId" | "uploaderId" | "kind" | "url" | "name" | "size" | "mimeType" | "durationMs" | "width" | "height" | "thumbnailUrl" | "metadata" | "postId" | "createdAt", ExtArgs["result"]["messageAttachment"]>
+  export type MessageAttachmentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    message?: boolean | MessageAttachment$messageArgs<ExtArgs>
+  }
+
+  export type $MessageAttachmentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "MessageAttachment"
+    objects: {
+      message: Prisma.$MessagePayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      messageId: string | null
+      uploaderId: string
+      kind: $Enums.MessageAttachmentKind
+      /**
+       * URL в S3 / CDN (для MEDIA/VOICE/CIRCLE/FILE). Для POST_SHARE/FORWARD_SNAPSHOT обычно null.
+       */
+      url: string | null
+      name: string | null
+      size: number | null
+      mimeType: string | null
+      durationMs: number | null
+      width: number | null
+      height: number | null
+      thumbnailUrl: string | null
+      /**
+       * Для VOICE — массив peaks (waveform), для FORWARD_SNAPSHOT — снапшот исходника,
+       * для POST_SHARE — оставляем null (postId хранится в колонке `postId`).
+       */
+      metadata: Prisma.JsonValue | null
+      /**
+       * Для POST_SHARE. По нему строится индекс — быстрый поиск «где репостили этот пост».
+       */
+      postId: string | null
+      createdAt: Date
+    }, ExtArgs["result"]["messageAttachment"]>
+    composites: {}
+  }
+
+  type MessageAttachmentGetPayload<S extends boolean | null | undefined | MessageAttachmentDefaultArgs> = $Result.GetResult<Prisma.$MessageAttachmentPayload, S>
+
+  type MessageAttachmentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<MessageAttachmentFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: MessageAttachmentCountAggregateInputType | true
+    }
+
+  export interface MessageAttachmentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['MessageAttachment'], meta: { name: 'MessageAttachment' } }
+    /**
+     * Find zero or one MessageAttachment that matches the filter.
+     * @param {MessageAttachmentFindUniqueArgs} args - Arguments to find a MessageAttachment
+     * @example
+     * // Get one MessageAttachment
+     * const messageAttachment = await prisma.messageAttachment.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends MessageAttachmentFindUniqueArgs>(args: SelectSubset<T, MessageAttachmentFindUniqueArgs<ExtArgs>>): Prisma__MessageAttachmentClient<$Result.GetResult<Prisma.$MessageAttachmentPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one MessageAttachment that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {MessageAttachmentFindUniqueOrThrowArgs} args - Arguments to find a MessageAttachment
+     * @example
+     * // Get one MessageAttachment
+     * const messageAttachment = await prisma.messageAttachment.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends MessageAttachmentFindUniqueOrThrowArgs>(args: SelectSubset<T, MessageAttachmentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__MessageAttachmentClient<$Result.GetResult<Prisma.$MessageAttachmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MessageAttachment that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MessageAttachmentFindFirstArgs} args - Arguments to find a MessageAttachment
+     * @example
+     * // Get one MessageAttachment
+     * const messageAttachment = await prisma.messageAttachment.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends MessageAttachmentFindFirstArgs>(args?: SelectSubset<T, MessageAttachmentFindFirstArgs<ExtArgs>>): Prisma__MessageAttachmentClient<$Result.GetResult<Prisma.$MessageAttachmentPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MessageAttachment that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MessageAttachmentFindFirstOrThrowArgs} args - Arguments to find a MessageAttachment
+     * @example
+     * // Get one MessageAttachment
+     * const messageAttachment = await prisma.messageAttachment.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends MessageAttachmentFindFirstOrThrowArgs>(args?: SelectSubset<T, MessageAttachmentFindFirstOrThrowArgs<ExtArgs>>): Prisma__MessageAttachmentClient<$Result.GetResult<Prisma.$MessageAttachmentPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more MessageAttachments that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MessageAttachmentFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all MessageAttachments
+     * const messageAttachments = await prisma.messageAttachment.findMany()
+     * 
+     * // Get first 10 MessageAttachments
+     * const messageAttachments = await prisma.messageAttachment.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const messageAttachmentWithIdOnly = await prisma.messageAttachment.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends MessageAttachmentFindManyArgs>(args?: SelectSubset<T, MessageAttachmentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessageAttachmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a MessageAttachment.
+     * @param {MessageAttachmentCreateArgs} args - Arguments to create a MessageAttachment.
+     * @example
+     * // Create one MessageAttachment
+     * const MessageAttachment = await prisma.messageAttachment.create({
+     *   data: {
+     *     // ... data to create a MessageAttachment
+     *   }
+     * })
+     * 
+     */
+    create<T extends MessageAttachmentCreateArgs>(args: SelectSubset<T, MessageAttachmentCreateArgs<ExtArgs>>): Prisma__MessageAttachmentClient<$Result.GetResult<Prisma.$MessageAttachmentPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many MessageAttachments.
+     * @param {MessageAttachmentCreateManyArgs} args - Arguments to create many MessageAttachments.
+     * @example
+     * // Create many MessageAttachments
+     * const messageAttachment = await prisma.messageAttachment.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends MessageAttachmentCreateManyArgs>(args?: SelectSubset<T, MessageAttachmentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Delete a MessageAttachment.
+     * @param {MessageAttachmentDeleteArgs} args - Arguments to delete one MessageAttachment.
+     * @example
+     * // Delete one MessageAttachment
+     * const MessageAttachment = await prisma.messageAttachment.delete({
+     *   where: {
+     *     // ... filter to delete one MessageAttachment
+     *   }
+     * })
+     * 
+     */
+    delete<T extends MessageAttachmentDeleteArgs>(args: SelectSubset<T, MessageAttachmentDeleteArgs<ExtArgs>>): Prisma__MessageAttachmentClient<$Result.GetResult<Prisma.$MessageAttachmentPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one MessageAttachment.
+     * @param {MessageAttachmentUpdateArgs} args - Arguments to update one MessageAttachment.
+     * @example
+     * // Update one MessageAttachment
+     * const messageAttachment = await prisma.messageAttachment.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends MessageAttachmentUpdateArgs>(args: SelectSubset<T, MessageAttachmentUpdateArgs<ExtArgs>>): Prisma__MessageAttachmentClient<$Result.GetResult<Prisma.$MessageAttachmentPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more MessageAttachments.
+     * @param {MessageAttachmentDeleteManyArgs} args - Arguments to filter MessageAttachments to delete.
+     * @example
+     * // Delete a few MessageAttachments
+     * const { count } = await prisma.messageAttachment.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends MessageAttachmentDeleteManyArgs>(args?: SelectSubset<T, MessageAttachmentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more MessageAttachments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MessageAttachmentUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many MessageAttachments
+     * const messageAttachment = await prisma.messageAttachment.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends MessageAttachmentUpdateManyArgs>(args: SelectSubset<T, MessageAttachmentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one MessageAttachment.
+     * @param {MessageAttachmentUpsertArgs} args - Arguments to update or create a MessageAttachment.
+     * @example
+     * // Update or create a MessageAttachment
+     * const messageAttachment = await prisma.messageAttachment.upsert({
+     *   create: {
+     *     // ... data to create a MessageAttachment
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the MessageAttachment we want to update
+     *   }
+     * })
+     */
+    upsert<T extends MessageAttachmentUpsertArgs>(args: SelectSubset<T, MessageAttachmentUpsertArgs<ExtArgs>>): Prisma__MessageAttachmentClient<$Result.GetResult<Prisma.$MessageAttachmentPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of MessageAttachments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MessageAttachmentCountArgs} args - Arguments to filter MessageAttachments to count.
+     * @example
+     * // Count the number of MessageAttachments
+     * const count = await prisma.messageAttachment.count({
+     *   where: {
+     *     // ... the filter for the MessageAttachments we want to count
+     *   }
+     * })
+    **/
+    count<T extends MessageAttachmentCountArgs>(
+      args?: Subset<T, MessageAttachmentCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], MessageAttachmentCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a MessageAttachment.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MessageAttachmentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends MessageAttachmentAggregateArgs>(args: Subset<T, MessageAttachmentAggregateArgs>): Prisma.PrismaPromise<GetMessageAttachmentAggregateType<T>>
+
+    /**
+     * Group by MessageAttachment.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MessageAttachmentGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends MessageAttachmentGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: MessageAttachmentGroupByArgs['orderBy'] }
+        : { orderBy?: MessageAttachmentGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, MessageAttachmentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMessageAttachmentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the MessageAttachment model
+   */
+  readonly fields: MessageAttachmentFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for MessageAttachment.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__MessageAttachmentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    message<T extends MessageAttachment$messageArgs<ExtArgs> = {}>(args?: Subset<T, MessageAttachment$messageArgs<ExtArgs>>): Prisma__MessageClient<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the MessageAttachment model
+   */
+  interface MessageAttachmentFieldRefs {
+    readonly id: FieldRef<"MessageAttachment", 'String'>
+    readonly messageId: FieldRef<"MessageAttachment", 'String'>
+    readonly uploaderId: FieldRef<"MessageAttachment", 'String'>
+    readonly kind: FieldRef<"MessageAttachment", 'MessageAttachmentKind'>
+    readonly url: FieldRef<"MessageAttachment", 'String'>
+    readonly name: FieldRef<"MessageAttachment", 'String'>
+    readonly size: FieldRef<"MessageAttachment", 'Int'>
+    readonly mimeType: FieldRef<"MessageAttachment", 'String'>
+    readonly durationMs: FieldRef<"MessageAttachment", 'Int'>
+    readonly width: FieldRef<"MessageAttachment", 'Int'>
+    readonly height: FieldRef<"MessageAttachment", 'Int'>
+    readonly thumbnailUrl: FieldRef<"MessageAttachment", 'String'>
+    readonly metadata: FieldRef<"MessageAttachment", 'Json'>
+    readonly postId: FieldRef<"MessageAttachment", 'String'>
+    readonly createdAt: FieldRef<"MessageAttachment", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * MessageAttachment findUnique
+   */
+  export type MessageAttachmentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageAttachment
+     */
+    select?: MessageAttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageAttachment
+     */
+    omit?: MessageAttachmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageAttachmentInclude<ExtArgs> | null
+    /**
+     * Filter, which MessageAttachment to fetch.
+     */
+    where: MessageAttachmentWhereUniqueInput
+  }
+
+  /**
+   * MessageAttachment findUniqueOrThrow
+   */
+  export type MessageAttachmentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageAttachment
+     */
+    select?: MessageAttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageAttachment
+     */
+    omit?: MessageAttachmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageAttachmentInclude<ExtArgs> | null
+    /**
+     * Filter, which MessageAttachment to fetch.
+     */
+    where: MessageAttachmentWhereUniqueInput
+  }
+
+  /**
+   * MessageAttachment findFirst
+   */
+  export type MessageAttachmentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageAttachment
+     */
+    select?: MessageAttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageAttachment
+     */
+    omit?: MessageAttachmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageAttachmentInclude<ExtArgs> | null
+    /**
+     * Filter, which MessageAttachment to fetch.
+     */
+    where?: MessageAttachmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MessageAttachments to fetch.
+     */
+    orderBy?: MessageAttachmentOrderByWithRelationInput | MessageAttachmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MessageAttachments.
+     */
+    cursor?: MessageAttachmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MessageAttachments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MessageAttachments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MessageAttachments.
+     */
+    distinct?: MessageAttachmentScalarFieldEnum | MessageAttachmentScalarFieldEnum[]
+  }
+
+  /**
+   * MessageAttachment findFirstOrThrow
+   */
+  export type MessageAttachmentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageAttachment
+     */
+    select?: MessageAttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageAttachment
+     */
+    omit?: MessageAttachmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageAttachmentInclude<ExtArgs> | null
+    /**
+     * Filter, which MessageAttachment to fetch.
+     */
+    where?: MessageAttachmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MessageAttachments to fetch.
+     */
+    orderBy?: MessageAttachmentOrderByWithRelationInput | MessageAttachmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MessageAttachments.
+     */
+    cursor?: MessageAttachmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MessageAttachments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MessageAttachments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MessageAttachments.
+     */
+    distinct?: MessageAttachmentScalarFieldEnum | MessageAttachmentScalarFieldEnum[]
+  }
+
+  /**
+   * MessageAttachment findMany
+   */
+  export type MessageAttachmentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageAttachment
+     */
+    select?: MessageAttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageAttachment
+     */
+    omit?: MessageAttachmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageAttachmentInclude<ExtArgs> | null
+    /**
+     * Filter, which MessageAttachments to fetch.
+     */
+    where?: MessageAttachmentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MessageAttachments to fetch.
+     */
+    orderBy?: MessageAttachmentOrderByWithRelationInput | MessageAttachmentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing MessageAttachments.
+     */
+    cursor?: MessageAttachmentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MessageAttachments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MessageAttachments.
+     */
+    skip?: number
+    distinct?: MessageAttachmentScalarFieldEnum | MessageAttachmentScalarFieldEnum[]
+  }
+
+  /**
+   * MessageAttachment create
+   */
+  export type MessageAttachmentCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageAttachment
+     */
+    select?: MessageAttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageAttachment
+     */
+    omit?: MessageAttachmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageAttachmentInclude<ExtArgs> | null
+    /**
+     * The data needed to create a MessageAttachment.
+     */
+    data: XOR<MessageAttachmentCreateInput, MessageAttachmentUncheckedCreateInput>
+  }
+
+  /**
+   * MessageAttachment createMany
+   */
+  export type MessageAttachmentCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many MessageAttachments.
+     */
+    data: MessageAttachmentCreateManyInput | MessageAttachmentCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * MessageAttachment update
+   */
+  export type MessageAttachmentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageAttachment
+     */
+    select?: MessageAttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageAttachment
+     */
+    omit?: MessageAttachmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageAttachmentInclude<ExtArgs> | null
+    /**
+     * The data needed to update a MessageAttachment.
+     */
+    data: XOR<MessageAttachmentUpdateInput, MessageAttachmentUncheckedUpdateInput>
+    /**
+     * Choose, which MessageAttachment to update.
+     */
+    where: MessageAttachmentWhereUniqueInput
+  }
+
+  /**
+   * MessageAttachment updateMany
+   */
+  export type MessageAttachmentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update MessageAttachments.
+     */
+    data: XOR<MessageAttachmentUpdateManyMutationInput, MessageAttachmentUncheckedUpdateManyInput>
+    /**
+     * Filter which MessageAttachments to update
+     */
+    where?: MessageAttachmentWhereInput
+    /**
+     * Limit how many MessageAttachments to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * MessageAttachment upsert
+   */
+  export type MessageAttachmentUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageAttachment
+     */
+    select?: MessageAttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageAttachment
+     */
+    omit?: MessageAttachmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageAttachmentInclude<ExtArgs> | null
+    /**
+     * The filter to search for the MessageAttachment to update in case it exists.
+     */
+    where: MessageAttachmentWhereUniqueInput
+    /**
+     * In case the MessageAttachment found by the `where` argument doesn't exist, create a new MessageAttachment with this data.
+     */
+    create: XOR<MessageAttachmentCreateInput, MessageAttachmentUncheckedCreateInput>
+    /**
+     * In case the MessageAttachment was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<MessageAttachmentUpdateInput, MessageAttachmentUncheckedUpdateInput>
+  }
+
+  /**
+   * MessageAttachment delete
+   */
+  export type MessageAttachmentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageAttachment
+     */
+    select?: MessageAttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageAttachment
+     */
+    omit?: MessageAttachmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageAttachmentInclude<ExtArgs> | null
+    /**
+     * Filter which MessageAttachment to delete.
+     */
+    where: MessageAttachmentWhereUniqueInput
+  }
+
+  /**
+   * MessageAttachment deleteMany
+   */
+  export type MessageAttachmentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MessageAttachments to delete
+     */
+    where?: MessageAttachmentWhereInput
+    /**
+     * Limit how many MessageAttachments to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * MessageAttachment.message
+   */
+  export type MessageAttachment$messageArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Message
+     */
+    select?: MessageSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Message
+     */
+    omit?: MessageOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageInclude<ExtArgs> | null
+    where?: MessageWhereInput
+  }
+
+  /**
+   * MessageAttachment without action
+   */
+  export type MessageAttachmentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MessageAttachment
+     */
+    select?: MessageAttachmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MessageAttachment
+     */
+    omit?: MessageAttachmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MessageAttachmentInclude<ExtArgs> | null
   }
 
 
@@ -20629,6 +22989,8 @@ export namespace Prisma {
     replyToId: 'replyToId',
     editedAt: 'editedAt',
     deletedAt: 'deletedAt',
+    metadata: 'metadata',
+    likesCount: 'likesCount',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     expiresAt: 'expiresAt',
@@ -20692,6 +23054,37 @@ export namespace Prisma {
   };
 
   export type MessageReadStatusScalarFieldEnum = (typeof MessageReadStatusScalarFieldEnum)[keyof typeof MessageReadStatusScalarFieldEnum]
+
+
+  export const MessageLikeScalarFieldEnum: {
+    id: 'id',
+    messageId: 'messageId',
+    userId: 'userId',
+    createdAt: 'createdAt'
+  };
+
+  export type MessageLikeScalarFieldEnum = (typeof MessageLikeScalarFieldEnum)[keyof typeof MessageLikeScalarFieldEnum]
+
+
+  export const MessageAttachmentScalarFieldEnum: {
+    id: 'id',
+    messageId: 'messageId',
+    uploaderId: 'uploaderId',
+    kind: 'kind',
+    url: 'url',
+    name: 'name',
+    size: 'size',
+    mimeType: 'mimeType',
+    durationMs: 'durationMs',
+    width: 'width',
+    height: 'height',
+    thumbnailUrl: 'thumbnailUrl',
+    metadata: 'metadata',
+    postId: 'postId',
+    createdAt: 'createdAt'
+  };
+
+  export type MessageAttachmentScalarFieldEnum = (typeof MessageAttachmentScalarFieldEnum)[keyof typeof MessageAttachmentScalarFieldEnum]
 
 
   export const CallScalarFieldEnum: {
@@ -20875,6 +23268,23 @@ export namespace Prisma {
   export type ChatMemberOrderByRelevanceFieldEnum = (typeof ChatMemberOrderByRelevanceFieldEnum)[keyof typeof ChatMemberOrderByRelevanceFieldEnum]
 
 
+  export const JsonNullValueFilter: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull,
+    AnyNull: typeof AnyNull
+  };
+
+  export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
+
+
+  export const QueryMode: {
+    default: 'default',
+    insensitive: 'insensitive'
+  };
+
+  export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
   export const MessageOrderByRelevanceFieldEnum: {
     id: 'id',
     chatId: 'chatId',
@@ -20930,6 +23340,29 @@ export namespace Prisma {
   };
 
   export type MessageReadStatusOrderByRelevanceFieldEnum = (typeof MessageReadStatusOrderByRelevanceFieldEnum)[keyof typeof MessageReadStatusOrderByRelevanceFieldEnum]
+
+
+  export const MessageLikeOrderByRelevanceFieldEnum: {
+    id: 'id',
+    messageId: 'messageId',
+    userId: 'userId'
+  };
+
+  export type MessageLikeOrderByRelevanceFieldEnum = (typeof MessageLikeOrderByRelevanceFieldEnum)[keyof typeof MessageLikeOrderByRelevanceFieldEnum]
+
+
+  export const MessageAttachmentOrderByRelevanceFieldEnum: {
+    id: 'id',
+    messageId: 'messageId',
+    uploaderId: 'uploaderId',
+    url: 'url',
+    name: 'name',
+    mimeType: 'mimeType',
+    thumbnailUrl: 'thumbnailUrl',
+    postId: 'postId'
+  };
+
+  export type MessageAttachmentOrderByRelevanceFieldEnum = (typeof MessageAttachmentOrderByRelevanceFieldEnum)[keyof typeof MessageAttachmentOrderByRelevanceFieldEnum]
 
 
   export const CallOrderByRelevanceFieldEnum: {
@@ -20995,23 +23428,6 @@ export namespace Prisma {
   };
 
   export type PostLikeOrderByRelevanceFieldEnum = (typeof PostLikeOrderByRelevanceFieldEnum)[keyof typeof PostLikeOrderByRelevanceFieldEnum]
-
-
-  export const JsonNullValueFilter: {
-    DbNull: typeof DbNull,
-    JsonNull: typeof JsonNull,
-    AnyNull: typeof AnyNull
-  };
-
-  export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
-
-
-  export const QueryMode: {
-    default: 'default',
-    insensitive: 'insensitive'
-  };
-
-  export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
 
 
   export const InvitationOrderByRelevanceFieldEnum: {
@@ -21093,6 +23509,27 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
+   * Reference to a field of type 'QueryMode'
+   */
+  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+  /**
+   * Reference to a field of type 'MessageAttachmentKind'
+   */
+  export type EnumMessageAttachmentKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MessageAttachmentKind'>
+    
+
+
+  /**
    * Reference to a field of type 'CallType'
    */
   export type EnumCallTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CallType'>
@@ -21142,20 +23579,6 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Json'
-   */
-  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
-    
-
-
-  /**
-   * Reference to a field of type 'QueryMode'
-   */
-  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
-    
-
-
-  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -21187,6 +23610,7 @@ export namespace Prisma {
     sentCalls?: CallListRelationFilter
     receivedCalls?: CallListRelationFilter
     messageReads?: MessageReadStatusListRelationFilter
+    messageLikes?: MessageLikeListRelationFilter
     chats?: ChatListRelationFilter
     followers?: FollowListRelationFilter
     following?: FollowListRelationFilter
@@ -21218,6 +23642,7 @@ export namespace Prisma {
     sentCalls?: CallOrderByRelationAggregateInput
     receivedCalls?: CallOrderByRelationAggregateInput
     messageReads?: MessageReadStatusOrderByRelationAggregateInput
+    messageLikes?: MessageLikeOrderByRelationAggregateInput
     chats?: ChatOrderByRelationAggregateInput
     followers?: FollowOrderByRelationAggregateInput
     following?: FollowOrderByRelationAggregateInput
@@ -21253,6 +23678,7 @@ export namespace Prisma {
     sentCalls?: CallListRelationFilter
     receivedCalls?: CallListRelationFilter
     messageReads?: MessageReadStatusListRelationFilter
+    messageLikes?: MessageLikeListRelationFilter
     chats?: ChatListRelationFilter
     followers?: FollowListRelationFilter
     following?: FollowListRelationFilter
@@ -21632,6 +24058,8 @@ export namespace Prisma {
     replyToId?: StringNullableFilter<"Message"> | string | null
     editedAt?: DateTimeNullableFilter<"Message"> | Date | string | null
     deletedAt?: DateTimeNullableFilter<"Message"> | Date | string | null
+    metadata?: JsonNullableFilter<"Message">
+    likesCount?: IntFilter<"Message"> | number
     createdAt?: DateTimeFilter<"Message"> | Date | string
     updatedAt?: DateTimeFilter<"Message"> | Date | string
     expiresAt?: DateTimeNullableFilter<"Message"> | Date | string | null
@@ -21647,6 +24075,8 @@ export namespace Prisma {
     readStatus?: MessageReadStatusListRelationFilter
     toDevice?: XOR<DeviceNullableScalarRelationFilter, DeviceWhereInput> | null
     fromDevice?: XOR<DeviceNullableScalarRelationFilter, DeviceWhereInput> | null
+    likes?: MessageLikeListRelationFilter
+    attachments?: MessageAttachmentListRelationFilter
   }
 
   export type MessageOrderByWithRelationInput = {
@@ -21661,6 +24091,8 @@ export namespace Prisma {
     replyToId?: SortOrderInput | SortOrder
     editedAt?: SortOrderInput | SortOrder
     deletedAt?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
+    likesCount?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     expiresAt?: SortOrderInput | SortOrder
@@ -21676,6 +24108,8 @@ export namespace Prisma {
     readStatus?: MessageReadStatusOrderByRelationAggregateInput
     toDevice?: DeviceOrderByWithRelationInput
     fromDevice?: DeviceOrderByWithRelationInput
+    likes?: MessageLikeOrderByRelationAggregateInput
+    attachments?: MessageAttachmentOrderByRelationAggregateInput
     _relevance?: MessageOrderByRelevanceInput
   }
 
@@ -21694,6 +24128,8 @@ export namespace Prisma {
     replyToId?: StringNullableFilter<"Message"> | string | null
     editedAt?: DateTimeNullableFilter<"Message"> | Date | string | null
     deletedAt?: DateTimeNullableFilter<"Message"> | Date | string | null
+    metadata?: JsonNullableFilter<"Message">
+    likesCount?: IntFilter<"Message"> | number
     createdAt?: DateTimeFilter<"Message"> | Date | string
     updatedAt?: DateTimeFilter<"Message"> | Date | string
     expiresAt?: DateTimeNullableFilter<"Message"> | Date | string | null
@@ -21709,6 +24145,8 @@ export namespace Prisma {
     readStatus?: MessageReadStatusListRelationFilter
     toDevice?: XOR<DeviceNullableScalarRelationFilter, DeviceWhereInput> | null
     fromDevice?: XOR<DeviceNullableScalarRelationFilter, DeviceWhereInput> | null
+    likes?: MessageLikeListRelationFilter
+    attachments?: MessageAttachmentListRelationFilter
   }, "id">
 
   export type MessageOrderByWithAggregationInput = {
@@ -21723,6 +24161,8 @@ export namespace Prisma {
     replyToId?: SortOrderInput | SortOrder
     editedAt?: SortOrderInput | SortOrder
     deletedAt?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
+    likesCount?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     expiresAt?: SortOrderInput | SortOrder
@@ -21753,6 +24193,8 @@ export namespace Prisma {
     replyToId?: StringNullableWithAggregatesFilter<"Message"> | string | null
     editedAt?: DateTimeNullableWithAggregatesFilter<"Message"> | Date | string | null
     deletedAt?: DateTimeNullableWithAggregatesFilter<"Message"> | Date | string | null
+    metadata?: JsonNullableWithAggregatesFilter<"Message">
+    likesCount?: IntWithAggregatesFilter<"Message"> | number
     createdAt?: DateTimeWithAggregatesFilter<"Message"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Message"> | Date | string
     expiresAt?: DateTimeNullableWithAggregatesFilter<"Message"> | Date | string | null
@@ -22050,6 +24492,169 @@ export namespace Prisma {
     messageId?: StringWithAggregatesFilter<"MessageReadStatus"> | string
     userId?: StringWithAggregatesFilter<"MessageReadStatus"> | string
     readAt?: DateTimeWithAggregatesFilter<"MessageReadStatus"> | Date | string
+  }
+
+  export type MessageLikeWhereInput = {
+    AND?: MessageLikeWhereInput | MessageLikeWhereInput[]
+    OR?: MessageLikeWhereInput[]
+    NOT?: MessageLikeWhereInput | MessageLikeWhereInput[]
+    id?: StringFilter<"MessageLike"> | string
+    messageId?: StringFilter<"MessageLike"> | string
+    userId?: StringFilter<"MessageLike"> | string
+    createdAt?: DateTimeFilter<"MessageLike"> | Date | string
+    message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type MessageLikeOrderByWithRelationInput = {
+    id?: SortOrder
+    messageId?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
+    message?: MessageOrderByWithRelationInput
+    user?: UserOrderByWithRelationInput
+    _relevance?: MessageLikeOrderByRelevanceInput
+  }
+
+  export type MessageLikeWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    messageId_userId?: MessageLikeMessageIdUserIdCompoundUniqueInput
+    AND?: MessageLikeWhereInput | MessageLikeWhereInput[]
+    OR?: MessageLikeWhereInput[]
+    NOT?: MessageLikeWhereInput | MessageLikeWhereInput[]
+    messageId?: StringFilter<"MessageLike"> | string
+    userId?: StringFilter<"MessageLike"> | string
+    createdAt?: DateTimeFilter<"MessageLike"> | Date | string
+    message?: XOR<MessageScalarRelationFilter, MessageWhereInput>
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "messageId_userId">
+
+  export type MessageLikeOrderByWithAggregationInput = {
+    id?: SortOrder
+    messageId?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
+    _count?: MessageLikeCountOrderByAggregateInput
+    _max?: MessageLikeMaxOrderByAggregateInput
+    _min?: MessageLikeMinOrderByAggregateInput
+  }
+
+  export type MessageLikeScalarWhereWithAggregatesInput = {
+    AND?: MessageLikeScalarWhereWithAggregatesInput | MessageLikeScalarWhereWithAggregatesInput[]
+    OR?: MessageLikeScalarWhereWithAggregatesInput[]
+    NOT?: MessageLikeScalarWhereWithAggregatesInput | MessageLikeScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"MessageLike"> | string
+    messageId?: StringWithAggregatesFilter<"MessageLike"> | string
+    userId?: StringWithAggregatesFilter<"MessageLike"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"MessageLike"> | Date | string
+  }
+
+  export type MessageAttachmentWhereInput = {
+    AND?: MessageAttachmentWhereInput | MessageAttachmentWhereInput[]
+    OR?: MessageAttachmentWhereInput[]
+    NOT?: MessageAttachmentWhereInput | MessageAttachmentWhereInput[]
+    id?: StringFilter<"MessageAttachment"> | string
+    messageId?: StringNullableFilter<"MessageAttachment"> | string | null
+    uploaderId?: StringFilter<"MessageAttachment"> | string
+    kind?: EnumMessageAttachmentKindFilter<"MessageAttachment"> | $Enums.MessageAttachmentKind
+    url?: StringNullableFilter<"MessageAttachment"> | string | null
+    name?: StringNullableFilter<"MessageAttachment"> | string | null
+    size?: IntNullableFilter<"MessageAttachment"> | number | null
+    mimeType?: StringNullableFilter<"MessageAttachment"> | string | null
+    durationMs?: IntNullableFilter<"MessageAttachment"> | number | null
+    width?: IntNullableFilter<"MessageAttachment"> | number | null
+    height?: IntNullableFilter<"MessageAttachment"> | number | null
+    thumbnailUrl?: StringNullableFilter<"MessageAttachment"> | string | null
+    metadata?: JsonNullableFilter<"MessageAttachment">
+    postId?: StringNullableFilter<"MessageAttachment"> | string | null
+    createdAt?: DateTimeFilter<"MessageAttachment"> | Date | string
+    message?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
+  }
+
+  export type MessageAttachmentOrderByWithRelationInput = {
+    id?: SortOrder
+    messageId?: SortOrderInput | SortOrder
+    uploaderId?: SortOrder
+    kind?: SortOrder
+    url?: SortOrderInput | SortOrder
+    name?: SortOrderInput | SortOrder
+    size?: SortOrderInput | SortOrder
+    mimeType?: SortOrderInput | SortOrder
+    durationMs?: SortOrderInput | SortOrder
+    width?: SortOrderInput | SortOrder
+    height?: SortOrderInput | SortOrder
+    thumbnailUrl?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
+    postId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    message?: MessageOrderByWithRelationInput
+    _relevance?: MessageAttachmentOrderByRelevanceInput
+  }
+
+  export type MessageAttachmentWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: MessageAttachmentWhereInput | MessageAttachmentWhereInput[]
+    OR?: MessageAttachmentWhereInput[]
+    NOT?: MessageAttachmentWhereInput | MessageAttachmentWhereInput[]
+    messageId?: StringNullableFilter<"MessageAttachment"> | string | null
+    uploaderId?: StringFilter<"MessageAttachment"> | string
+    kind?: EnumMessageAttachmentKindFilter<"MessageAttachment"> | $Enums.MessageAttachmentKind
+    url?: StringNullableFilter<"MessageAttachment"> | string | null
+    name?: StringNullableFilter<"MessageAttachment"> | string | null
+    size?: IntNullableFilter<"MessageAttachment"> | number | null
+    mimeType?: StringNullableFilter<"MessageAttachment"> | string | null
+    durationMs?: IntNullableFilter<"MessageAttachment"> | number | null
+    width?: IntNullableFilter<"MessageAttachment"> | number | null
+    height?: IntNullableFilter<"MessageAttachment"> | number | null
+    thumbnailUrl?: StringNullableFilter<"MessageAttachment"> | string | null
+    metadata?: JsonNullableFilter<"MessageAttachment">
+    postId?: StringNullableFilter<"MessageAttachment"> | string | null
+    createdAt?: DateTimeFilter<"MessageAttachment"> | Date | string
+    message?: XOR<MessageNullableScalarRelationFilter, MessageWhereInput> | null
+  }, "id">
+
+  export type MessageAttachmentOrderByWithAggregationInput = {
+    id?: SortOrder
+    messageId?: SortOrderInput | SortOrder
+    uploaderId?: SortOrder
+    kind?: SortOrder
+    url?: SortOrderInput | SortOrder
+    name?: SortOrderInput | SortOrder
+    size?: SortOrderInput | SortOrder
+    mimeType?: SortOrderInput | SortOrder
+    durationMs?: SortOrderInput | SortOrder
+    width?: SortOrderInput | SortOrder
+    height?: SortOrderInput | SortOrder
+    thumbnailUrl?: SortOrderInput | SortOrder
+    metadata?: SortOrderInput | SortOrder
+    postId?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: MessageAttachmentCountOrderByAggregateInput
+    _avg?: MessageAttachmentAvgOrderByAggregateInput
+    _max?: MessageAttachmentMaxOrderByAggregateInput
+    _min?: MessageAttachmentMinOrderByAggregateInput
+    _sum?: MessageAttachmentSumOrderByAggregateInput
+  }
+
+  export type MessageAttachmentScalarWhereWithAggregatesInput = {
+    AND?: MessageAttachmentScalarWhereWithAggregatesInput | MessageAttachmentScalarWhereWithAggregatesInput[]
+    OR?: MessageAttachmentScalarWhereWithAggregatesInput[]
+    NOT?: MessageAttachmentScalarWhereWithAggregatesInput | MessageAttachmentScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"MessageAttachment"> | string
+    messageId?: StringNullableWithAggregatesFilter<"MessageAttachment"> | string | null
+    uploaderId?: StringWithAggregatesFilter<"MessageAttachment"> | string
+    kind?: EnumMessageAttachmentKindWithAggregatesFilter<"MessageAttachment"> | $Enums.MessageAttachmentKind
+    url?: StringNullableWithAggregatesFilter<"MessageAttachment"> | string | null
+    name?: StringNullableWithAggregatesFilter<"MessageAttachment"> | string | null
+    size?: IntNullableWithAggregatesFilter<"MessageAttachment"> | number | null
+    mimeType?: StringNullableWithAggregatesFilter<"MessageAttachment"> | string | null
+    durationMs?: IntNullableWithAggregatesFilter<"MessageAttachment"> | number | null
+    width?: IntNullableWithAggregatesFilter<"MessageAttachment"> | number | null
+    height?: IntNullableWithAggregatesFilter<"MessageAttachment"> | number | null
+    thumbnailUrl?: StringNullableWithAggregatesFilter<"MessageAttachment"> | string | null
+    metadata?: JsonNullableWithAggregatesFilter<"MessageAttachment">
+    postId?: StringNullableWithAggregatesFilter<"MessageAttachment"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"MessageAttachment"> | Date | string
   }
 
   export type CallWhereInput = {
@@ -22621,6 +25226,7 @@ export namespace Prisma {
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeCreateNestedManyWithoutUserInput
     chats?: ChatCreateNestedManyWithoutUserInput
     followers?: FollowCreateNestedManyWithoutFollowerInput
     following?: FollowCreateNestedManyWithoutFollowingInput
@@ -22652,6 +25258,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeUncheckedCreateNestedManyWithoutUserInput
     chats?: ChatUncheckedCreateNestedManyWithoutUserInput
     followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
@@ -22683,6 +25290,7 @@ export namespace Prisma {
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUpdateManyWithoutUserNestedInput
     chats?: ChatUpdateManyWithoutUserNestedInput
     followers?: FollowUpdateManyWithoutFollowerNestedInput
     following?: FollowUpdateManyWithoutFollowingNestedInput
@@ -22714,6 +25322,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUncheckedUpdateManyWithoutUserNestedInput
     chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
     followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
@@ -23113,6 +25722,8 @@ export namespace Prisma {
     fileSize?: number | null
     editedAt?: Date | string | null
     deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     expiresAt?: Date | string | null
@@ -23126,6 +25737,8 @@ export namespace Prisma {
     readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
     toDevice?: DeviceCreateNestedOneWithoutTargetMessagesInput
     fromDevice?: DeviceCreateNestedOneWithoutSentMessagesInput
+    likes?: MessageLikeCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
   }
 
   export type MessageUncheckedCreateInput = {
@@ -23140,6 +25753,8 @@ export namespace Prisma {
     replyToId?: string | null
     editedAt?: Date | string | null
     deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     expiresAt?: Date | string | null
@@ -23150,6 +25765,8 @@ export namespace Prisma {
     registrationId?: number | null
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
     readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    likes?: MessageLikeUncheckedCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
   }
 
   export type MessageUpdateInput = {
@@ -23161,6 +25778,8 @@ export namespace Prisma {
     fileSize?: NullableIntFieldUpdateOperationsInput | number | null
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -23174,6 +25793,8 @@ export namespace Prisma {
     readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
     toDevice?: DeviceUpdateOneWithoutTargetMessagesNestedInput
     fromDevice?: DeviceUpdateOneWithoutSentMessagesNestedInput
+    likes?: MessageLikeUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageUncheckedUpdateInput = {
@@ -23188,6 +25809,8 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -23198,6 +25821,8 @@ export namespace Prisma {
     registrationId?: NullableIntFieldUpdateOperationsInput | number | null
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
     readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    likes?: MessageLikeUncheckedUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageCreateManyInput = {
@@ -23212,6 +25837,8 @@ export namespace Prisma {
     replyToId?: string | null
     editedAt?: Date | string | null
     deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     expiresAt?: Date | string | null
@@ -23231,6 +25858,8 @@ export namespace Prisma {
     fileSize?: NullableIntFieldUpdateOperationsInput | number | null
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -23251,6 +25880,8 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -23550,6 +26181,178 @@ export namespace Prisma {
     messageId?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     readAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MessageLikeCreateInput = {
+    id?: string
+    createdAt?: Date | string
+    message: MessageCreateNestedOneWithoutLikesInput
+    user: UserCreateNestedOneWithoutMessageLikesInput
+  }
+
+  export type MessageLikeUncheckedCreateInput = {
+    id?: string
+    messageId: string
+    userId: string
+    createdAt?: Date | string
+  }
+
+  export type MessageLikeUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    message?: MessageUpdateOneRequiredWithoutLikesNestedInput
+    user?: UserUpdateOneRequiredWithoutMessageLikesNestedInput
+  }
+
+  export type MessageLikeUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    messageId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MessageLikeCreateManyInput = {
+    id?: string
+    messageId: string
+    userId: string
+    createdAt?: Date | string
+  }
+
+  export type MessageLikeUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MessageLikeUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    messageId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MessageAttachmentCreateInput = {
+    id?: string
+    uploaderId: string
+    kind: $Enums.MessageAttachmentKind
+    url?: string | null
+    name?: string | null
+    size?: number | null
+    mimeType?: string | null
+    durationMs?: number | null
+    width?: number | null
+    height?: number | null
+    thumbnailUrl?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    postId?: string | null
+    createdAt?: Date | string
+    message?: MessageCreateNestedOneWithoutAttachmentsInput
+  }
+
+  export type MessageAttachmentUncheckedCreateInput = {
+    id?: string
+    messageId?: string | null
+    uploaderId: string
+    kind: $Enums.MessageAttachmentKind
+    url?: string | null
+    name?: string | null
+    size?: number | null
+    mimeType?: string | null
+    durationMs?: number | null
+    width?: number | null
+    height?: number | null
+    thumbnailUrl?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    postId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type MessageAttachmentUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    uploaderId?: StringFieldUpdateOperationsInput | string
+    kind?: EnumMessageAttachmentKindFieldUpdateOperationsInput | $Enums.MessageAttachmentKind
+    url?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    size?: NullableIntFieldUpdateOperationsInput | number | null
+    mimeType?: NullableStringFieldUpdateOperationsInput | string | null
+    durationMs?: NullableIntFieldUpdateOperationsInput | number | null
+    width?: NullableIntFieldUpdateOperationsInput | number | null
+    height?: NullableIntFieldUpdateOperationsInput | number | null
+    thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    postId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    message?: MessageUpdateOneWithoutAttachmentsNestedInput
+  }
+
+  export type MessageAttachmentUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    messageId?: NullableStringFieldUpdateOperationsInput | string | null
+    uploaderId?: StringFieldUpdateOperationsInput | string
+    kind?: EnumMessageAttachmentKindFieldUpdateOperationsInput | $Enums.MessageAttachmentKind
+    url?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    size?: NullableIntFieldUpdateOperationsInput | number | null
+    mimeType?: NullableStringFieldUpdateOperationsInput | string | null
+    durationMs?: NullableIntFieldUpdateOperationsInput | number | null
+    width?: NullableIntFieldUpdateOperationsInput | number | null
+    height?: NullableIntFieldUpdateOperationsInput | number | null
+    thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    postId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MessageAttachmentCreateManyInput = {
+    id?: string
+    messageId?: string | null
+    uploaderId: string
+    kind: $Enums.MessageAttachmentKind
+    url?: string | null
+    name?: string | null
+    size?: number | null
+    mimeType?: string | null
+    durationMs?: number | null
+    width?: number | null
+    height?: number | null
+    thumbnailUrl?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    postId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type MessageAttachmentUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    uploaderId?: StringFieldUpdateOperationsInput | string
+    kind?: EnumMessageAttachmentKindFieldUpdateOperationsInput | $Enums.MessageAttachmentKind
+    url?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    size?: NullableIntFieldUpdateOperationsInput | number | null
+    mimeType?: NullableStringFieldUpdateOperationsInput | string | null
+    durationMs?: NullableIntFieldUpdateOperationsInput | number | null
+    width?: NullableIntFieldUpdateOperationsInput | number | null
+    height?: NullableIntFieldUpdateOperationsInput | number | null
+    thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    postId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MessageAttachmentUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    messageId?: NullableStringFieldUpdateOperationsInput | string | null
+    uploaderId?: StringFieldUpdateOperationsInput | string
+    kind?: EnumMessageAttachmentKindFieldUpdateOperationsInput | $Enums.MessageAttachmentKind
+    url?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    size?: NullableIntFieldUpdateOperationsInput | number | null
+    mimeType?: NullableStringFieldUpdateOperationsInput | string | null
+    durationMs?: NullableIntFieldUpdateOperationsInput | number | null
+    width?: NullableIntFieldUpdateOperationsInput | number | null
+    height?: NullableIntFieldUpdateOperationsInput | number | null
+    thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    postId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type CallCreateInput = {
@@ -24199,6 +27002,12 @@ export namespace Prisma {
     none?: MessageReadStatusWhereInput
   }
 
+  export type MessageLikeListRelationFilter = {
+    every?: MessageLikeWhereInput
+    some?: MessageLikeWhereInput
+    none?: MessageLikeWhereInput
+  }
+
   export type FollowListRelationFilter = {
     every?: FollowWhereInput
     some?: FollowWhereInput
@@ -24268,6 +27077,10 @@ export namespace Prisma {
   }
 
   export type MessageReadStatusOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type MessageLikeOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -24721,6 +27534,40 @@ export namespace Prisma {
     notIn?: $Enums.MessageType[]
     not?: NestedEnumMessageTypeFilter<$PrismaModel> | $Enums.MessageType
   }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue
+    lte?: InputJsonValue
+    gt?: InputJsonValue
+    gte?: InputJsonValue
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
+  }
 
   export type MessageNullableScalarRelationFilter = {
     is?: MessageWhereInput | null
@@ -24730,6 +27577,16 @@ export namespace Prisma {
   export type DeviceNullableScalarRelationFilter = {
     is?: DeviceWhereInput | null
     isNot?: DeviceWhereInput | null
+  }
+
+  export type MessageAttachmentListRelationFilter = {
+    every?: MessageAttachmentWhereInput
+    some?: MessageAttachmentWhereInput
+    none?: MessageAttachmentWhereInput
+  }
+
+  export type MessageAttachmentOrderByRelationAggregateInput = {
+    _count?: SortOrder
   }
 
   export type MessageOrderByRelevanceInput = {
@@ -24750,6 +27607,8 @@ export namespace Prisma {
     replyToId?: SortOrder
     editedAt?: SortOrder
     deletedAt?: SortOrder
+    metadata?: SortOrder
+    likesCount?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     expiresAt?: SortOrder
@@ -24762,6 +27621,7 @@ export namespace Prisma {
 
   export type MessageAvgOrderByAggregateInput = {
     fileSize?: SortOrder
+    likesCount?: SortOrder
     registrationId?: SortOrder
   }
 
@@ -24777,6 +27637,7 @@ export namespace Prisma {
     replyToId?: SortOrder
     editedAt?: SortOrder
     deletedAt?: SortOrder
+    likesCount?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     expiresAt?: SortOrder
@@ -24799,6 +27660,7 @@ export namespace Prisma {
     replyToId?: SortOrder
     editedAt?: SortOrder
     deletedAt?: SortOrder
+    likesCount?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     expiresAt?: SortOrder
@@ -24811,6 +27673,7 @@ export namespace Prisma {
 
   export type MessageSumOrderByAggregateInput = {
     fileSize?: SortOrder
+    likesCount?: SortOrder
     registrationId?: SortOrder
   }
 
@@ -24823,8 +27686,34 @@ export namespace Prisma {
     _min?: NestedEnumMessageTypeFilter<$PrismaModel>
     _max?: NestedEnumMessageTypeFilter<$PrismaModel>
   }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
 
-  export type IntFilter<$PrismaModel = never> = {
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue
+    lte?: InputJsonValue
+    gt?: InputJsonValue
+    gte?: InputJsonValue
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
+  }
+
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
     in?: number[]
     notIn?: number[]
@@ -24832,7 +27721,12 @@ export namespace Prisma {
     lte?: number | IntFieldRefInput<$PrismaModel>
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntFilter<$PrismaModel> | number
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type PreKeyListRelationFilter = {
@@ -24920,22 +27814,6 @@ export namespace Prisma {
 
   export type DeviceSumOrderByAggregateInput = {
     registrationId?: SortOrder
-  }
-
-  export type IntWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel>
-    in?: number[]
-    notIn?: number[]
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
-    _count?: NestedIntFilter<$PrismaModel>
-    _avg?: NestedFloatFilter<$PrismaModel>
-    _sum?: NestedIntFilter<$PrismaModel>
-    _min?: NestedIntFilter<$PrismaModel>
-    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type DeviceScalarRelationFilter = {
@@ -25067,6 +27945,127 @@ export namespace Prisma {
     messageId?: SortOrder
     userId?: SortOrder
     readAt?: SortOrder
+  }
+
+  export type MessageLikeOrderByRelevanceInput = {
+    fields: MessageLikeOrderByRelevanceFieldEnum | MessageLikeOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type MessageLikeMessageIdUserIdCompoundUniqueInput = {
+    messageId: string
+    userId: string
+  }
+
+  export type MessageLikeCountOrderByAggregateInput = {
+    id?: SortOrder
+    messageId?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type MessageLikeMaxOrderByAggregateInput = {
+    id?: SortOrder
+    messageId?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type MessageLikeMinOrderByAggregateInput = {
+    id?: SortOrder
+    messageId?: SortOrder
+    userId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type EnumMessageAttachmentKindFilter<$PrismaModel = never> = {
+    equals?: $Enums.MessageAttachmentKind | EnumMessageAttachmentKindFieldRefInput<$PrismaModel>
+    in?: $Enums.MessageAttachmentKind[]
+    notIn?: $Enums.MessageAttachmentKind[]
+    not?: NestedEnumMessageAttachmentKindFilter<$PrismaModel> | $Enums.MessageAttachmentKind
+  }
+
+  export type MessageAttachmentOrderByRelevanceInput = {
+    fields: MessageAttachmentOrderByRelevanceFieldEnum | MessageAttachmentOrderByRelevanceFieldEnum[]
+    sort: SortOrder
+    search: string
+  }
+
+  export type MessageAttachmentCountOrderByAggregateInput = {
+    id?: SortOrder
+    messageId?: SortOrder
+    uploaderId?: SortOrder
+    kind?: SortOrder
+    url?: SortOrder
+    name?: SortOrder
+    size?: SortOrder
+    mimeType?: SortOrder
+    durationMs?: SortOrder
+    width?: SortOrder
+    height?: SortOrder
+    thumbnailUrl?: SortOrder
+    metadata?: SortOrder
+    postId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type MessageAttachmentAvgOrderByAggregateInput = {
+    size?: SortOrder
+    durationMs?: SortOrder
+    width?: SortOrder
+    height?: SortOrder
+  }
+
+  export type MessageAttachmentMaxOrderByAggregateInput = {
+    id?: SortOrder
+    messageId?: SortOrder
+    uploaderId?: SortOrder
+    kind?: SortOrder
+    url?: SortOrder
+    name?: SortOrder
+    size?: SortOrder
+    mimeType?: SortOrder
+    durationMs?: SortOrder
+    width?: SortOrder
+    height?: SortOrder
+    thumbnailUrl?: SortOrder
+    postId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type MessageAttachmentMinOrderByAggregateInput = {
+    id?: SortOrder
+    messageId?: SortOrder
+    uploaderId?: SortOrder
+    kind?: SortOrder
+    url?: SortOrder
+    name?: SortOrder
+    size?: SortOrder
+    mimeType?: SortOrder
+    durationMs?: SortOrder
+    width?: SortOrder
+    height?: SortOrder
+    thumbnailUrl?: SortOrder
+    postId?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type MessageAttachmentSumOrderByAggregateInput = {
+    size?: SortOrder
+    durationMs?: SortOrder
+    width?: SortOrder
+    height?: SortOrder
+  }
+
+  export type EnumMessageAttachmentKindWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.MessageAttachmentKind | EnumMessageAttachmentKindFieldRefInput<$PrismaModel>
+    in?: $Enums.MessageAttachmentKind[]
+    notIn?: $Enums.MessageAttachmentKind[]
+    not?: NestedEnumMessageAttachmentKindWithAggregatesFilter<$PrismaModel> | $Enums.MessageAttachmentKind
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumMessageAttachmentKindFilter<$PrismaModel>
+    _max?: NestedEnumMessageAttachmentKindFilter<$PrismaModel>
   }
 
   export type EnumCallTypeFilter<$PrismaModel = never> = {
@@ -25446,29 +28445,6 @@ export namespace Prisma {
     notIn?: $Enums.InvitationStatus[]
     not?: NestedEnumInvitationStatusFilter<$PrismaModel> | $Enums.InvitationStatus
   }
-  export type JsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue
-    lte?: InputJsonValue
-    gt?: InputJsonValue
-    gte?: InputJsonValue
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
 
   export type InvitationOrderByRelevanceInput = {
     fields: InvitationOrderByRelevanceFieldEnum | InvitationOrderByRelevanceFieldEnum[]
@@ -25528,32 +28504,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumInvitationStatusFilter<$PrismaModel>
     _max?: NestedEnumInvitationStatusFilter<$PrismaModel>
-  }
-  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
-        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
-
-  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue
-    lte?: InputJsonValue
-    gt?: InputJsonValue
-    gte?: InputJsonValue
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedJsonNullableFilter<$PrismaModel>
-    _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
   export type TokenCreateNestedManyWithoutUserInput = {
@@ -25617,6 +28567,13 @@ export namespace Prisma {
     connectOrCreate?: MessageReadStatusCreateOrConnectWithoutUserInput | MessageReadStatusCreateOrConnectWithoutUserInput[]
     createMany?: MessageReadStatusCreateManyUserInputEnvelope
     connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
+  }
+
+  export type MessageLikeCreateNestedManyWithoutUserInput = {
+    create?: XOR<MessageLikeCreateWithoutUserInput, MessageLikeUncheckedCreateWithoutUserInput> | MessageLikeCreateWithoutUserInput[] | MessageLikeUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: MessageLikeCreateOrConnectWithoutUserInput | MessageLikeCreateOrConnectWithoutUserInput[]
+    createMany?: MessageLikeCreateManyUserInputEnvelope
+    connect?: MessageLikeWhereUniqueInput | MessageLikeWhereUniqueInput[]
   }
 
   export type ChatCreateNestedManyWithoutUserInput = {
@@ -25749,6 +28706,13 @@ export namespace Prisma {
     connectOrCreate?: MessageReadStatusCreateOrConnectWithoutUserInput | MessageReadStatusCreateOrConnectWithoutUserInput[]
     createMany?: MessageReadStatusCreateManyUserInputEnvelope
     connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
+  }
+
+  export type MessageLikeUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<MessageLikeCreateWithoutUserInput, MessageLikeUncheckedCreateWithoutUserInput> | MessageLikeCreateWithoutUserInput[] | MessageLikeUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: MessageLikeCreateOrConnectWithoutUserInput | MessageLikeCreateOrConnectWithoutUserInput[]
+    createMany?: MessageLikeCreateManyUserInputEnvelope
+    connect?: MessageLikeWhereUniqueInput | MessageLikeWhereUniqueInput[]
   }
 
   export type ChatUncheckedCreateNestedManyWithoutUserInput = {
@@ -25960,6 +28924,20 @@ export namespace Prisma {
     update?: MessageReadStatusUpdateWithWhereUniqueWithoutUserInput | MessageReadStatusUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: MessageReadStatusUpdateManyWithWhereWithoutUserInput | MessageReadStatusUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: MessageReadStatusScalarWhereInput | MessageReadStatusScalarWhereInput[]
+  }
+
+  export type MessageLikeUpdateManyWithoutUserNestedInput = {
+    create?: XOR<MessageLikeCreateWithoutUserInput, MessageLikeUncheckedCreateWithoutUserInput> | MessageLikeCreateWithoutUserInput[] | MessageLikeUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: MessageLikeCreateOrConnectWithoutUserInput | MessageLikeCreateOrConnectWithoutUserInput[]
+    upsert?: MessageLikeUpsertWithWhereUniqueWithoutUserInput | MessageLikeUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: MessageLikeCreateManyUserInputEnvelope
+    set?: MessageLikeWhereUniqueInput | MessageLikeWhereUniqueInput[]
+    disconnect?: MessageLikeWhereUniqueInput | MessageLikeWhereUniqueInput[]
+    delete?: MessageLikeWhereUniqueInput | MessageLikeWhereUniqueInput[]
+    connect?: MessageLikeWhereUniqueInput | MessageLikeWhereUniqueInput[]
+    update?: MessageLikeUpdateWithWhereUniqueWithoutUserInput | MessageLikeUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: MessageLikeUpdateManyWithWhereWithoutUserInput | MessageLikeUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: MessageLikeScalarWhereInput | MessageLikeScalarWhereInput[]
   }
 
   export type ChatUpdateManyWithoutUserNestedInput = {
@@ -26222,6 +29200,20 @@ export namespace Prisma {
     update?: MessageReadStatusUpdateWithWhereUniqueWithoutUserInput | MessageReadStatusUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: MessageReadStatusUpdateManyWithWhereWithoutUserInput | MessageReadStatusUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: MessageReadStatusScalarWhereInput | MessageReadStatusScalarWhereInput[]
+  }
+
+  export type MessageLikeUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<MessageLikeCreateWithoutUserInput, MessageLikeUncheckedCreateWithoutUserInput> | MessageLikeCreateWithoutUserInput[] | MessageLikeUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: MessageLikeCreateOrConnectWithoutUserInput | MessageLikeCreateOrConnectWithoutUserInput[]
+    upsert?: MessageLikeUpsertWithWhereUniqueWithoutUserInput | MessageLikeUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: MessageLikeCreateManyUserInputEnvelope
+    set?: MessageLikeWhereUniqueInput | MessageLikeWhereUniqueInput[]
+    disconnect?: MessageLikeWhereUniqueInput | MessageLikeWhereUniqueInput[]
+    delete?: MessageLikeWhereUniqueInput | MessageLikeWhereUniqueInput[]
+    connect?: MessageLikeWhereUniqueInput | MessageLikeWhereUniqueInput[]
+    update?: MessageLikeUpdateWithWhereUniqueWithoutUserInput | MessageLikeUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: MessageLikeUpdateManyWithWhereWithoutUserInput | MessageLikeUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: MessageLikeScalarWhereInput | MessageLikeScalarWhereInput[]
   }
 
   export type ChatUncheckedUpdateManyWithoutUserNestedInput = {
@@ -26644,6 +29636,20 @@ export namespace Prisma {
     connect?: DeviceWhereUniqueInput
   }
 
+  export type MessageLikeCreateNestedManyWithoutMessageInput = {
+    create?: XOR<MessageLikeCreateWithoutMessageInput, MessageLikeUncheckedCreateWithoutMessageInput> | MessageLikeCreateWithoutMessageInput[] | MessageLikeUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageLikeCreateOrConnectWithoutMessageInput | MessageLikeCreateOrConnectWithoutMessageInput[]
+    createMany?: MessageLikeCreateManyMessageInputEnvelope
+    connect?: MessageLikeWhereUniqueInput | MessageLikeWhereUniqueInput[]
+  }
+
+  export type MessageAttachmentCreateNestedManyWithoutMessageInput = {
+    create?: XOR<MessageAttachmentCreateWithoutMessageInput, MessageAttachmentUncheckedCreateWithoutMessageInput> | MessageAttachmentCreateWithoutMessageInput[] | MessageAttachmentUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageAttachmentCreateOrConnectWithoutMessageInput | MessageAttachmentCreateOrConnectWithoutMessageInput[]
+    createMany?: MessageAttachmentCreateManyMessageInputEnvelope
+    connect?: MessageAttachmentWhereUniqueInput | MessageAttachmentWhereUniqueInput[]
+  }
+
   export type MessageUncheckedCreateNestedManyWithoutReplyToInput = {
     create?: XOR<MessageCreateWithoutReplyToInput, MessageUncheckedCreateWithoutReplyToInput> | MessageCreateWithoutReplyToInput[] | MessageUncheckedCreateWithoutReplyToInput[]
     connectOrCreate?: MessageCreateOrConnectWithoutReplyToInput | MessageCreateOrConnectWithoutReplyToInput[]
@@ -26658,8 +29664,30 @@ export namespace Prisma {
     connect?: MessageReadStatusWhereUniqueInput | MessageReadStatusWhereUniqueInput[]
   }
 
+  export type MessageLikeUncheckedCreateNestedManyWithoutMessageInput = {
+    create?: XOR<MessageLikeCreateWithoutMessageInput, MessageLikeUncheckedCreateWithoutMessageInput> | MessageLikeCreateWithoutMessageInput[] | MessageLikeUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageLikeCreateOrConnectWithoutMessageInput | MessageLikeCreateOrConnectWithoutMessageInput[]
+    createMany?: MessageLikeCreateManyMessageInputEnvelope
+    connect?: MessageLikeWhereUniqueInput | MessageLikeWhereUniqueInput[]
+  }
+
+  export type MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput = {
+    create?: XOR<MessageAttachmentCreateWithoutMessageInput, MessageAttachmentUncheckedCreateWithoutMessageInput> | MessageAttachmentCreateWithoutMessageInput[] | MessageAttachmentUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageAttachmentCreateOrConnectWithoutMessageInput | MessageAttachmentCreateOrConnectWithoutMessageInput[]
+    createMany?: MessageAttachmentCreateManyMessageInputEnvelope
+    connect?: MessageAttachmentWhereUniqueInput | MessageAttachmentWhereUniqueInput[]
+  }
+
   export type EnumMessageTypeFieldUpdateOperationsInput = {
     set?: $Enums.MessageType
+  }
+
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type ChatUpdateOneRequiredWithoutMessagesNestedInput = {
@@ -26736,6 +29764,34 @@ export namespace Prisma {
     update?: XOR<XOR<DeviceUpdateToOneWithWhereWithoutSentMessagesInput, DeviceUpdateWithoutSentMessagesInput>, DeviceUncheckedUpdateWithoutSentMessagesInput>
   }
 
+  export type MessageLikeUpdateManyWithoutMessageNestedInput = {
+    create?: XOR<MessageLikeCreateWithoutMessageInput, MessageLikeUncheckedCreateWithoutMessageInput> | MessageLikeCreateWithoutMessageInput[] | MessageLikeUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageLikeCreateOrConnectWithoutMessageInput | MessageLikeCreateOrConnectWithoutMessageInput[]
+    upsert?: MessageLikeUpsertWithWhereUniqueWithoutMessageInput | MessageLikeUpsertWithWhereUniqueWithoutMessageInput[]
+    createMany?: MessageLikeCreateManyMessageInputEnvelope
+    set?: MessageLikeWhereUniqueInput | MessageLikeWhereUniqueInput[]
+    disconnect?: MessageLikeWhereUniqueInput | MessageLikeWhereUniqueInput[]
+    delete?: MessageLikeWhereUniqueInput | MessageLikeWhereUniqueInput[]
+    connect?: MessageLikeWhereUniqueInput | MessageLikeWhereUniqueInput[]
+    update?: MessageLikeUpdateWithWhereUniqueWithoutMessageInput | MessageLikeUpdateWithWhereUniqueWithoutMessageInput[]
+    updateMany?: MessageLikeUpdateManyWithWhereWithoutMessageInput | MessageLikeUpdateManyWithWhereWithoutMessageInput[]
+    deleteMany?: MessageLikeScalarWhereInput | MessageLikeScalarWhereInput[]
+  }
+
+  export type MessageAttachmentUpdateManyWithoutMessageNestedInput = {
+    create?: XOR<MessageAttachmentCreateWithoutMessageInput, MessageAttachmentUncheckedCreateWithoutMessageInput> | MessageAttachmentCreateWithoutMessageInput[] | MessageAttachmentUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageAttachmentCreateOrConnectWithoutMessageInput | MessageAttachmentCreateOrConnectWithoutMessageInput[]
+    upsert?: MessageAttachmentUpsertWithWhereUniqueWithoutMessageInput | MessageAttachmentUpsertWithWhereUniqueWithoutMessageInput[]
+    createMany?: MessageAttachmentCreateManyMessageInputEnvelope
+    set?: MessageAttachmentWhereUniqueInput | MessageAttachmentWhereUniqueInput[]
+    disconnect?: MessageAttachmentWhereUniqueInput | MessageAttachmentWhereUniqueInput[]
+    delete?: MessageAttachmentWhereUniqueInput | MessageAttachmentWhereUniqueInput[]
+    connect?: MessageAttachmentWhereUniqueInput | MessageAttachmentWhereUniqueInput[]
+    update?: MessageAttachmentUpdateWithWhereUniqueWithoutMessageInput | MessageAttachmentUpdateWithWhereUniqueWithoutMessageInput[]
+    updateMany?: MessageAttachmentUpdateManyWithWhereWithoutMessageInput | MessageAttachmentUpdateManyWithWhereWithoutMessageInput[]
+    deleteMany?: MessageAttachmentScalarWhereInput | MessageAttachmentScalarWhereInput[]
+  }
+
   export type MessageUncheckedUpdateManyWithoutReplyToNestedInput = {
     create?: XOR<MessageCreateWithoutReplyToInput, MessageUncheckedCreateWithoutReplyToInput> | MessageCreateWithoutReplyToInput[] | MessageUncheckedCreateWithoutReplyToInput[]
     connectOrCreate?: MessageCreateOrConnectWithoutReplyToInput | MessageCreateOrConnectWithoutReplyToInput[]
@@ -26762,6 +29818,34 @@ export namespace Prisma {
     update?: MessageReadStatusUpdateWithWhereUniqueWithoutMessageInput | MessageReadStatusUpdateWithWhereUniqueWithoutMessageInput[]
     updateMany?: MessageReadStatusUpdateManyWithWhereWithoutMessageInput | MessageReadStatusUpdateManyWithWhereWithoutMessageInput[]
     deleteMany?: MessageReadStatusScalarWhereInput | MessageReadStatusScalarWhereInput[]
+  }
+
+  export type MessageLikeUncheckedUpdateManyWithoutMessageNestedInput = {
+    create?: XOR<MessageLikeCreateWithoutMessageInput, MessageLikeUncheckedCreateWithoutMessageInput> | MessageLikeCreateWithoutMessageInput[] | MessageLikeUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageLikeCreateOrConnectWithoutMessageInput | MessageLikeCreateOrConnectWithoutMessageInput[]
+    upsert?: MessageLikeUpsertWithWhereUniqueWithoutMessageInput | MessageLikeUpsertWithWhereUniqueWithoutMessageInput[]
+    createMany?: MessageLikeCreateManyMessageInputEnvelope
+    set?: MessageLikeWhereUniqueInput | MessageLikeWhereUniqueInput[]
+    disconnect?: MessageLikeWhereUniqueInput | MessageLikeWhereUniqueInput[]
+    delete?: MessageLikeWhereUniqueInput | MessageLikeWhereUniqueInput[]
+    connect?: MessageLikeWhereUniqueInput | MessageLikeWhereUniqueInput[]
+    update?: MessageLikeUpdateWithWhereUniqueWithoutMessageInput | MessageLikeUpdateWithWhereUniqueWithoutMessageInput[]
+    updateMany?: MessageLikeUpdateManyWithWhereWithoutMessageInput | MessageLikeUpdateManyWithWhereWithoutMessageInput[]
+    deleteMany?: MessageLikeScalarWhereInput | MessageLikeScalarWhereInput[]
+  }
+
+  export type MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput = {
+    create?: XOR<MessageAttachmentCreateWithoutMessageInput, MessageAttachmentUncheckedCreateWithoutMessageInput> | MessageAttachmentCreateWithoutMessageInput[] | MessageAttachmentUncheckedCreateWithoutMessageInput[]
+    connectOrCreate?: MessageAttachmentCreateOrConnectWithoutMessageInput | MessageAttachmentCreateOrConnectWithoutMessageInput[]
+    upsert?: MessageAttachmentUpsertWithWhereUniqueWithoutMessageInput | MessageAttachmentUpsertWithWhereUniqueWithoutMessageInput[]
+    createMany?: MessageAttachmentCreateManyMessageInputEnvelope
+    set?: MessageAttachmentWhereUniqueInput | MessageAttachmentWhereUniqueInput[]
+    disconnect?: MessageAttachmentWhereUniqueInput | MessageAttachmentWhereUniqueInput[]
+    delete?: MessageAttachmentWhereUniqueInput | MessageAttachmentWhereUniqueInput[]
+    connect?: MessageAttachmentWhereUniqueInput | MessageAttachmentWhereUniqueInput[]
+    update?: MessageAttachmentUpdateWithWhereUniqueWithoutMessageInput | MessageAttachmentUpdateWithWhereUniqueWithoutMessageInput[]
+    updateMany?: MessageAttachmentUpdateManyWithWhereWithoutMessageInput | MessageAttachmentUpdateManyWithWhereWithoutMessageInput[]
+    deleteMany?: MessageAttachmentScalarWhereInput | MessageAttachmentScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutDevicesInput = {
@@ -26824,14 +29908,6 @@ export namespace Prisma {
     connectOrCreate?: MessageCreateOrConnectWithoutFromDeviceInput | MessageCreateOrConnectWithoutFromDeviceInput[]
     createMany?: MessageCreateManyFromDeviceInputEnvelope
     connect?: MessageWhereUniqueInput | MessageWhereUniqueInput[]
-  }
-
-  export type IntFieldUpdateOperationsInput = {
-    set?: number
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
   }
 
   export type UserUpdateOneRequiredWithoutDevicesNestedInput = {
@@ -27008,6 +30084,54 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutMessageReadsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutMessageReadsInput, UserUpdateWithoutMessageReadsInput>, UserUncheckedUpdateWithoutMessageReadsInput>
+  }
+
+  export type MessageCreateNestedOneWithoutLikesInput = {
+    create?: XOR<MessageCreateWithoutLikesInput, MessageUncheckedCreateWithoutLikesInput>
+    connectOrCreate?: MessageCreateOrConnectWithoutLikesInput
+    connect?: MessageWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutMessageLikesInput = {
+    create?: XOR<UserCreateWithoutMessageLikesInput, UserUncheckedCreateWithoutMessageLikesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutMessageLikesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type MessageUpdateOneRequiredWithoutLikesNestedInput = {
+    create?: XOR<MessageCreateWithoutLikesInput, MessageUncheckedCreateWithoutLikesInput>
+    connectOrCreate?: MessageCreateOrConnectWithoutLikesInput
+    upsert?: MessageUpsertWithoutLikesInput
+    connect?: MessageWhereUniqueInput
+    update?: XOR<XOR<MessageUpdateToOneWithWhereWithoutLikesInput, MessageUpdateWithoutLikesInput>, MessageUncheckedUpdateWithoutLikesInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutMessageLikesNestedInput = {
+    create?: XOR<UserCreateWithoutMessageLikesInput, UserUncheckedCreateWithoutMessageLikesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutMessageLikesInput
+    upsert?: UserUpsertWithoutMessageLikesInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutMessageLikesInput, UserUpdateWithoutMessageLikesInput>, UserUncheckedUpdateWithoutMessageLikesInput>
+  }
+
+  export type MessageCreateNestedOneWithoutAttachmentsInput = {
+    create?: XOR<MessageCreateWithoutAttachmentsInput, MessageUncheckedCreateWithoutAttachmentsInput>
+    connectOrCreate?: MessageCreateOrConnectWithoutAttachmentsInput
+    connect?: MessageWhereUniqueInput
+  }
+
+  export type EnumMessageAttachmentKindFieldUpdateOperationsInput = {
+    set?: $Enums.MessageAttachmentKind
+  }
+
+  export type MessageUpdateOneWithoutAttachmentsNestedInput = {
+    create?: XOR<MessageCreateWithoutAttachmentsInput, MessageUncheckedCreateWithoutAttachmentsInput>
+    connectOrCreate?: MessageCreateOrConnectWithoutAttachmentsInput
+    upsert?: MessageUpsertWithoutAttachmentsInput
+    disconnect?: MessageWhereInput | boolean
+    delete?: MessageWhereInput | boolean
+    connect?: MessageWhereUniqueInput
+    update?: XOR<XOR<MessageUpdateToOneWithWhereWithoutAttachmentsInput, MessageUpdateWithoutAttachmentsInput>, MessageUncheckedUpdateWithoutAttachmentsInput>
   }
 
   export type ChatCreateNestedOneWithoutCallsInput = {
@@ -27586,6 +30710,29 @@ export namespace Prisma {
     _min?: NestedEnumMessageTypeFilter<$PrismaModel>
     _max?: NestedEnumMessageTypeFilter<$PrismaModel>
   }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue
+    lte?: InputJsonValue
+    gt?: InputJsonValue
+    gte?: InputJsonValue
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>
@@ -27612,6 +30759,23 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
+  export type NestedEnumMessageAttachmentKindFilter<$PrismaModel = never> = {
+    equals?: $Enums.MessageAttachmentKind | EnumMessageAttachmentKindFieldRefInput<$PrismaModel>
+    in?: $Enums.MessageAttachmentKind[]
+    notIn?: $Enums.MessageAttachmentKind[]
+    not?: NestedEnumMessageAttachmentKindFilter<$PrismaModel> | $Enums.MessageAttachmentKind
+  }
+
+  export type NestedEnumMessageAttachmentKindWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.MessageAttachmentKind | EnumMessageAttachmentKindFieldRefInput<$PrismaModel>
+    in?: $Enums.MessageAttachmentKind[]
+    notIn?: $Enums.MessageAttachmentKind[]
+    not?: NestedEnumMessageAttachmentKindWithAggregatesFilter<$PrismaModel> | $Enums.MessageAttachmentKind
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumMessageAttachmentKindFilter<$PrismaModel>
+    _max?: NestedEnumMessageAttachmentKindFilter<$PrismaModel>
   }
 
   export type NestedEnumCallTypeFilter<$PrismaModel = never> = {
@@ -27732,29 +30896,6 @@ export namespace Prisma {
     _min?: NestedEnumInvitationStatusFilter<$PrismaModel>
     _max?: NestedEnumInvitationStatusFilter<$PrismaModel>
   }
-  export type NestedJsonNullableFilter<$PrismaModel = never> =
-    | PatchUndefined<
-        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
-        Required<NestedJsonNullableFilterBase<$PrismaModel>>
-      >
-    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
-
-  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
-    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-    path?: string
-    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
-    string_contains?: string | StringFieldRefInput<$PrismaModel>
-    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
-    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
-    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
-    lt?: InputJsonValue
-    lte?: InputJsonValue
-    gt?: InputJsonValue
-    gte?: InputJsonValue
-    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
-  }
 
   export type TokenCreateWithoutUserInput = {
     id?: string
@@ -27869,6 +31010,8 @@ export namespace Prisma {
     fileSize?: number | null
     editedAt?: Date | string | null
     deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     expiresAt?: Date | string | null
@@ -27881,6 +31024,8 @@ export namespace Prisma {
     readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
     toDevice?: DeviceCreateNestedOneWithoutTargetMessagesInput
     fromDevice?: DeviceCreateNestedOneWithoutSentMessagesInput
+    likes?: MessageLikeCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
   }
 
   export type MessageUncheckedCreateWithoutSenderInput = {
@@ -27894,6 +31039,8 @@ export namespace Prisma {
     replyToId?: string | null
     editedAt?: Date | string | null
     deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     expiresAt?: Date | string | null
@@ -27904,6 +31051,8 @@ export namespace Prisma {
     registrationId?: number | null
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
     readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    likes?: MessageLikeUncheckedCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
   }
 
   export type MessageCreateOrConnectWithoutSenderInput = {
@@ -28089,6 +31238,28 @@ export namespace Prisma {
 
   export type MessageReadStatusCreateManyUserInputEnvelope = {
     data: MessageReadStatusCreateManyUserInput | MessageReadStatusCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type MessageLikeCreateWithoutUserInput = {
+    id?: string
+    createdAt?: Date | string
+    message: MessageCreateNestedOneWithoutLikesInput
+  }
+
+  export type MessageLikeUncheckedCreateWithoutUserInput = {
+    id?: string
+    messageId: string
+    createdAt?: Date | string
+  }
+
+  export type MessageLikeCreateOrConnectWithoutUserInput = {
+    where: MessageLikeWhereUniqueInput
+    create: XOR<MessageLikeCreateWithoutUserInput, MessageLikeUncheckedCreateWithoutUserInput>
+  }
+
+  export type MessageLikeCreateManyUserInputEnvelope = {
+    data: MessageLikeCreateManyUserInput | MessageLikeCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -28536,6 +31707,8 @@ export namespace Prisma {
     replyToId?: StringNullableFilter<"Message"> | string | null
     editedAt?: DateTimeNullableFilter<"Message"> | Date | string | null
     deletedAt?: DateTimeNullableFilter<"Message"> | Date | string | null
+    metadata?: JsonNullableFilter<"Message">
+    likesCount?: IntFilter<"Message"> | number
     createdAt?: DateTimeFilter<"Message"> | Date | string
     updatedAt?: DateTimeFilter<"Message"> | Date | string
     expiresAt?: DateTimeNullableFilter<"Message"> | Date | string | null
@@ -28686,6 +31859,32 @@ export namespace Prisma {
     messageId?: StringFilter<"MessageReadStatus"> | string
     userId?: StringFilter<"MessageReadStatus"> | string
     readAt?: DateTimeFilter<"MessageReadStatus"> | Date | string
+  }
+
+  export type MessageLikeUpsertWithWhereUniqueWithoutUserInput = {
+    where: MessageLikeWhereUniqueInput
+    update: XOR<MessageLikeUpdateWithoutUserInput, MessageLikeUncheckedUpdateWithoutUserInput>
+    create: XOR<MessageLikeCreateWithoutUserInput, MessageLikeUncheckedCreateWithoutUserInput>
+  }
+
+  export type MessageLikeUpdateWithWhereUniqueWithoutUserInput = {
+    where: MessageLikeWhereUniqueInput
+    data: XOR<MessageLikeUpdateWithoutUserInput, MessageLikeUncheckedUpdateWithoutUserInput>
+  }
+
+  export type MessageLikeUpdateManyWithWhereWithoutUserInput = {
+    where: MessageLikeScalarWhereInput
+    data: XOR<MessageLikeUpdateManyMutationInput, MessageLikeUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type MessageLikeScalarWhereInput = {
+    AND?: MessageLikeScalarWhereInput | MessageLikeScalarWhereInput[]
+    OR?: MessageLikeScalarWhereInput[]
+    NOT?: MessageLikeScalarWhereInput | MessageLikeScalarWhereInput[]
+    id?: StringFilter<"MessageLike"> | string
+    messageId?: StringFilter<"MessageLike"> | string
+    userId?: StringFilter<"MessageLike"> | string
+    createdAt?: DateTimeFilter<"MessageLike"> | Date | string
   }
 
   export type ChatUpsertWithWhereUniqueWithoutUserInput = {
@@ -28950,6 +32149,7 @@ export namespace Prisma {
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeCreateNestedManyWithoutUserInput
     chats?: ChatCreateNestedManyWithoutUserInput
     followers?: FollowCreateNestedManyWithoutFollowerInput
     following?: FollowCreateNestedManyWithoutFollowingInput
@@ -28980,6 +32180,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeUncheckedCreateNestedManyWithoutUserInput
     chats?: ChatUncheckedCreateNestedManyWithoutUserInput
     followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
@@ -29026,6 +32227,7 @@ export namespace Prisma {
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUpdateManyWithoutUserNestedInput
     chats?: ChatUpdateManyWithoutUserNestedInput
     followers?: FollowUpdateManyWithoutFollowerNestedInput
     following?: FollowUpdateManyWithoutFollowingNestedInput
@@ -29056,6 +32258,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUncheckedUpdateManyWithoutUserNestedInput
     chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
     followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
@@ -29087,6 +32290,7 @@ export namespace Prisma {
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeCreateNestedManyWithoutUserInput
     chats?: ChatCreateNestedManyWithoutUserInput
     followers?: FollowCreateNestedManyWithoutFollowerInput
     following?: FollowCreateNestedManyWithoutFollowingInput
@@ -29117,6 +32321,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeUncheckedCreateNestedManyWithoutUserInput
     chats?: ChatUncheckedCreateNestedManyWithoutUserInput
     followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
@@ -29163,6 +32368,7 @@ export namespace Prisma {
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUpdateManyWithoutUserNestedInput
     chats?: ChatUpdateManyWithoutUserNestedInput
     followers?: FollowUpdateManyWithoutFollowerNestedInput
     following?: FollowUpdateManyWithoutFollowingNestedInput
@@ -29193,6 +32399,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUncheckedUpdateManyWithoutUserNestedInput
     chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
     followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
@@ -29241,6 +32448,8 @@ export namespace Prisma {
     fileSize?: number | null
     editedAt?: Date | string | null
     deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     expiresAt?: Date | string | null
@@ -29253,6 +32462,8 @@ export namespace Prisma {
     readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
     toDevice?: DeviceCreateNestedOneWithoutTargetMessagesInput
     fromDevice?: DeviceCreateNestedOneWithoutSentMessagesInput
+    likes?: MessageLikeCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
   }
 
   export type MessageUncheckedCreateWithoutChatInput = {
@@ -29266,6 +32477,8 @@ export namespace Prisma {
     replyToId?: string | null
     editedAt?: Date | string | null
     deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     expiresAt?: Date | string | null
@@ -29276,6 +32489,8 @@ export namespace Prisma {
     registrationId?: number | null
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
     readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    likes?: MessageLikeUncheckedCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
   }
 
   export type MessageCreateOrConnectWithoutChatInput = {
@@ -29342,6 +32557,7 @@ export namespace Prisma {
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeCreateNestedManyWithoutUserInput
     chats?: ChatCreateNestedManyWithoutUserInput
     followers?: FollowCreateNestedManyWithoutFollowerInput
     following?: FollowCreateNestedManyWithoutFollowingInput
@@ -29372,6 +32588,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeUncheckedCreateNestedManyWithoutUserInput
     chats?: ChatUncheckedCreateNestedManyWithoutUserInput
     followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
@@ -29408,6 +32625,7 @@ export namespace Prisma {
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeCreateNestedManyWithoutUserInput
     followers?: FollowCreateNestedManyWithoutFollowerInput
     following?: FollowCreateNestedManyWithoutFollowingInput
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -29438,6 +32656,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeUncheckedCreateNestedManyWithoutUserInput
     followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
@@ -29531,6 +32750,7 @@ export namespace Prisma {
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUpdateManyWithoutUserNestedInput
     chats?: ChatUpdateManyWithoutUserNestedInput
     followers?: FollowUpdateManyWithoutFollowerNestedInput
     following?: FollowUpdateManyWithoutFollowingNestedInput
@@ -29561,6 +32781,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUncheckedUpdateManyWithoutUserNestedInput
     chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
     followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
@@ -29603,6 +32824,7 @@ export namespace Prisma {
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUpdateManyWithoutUserNestedInput
     followers?: FollowUpdateManyWithoutFollowerNestedInput
     following?: FollowUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -29633,6 +32855,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUncheckedUpdateManyWithoutUserNestedInput
     followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
@@ -29701,6 +32924,7 @@ export namespace Prisma {
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeCreateNestedManyWithoutUserInput
     chats?: ChatCreateNestedManyWithoutUserInput
     followers?: FollowCreateNestedManyWithoutFollowerInput
     following?: FollowCreateNestedManyWithoutFollowingInput
@@ -29731,6 +32955,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeUncheckedCreateNestedManyWithoutUserInput
     chats?: ChatUncheckedCreateNestedManyWithoutUserInput
     followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
@@ -29822,6 +33047,7 @@ export namespace Prisma {
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUpdateManyWithoutUserNestedInput
     chats?: ChatUpdateManyWithoutUserNestedInput
     followers?: FollowUpdateManyWithoutFollowerNestedInput
     following?: FollowUpdateManyWithoutFollowingNestedInput
@@ -29852,6 +33078,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUncheckedUpdateManyWithoutUserNestedInput
     chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
     followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
@@ -29921,6 +33148,7 @@ export namespace Prisma {
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeCreateNestedManyWithoutUserInput
     chats?: ChatCreateNestedManyWithoutUserInput
     followers?: FollowCreateNestedManyWithoutFollowerInput
     following?: FollowCreateNestedManyWithoutFollowingInput
@@ -29951,6 +33179,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeUncheckedCreateNestedManyWithoutUserInput
     chats?: ChatUncheckedCreateNestedManyWithoutUserInput
     followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
@@ -29977,6 +33206,8 @@ export namespace Prisma {
     fileSize?: number | null
     editedAt?: Date | string | null
     deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     expiresAt?: Date | string | null
@@ -29989,6 +33220,8 @@ export namespace Prisma {
     readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
     toDevice?: DeviceCreateNestedOneWithoutTargetMessagesInput
     fromDevice?: DeviceCreateNestedOneWithoutSentMessagesInput
+    likes?: MessageLikeCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
   }
 
   export type MessageUncheckedCreateWithoutRepliesInput = {
@@ -30003,6 +33236,8 @@ export namespace Prisma {
     replyToId?: string | null
     editedAt?: Date | string | null
     deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     expiresAt?: Date | string | null
@@ -30012,6 +33247,8 @@ export namespace Prisma {
     signalMessageType?: string | null
     registrationId?: number | null
     readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    likes?: MessageLikeUncheckedCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
   }
 
   export type MessageCreateOrConnectWithoutRepliesInput = {
@@ -30028,6 +33265,8 @@ export namespace Prisma {
     fileSize?: number | null
     editedAt?: Date | string | null
     deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     expiresAt?: Date | string | null
@@ -30040,6 +33279,8 @@ export namespace Prisma {
     readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
     toDevice?: DeviceCreateNestedOneWithoutTargetMessagesInput
     fromDevice?: DeviceCreateNestedOneWithoutSentMessagesInput
+    likes?: MessageLikeCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
   }
 
   export type MessageUncheckedCreateWithoutReplyToInput = {
@@ -30053,6 +33294,8 @@ export namespace Prisma {
     fileSize?: number | null
     editedAt?: Date | string | null
     deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     expiresAt?: Date | string | null
@@ -30063,6 +33306,8 @@ export namespace Prisma {
     registrationId?: number | null
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
     readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    likes?: MessageLikeUncheckedCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
   }
 
   export type MessageCreateOrConnectWithoutReplyToInput = {
@@ -30183,6 +33428,72 @@ export namespace Prisma {
     create: XOR<DeviceCreateWithoutSentMessagesInput, DeviceUncheckedCreateWithoutSentMessagesInput>
   }
 
+  export type MessageLikeCreateWithoutMessageInput = {
+    id?: string
+    createdAt?: Date | string
+    user: UserCreateNestedOneWithoutMessageLikesInput
+  }
+
+  export type MessageLikeUncheckedCreateWithoutMessageInput = {
+    id?: string
+    userId: string
+    createdAt?: Date | string
+  }
+
+  export type MessageLikeCreateOrConnectWithoutMessageInput = {
+    where: MessageLikeWhereUniqueInput
+    create: XOR<MessageLikeCreateWithoutMessageInput, MessageLikeUncheckedCreateWithoutMessageInput>
+  }
+
+  export type MessageLikeCreateManyMessageInputEnvelope = {
+    data: MessageLikeCreateManyMessageInput | MessageLikeCreateManyMessageInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type MessageAttachmentCreateWithoutMessageInput = {
+    id?: string
+    uploaderId: string
+    kind: $Enums.MessageAttachmentKind
+    url?: string | null
+    name?: string | null
+    size?: number | null
+    mimeType?: string | null
+    durationMs?: number | null
+    width?: number | null
+    height?: number | null
+    thumbnailUrl?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    postId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type MessageAttachmentUncheckedCreateWithoutMessageInput = {
+    id?: string
+    uploaderId: string
+    kind: $Enums.MessageAttachmentKind
+    url?: string | null
+    name?: string | null
+    size?: number | null
+    mimeType?: string | null
+    durationMs?: number | null
+    width?: number | null
+    height?: number | null
+    thumbnailUrl?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    postId?: string | null
+    createdAt?: Date | string
+  }
+
+  export type MessageAttachmentCreateOrConnectWithoutMessageInput = {
+    where: MessageAttachmentWhereUniqueInput
+    create: XOR<MessageAttachmentCreateWithoutMessageInput, MessageAttachmentUncheckedCreateWithoutMessageInput>
+  }
+
+  export type MessageAttachmentCreateManyMessageInputEnvelope = {
+    data: MessageAttachmentCreateManyMessageInput | MessageAttachmentCreateManyMessageInput[]
+    skipDuplicates?: boolean
+  }
+
   export type ChatUpsertWithoutMessagesInput = {
     update: XOR<ChatUpdateWithoutMessagesInput, ChatUncheckedUpdateWithoutMessagesInput>
     create: XOR<ChatCreateWithoutMessagesInput, ChatUncheckedCreateWithoutMessagesInput>
@@ -30257,6 +33568,7 @@ export namespace Prisma {
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUpdateManyWithoutUserNestedInput
     chats?: ChatUpdateManyWithoutUserNestedInput
     followers?: FollowUpdateManyWithoutFollowerNestedInput
     following?: FollowUpdateManyWithoutFollowingNestedInput
@@ -30287,6 +33599,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUncheckedUpdateManyWithoutUserNestedInput
     chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
     followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
@@ -30319,6 +33632,8 @@ export namespace Prisma {
     fileSize?: NullableIntFieldUpdateOperationsInput | number | null
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -30331,6 +33646,8 @@ export namespace Prisma {
     readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
     toDevice?: DeviceUpdateOneWithoutTargetMessagesNestedInput
     fromDevice?: DeviceUpdateOneWithoutSentMessagesNestedInput
+    likes?: MessageLikeUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageUncheckedUpdateWithoutRepliesInput = {
@@ -30345,6 +33662,8 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -30354,6 +33673,8 @@ export namespace Prisma {
     signalMessageType?: NullableStringFieldUpdateOperationsInput | string | null
     registrationId?: NullableIntFieldUpdateOperationsInput | number | null
     readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    likes?: MessageLikeUncheckedUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageUpsertWithWhereUniqueWithoutReplyToInput = {
@@ -30486,6 +33807,59 @@ export namespace Prisma {
     targetMessages?: MessageUncheckedUpdateManyWithoutToDeviceNestedInput
   }
 
+  export type MessageLikeUpsertWithWhereUniqueWithoutMessageInput = {
+    where: MessageLikeWhereUniqueInput
+    update: XOR<MessageLikeUpdateWithoutMessageInput, MessageLikeUncheckedUpdateWithoutMessageInput>
+    create: XOR<MessageLikeCreateWithoutMessageInput, MessageLikeUncheckedCreateWithoutMessageInput>
+  }
+
+  export type MessageLikeUpdateWithWhereUniqueWithoutMessageInput = {
+    where: MessageLikeWhereUniqueInput
+    data: XOR<MessageLikeUpdateWithoutMessageInput, MessageLikeUncheckedUpdateWithoutMessageInput>
+  }
+
+  export type MessageLikeUpdateManyWithWhereWithoutMessageInput = {
+    where: MessageLikeScalarWhereInput
+    data: XOR<MessageLikeUpdateManyMutationInput, MessageLikeUncheckedUpdateManyWithoutMessageInput>
+  }
+
+  export type MessageAttachmentUpsertWithWhereUniqueWithoutMessageInput = {
+    where: MessageAttachmentWhereUniqueInput
+    update: XOR<MessageAttachmentUpdateWithoutMessageInput, MessageAttachmentUncheckedUpdateWithoutMessageInput>
+    create: XOR<MessageAttachmentCreateWithoutMessageInput, MessageAttachmentUncheckedCreateWithoutMessageInput>
+  }
+
+  export type MessageAttachmentUpdateWithWhereUniqueWithoutMessageInput = {
+    where: MessageAttachmentWhereUniqueInput
+    data: XOR<MessageAttachmentUpdateWithoutMessageInput, MessageAttachmentUncheckedUpdateWithoutMessageInput>
+  }
+
+  export type MessageAttachmentUpdateManyWithWhereWithoutMessageInput = {
+    where: MessageAttachmentScalarWhereInput
+    data: XOR<MessageAttachmentUpdateManyMutationInput, MessageAttachmentUncheckedUpdateManyWithoutMessageInput>
+  }
+
+  export type MessageAttachmentScalarWhereInput = {
+    AND?: MessageAttachmentScalarWhereInput | MessageAttachmentScalarWhereInput[]
+    OR?: MessageAttachmentScalarWhereInput[]
+    NOT?: MessageAttachmentScalarWhereInput | MessageAttachmentScalarWhereInput[]
+    id?: StringFilter<"MessageAttachment"> | string
+    messageId?: StringNullableFilter<"MessageAttachment"> | string | null
+    uploaderId?: StringFilter<"MessageAttachment"> | string
+    kind?: EnumMessageAttachmentKindFilter<"MessageAttachment"> | $Enums.MessageAttachmentKind
+    url?: StringNullableFilter<"MessageAttachment"> | string | null
+    name?: StringNullableFilter<"MessageAttachment"> | string | null
+    size?: IntNullableFilter<"MessageAttachment"> | number | null
+    mimeType?: StringNullableFilter<"MessageAttachment"> | string | null
+    durationMs?: IntNullableFilter<"MessageAttachment"> | number | null
+    width?: IntNullableFilter<"MessageAttachment"> | number | null
+    height?: IntNullableFilter<"MessageAttachment"> | number | null
+    thumbnailUrl?: StringNullableFilter<"MessageAttachment"> | string | null
+    metadata?: JsonNullableFilter<"MessageAttachment">
+    postId?: StringNullableFilter<"MessageAttachment"> | string | null
+    createdAt?: DateTimeFilter<"MessageAttachment"> | Date | string
+  }
+
   export type UserCreateWithoutDevicesInput = {
     id?: string
     name: string
@@ -30504,6 +33878,7 @@ export namespace Prisma {
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeCreateNestedManyWithoutUserInput
     chats?: ChatCreateNestedManyWithoutUserInput
     followers?: FollowCreateNestedManyWithoutFollowerInput
     following?: FollowCreateNestedManyWithoutFollowingInput
@@ -30534,6 +33909,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeUncheckedCreateNestedManyWithoutUserInput
     chats?: ChatUncheckedCreateNestedManyWithoutUserInput
     followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
@@ -30610,6 +33986,8 @@ export namespace Prisma {
     fileSize?: number | null
     editedAt?: Date | string | null
     deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     expiresAt?: Date | string | null
@@ -30622,6 +34000,8 @@ export namespace Prisma {
     replies?: MessageCreateNestedManyWithoutReplyToInput
     readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
     fromDevice?: DeviceCreateNestedOneWithoutSentMessagesInput
+    likes?: MessageLikeCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
   }
 
   export type MessageUncheckedCreateWithoutToDeviceInput = {
@@ -30636,6 +34016,8 @@ export namespace Prisma {
     replyToId?: string | null
     editedAt?: Date | string | null
     deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     expiresAt?: Date | string | null
@@ -30645,6 +34027,8 @@ export namespace Prisma {
     registrationId?: number | null
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
     readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    likes?: MessageLikeUncheckedCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
   }
 
   export type MessageCreateOrConnectWithoutToDeviceInput = {
@@ -30666,6 +34050,8 @@ export namespace Prisma {
     fileSize?: number | null
     editedAt?: Date | string | null
     deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     expiresAt?: Date | string | null
@@ -30678,6 +34064,8 @@ export namespace Prisma {
     replies?: MessageCreateNestedManyWithoutReplyToInput
     readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
     toDevice?: DeviceCreateNestedOneWithoutTargetMessagesInput
+    likes?: MessageLikeCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
   }
 
   export type MessageUncheckedCreateWithoutFromDeviceInput = {
@@ -30692,6 +34080,8 @@ export namespace Prisma {
     replyToId?: string | null
     editedAt?: Date | string | null
     deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     expiresAt?: Date | string | null
@@ -30701,6 +34091,8 @@ export namespace Prisma {
     registrationId?: number | null
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
     readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    likes?: MessageLikeUncheckedCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
   }
 
   export type MessageCreateOrConnectWithoutFromDeviceInput = {
@@ -30742,6 +34134,7 @@ export namespace Prisma {
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUpdateManyWithoutUserNestedInput
     chats?: ChatUpdateManyWithoutUserNestedInput
     followers?: FollowUpdateManyWithoutFollowerNestedInput
     following?: FollowUpdateManyWithoutFollowingNestedInput
@@ -30772,6 +34165,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUncheckedUpdateManyWithoutUserNestedInput
     chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
     followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
@@ -31064,6 +34458,8 @@ export namespace Prisma {
     fileSize?: number | null
     editedAt?: Date | string | null
     deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     expiresAt?: Date | string | null
@@ -31076,6 +34472,8 @@ export namespace Prisma {
     replies?: MessageCreateNestedManyWithoutReplyToInput
     toDevice?: DeviceCreateNestedOneWithoutTargetMessagesInput
     fromDevice?: DeviceCreateNestedOneWithoutSentMessagesInput
+    likes?: MessageLikeCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
   }
 
   export type MessageUncheckedCreateWithoutReadStatusInput = {
@@ -31090,6 +34488,8 @@ export namespace Prisma {
     replyToId?: string | null
     editedAt?: Date | string | null
     deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     expiresAt?: Date | string | null
@@ -31099,6 +34499,8 @@ export namespace Prisma {
     signalMessageType?: string | null
     registrationId?: number | null
     replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
+    likes?: MessageLikeUncheckedCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
   }
 
   export type MessageCreateOrConnectWithoutReadStatusInput = {
@@ -31124,6 +34526,7 @@ export namespace Prisma {
     pushDevices?: PushDeviceCreateNestedManyWithoutUserInput
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
+    messageLikes?: MessageLikeCreateNestedManyWithoutUserInput
     chats?: ChatCreateNestedManyWithoutUserInput
     followers?: FollowCreateNestedManyWithoutFollowerInput
     following?: FollowCreateNestedManyWithoutFollowingInput
@@ -31154,6 +34557,7 @@ export namespace Prisma {
     pushDevices?: PushDeviceUncheckedCreateNestedManyWithoutUserInput
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
+    messageLikes?: MessageLikeUncheckedCreateNestedManyWithoutUserInput
     chats?: ChatUncheckedCreateNestedManyWithoutUserInput
     followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
@@ -31191,6 +34595,8 @@ export namespace Prisma {
     fileSize?: NullableIntFieldUpdateOperationsInput | number | null
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -31203,6 +34609,8 @@ export namespace Prisma {
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     toDevice?: DeviceUpdateOneWithoutTargetMessagesNestedInput
     fromDevice?: DeviceUpdateOneWithoutSentMessagesNestedInput
+    likes?: MessageLikeUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageUncheckedUpdateWithoutReadStatusInput = {
@@ -31217,6 +34625,8 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -31226,6 +34636,8 @@ export namespace Prisma {
     signalMessageType?: NullableStringFieldUpdateOperationsInput | string | null
     registrationId?: NullableIntFieldUpdateOperationsInput | number | null
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
+    likes?: MessageLikeUncheckedUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
   }
 
   export type UserUpsertWithoutMessageReadsInput = {
@@ -31257,6 +34669,7 @@ export namespace Prisma {
     pushDevices?: PushDeviceUpdateManyWithoutUserNestedInput
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
+    messageLikes?: MessageLikeUpdateManyWithoutUserNestedInput
     chats?: ChatUpdateManyWithoutUserNestedInput
     followers?: FollowUpdateManyWithoutFollowerNestedInput
     following?: FollowUpdateManyWithoutFollowingNestedInput
@@ -31287,6 +34700,7 @@ export namespace Prisma {
     pushDevices?: PushDeviceUncheckedUpdateManyWithoutUserNestedInput
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
+    messageLikes?: MessageLikeUncheckedUpdateManyWithoutUserNestedInput
     chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
     followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
@@ -31297,6 +34711,394 @@ export namespace Prisma {
     postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
     invitationsSent?: InvitationUncheckedUpdateManyWithoutFromUserNestedInput
     invitationsReceived?: InvitationUncheckedUpdateManyWithoutToUserNestedInput
+  }
+
+  export type MessageCreateWithoutLikesInput = {
+    id?: string
+    content: string
+    type?: $Enums.MessageType
+    fileUrl?: string | null
+    fileName?: string | null
+    fileSize?: number | null
+    editedAt?: Date | string | null
+    deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    expiresAt?: Date | string | null
+    isEncrypted?: boolean
+    signalMessageType?: string | null
+    registrationId?: number | null
+    chat: ChatCreateNestedOneWithoutMessagesInput
+    sender: UserCreateNestedOneWithoutMessagesInput
+    replyTo?: MessageCreateNestedOneWithoutRepliesInput
+    replies?: MessageCreateNestedManyWithoutReplyToInput
+    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    toDevice?: DeviceCreateNestedOneWithoutTargetMessagesInput
+    fromDevice?: DeviceCreateNestedOneWithoutSentMessagesInput
+    attachments?: MessageAttachmentCreateNestedManyWithoutMessageInput
+  }
+
+  export type MessageUncheckedCreateWithoutLikesInput = {
+    id?: string
+    chatId: string
+    senderId: string
+    content: string
+    type?: $Enums.MessageType
+    fileUrl?: string | null
+    fileName?: string | null
+    fileSize?: number | null
+    replyToId?: string | null
+    editedAt?: Date | string | null
+    deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    expiresAt?: Date | string | null
+    isEncrypted?: boolean
+    toDeviceId?: string | null
+    senderDeviceId?: string | null
+    signalMessageType?: string | null
+    registrationId?: number | null
+    replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
+    readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    attachments?: MessageAttachmentUncheckedCreateNestedManyWithoutMessageInput
+  }
+
+  export type MessageCreateOrConnectWithoutLikesInput = {
+    where: MessageWhereUniqueInput
+    create: XOR<MessageCreateWithoutLikesInput, MessageUncheckedCreateWithoutLikesInput>
+  }
+
+  export type UserCreateWithoutMessageLikesInput = {
+    id?: string
+    name: string
+    email: string
+    isAcivated?: boolean
+    activationLink: string
+    role: $Enums.user_roles
+    password: string
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+    tokens?: TokenCreateNestedManyWithoutUserInput
+    createdChats?: ChatCreateNestedManyWithoutCreatorInput
+    chatMembers?: ChatMemberCreateNestedManyWithoutUserInput
+    messages?: MessageCreateNestedManyWithoutSenderInput
+    devices?: DeviceCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceCreateNestedManyWithoutUserInput
+    sentCalls?: CallCreateNestedManyWithoutInitiatorInput
+    receivedCalls?: CallCreateNestedManyWithoutReceiverInput
+    messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
+    chats?: ChatCreateNestedManyWithoutUserInput
+    followers?: FollowCreateNestedManyWithoutFollowerInput
+    following?: FollowCreateNestedManyWithoutFollowingInput
+    profile?: ProfileCreateNestedOneWithoutUserInput
+    passwordResetTokens?: PasswordResetTokenCreateNestedManyWithoutUserInput
+    posts?: PostCreateNestedManyWithoutUserInput
+    authoredPosts?: PostCreateNestedManyWithoutAuthorInput
+    postLikes?: PostLikeCreateNestedManyWithoutUserInput
+    invitationsSent?: InvitationCreateNestedManyWithoutFromUserInput
+    invitationsReceived?: InvitationCreateNestedManyWithoutToUserInput
+  }
+
+  export type UserUncheckedCreateWithoutMessageLikesInput = {
+    id?: string
+    name: string
+    email: string
+    isAcivated?: boolean
+    activationLink: string
+    role: $Enums.user_roles
+    password: string
+    createdAt?: Date | string | null
+    updatedAt?: Date | string | null
+    tokens?: TokenUncheckedCreateNestedManyWithoutUserInput
+    createdChats?: ChatUncheckedCreateNestedManyWithoutCreatorInput
+    chatMembers?: ChatMemberUncheckedCreateNestedManyWithoutUserInput
+    messages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    devices?: DeviceUncheckedCreateNestedManyWithoutUserInput
+    pushDevices?: PushDeviceUncheckedCreateNestedManyWithoutUserInput
+    sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
+    receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
+    messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    chats?: ChatUncheckedCreateNestedManyWithoutUserInput
+    followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
+    following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
+    profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
+    passwordResetTokens?: PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
+    posts?: PostUncheckedCreateNestedManyWithoutUserInput
+    authoredPosts?: PostUncheckedCreateNestedManyWithoutAuthorInput
+    postLikes?: PostLikeUncheckedCreateNestedManyWithoutUserInput
+    invitationsSent?: InvitationUncheckedCreateNestedManyWithoutFromUserInput
+    invitationsReceived?: InvitationUncheckedCreateNestedManyWithoutToUserInput
+  }
+
+  export type UserCreateOrConnectWithoutMessageLikesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutMessageLikesInput, UserUncheckedCreateWithoutMessageLikesInput>
+  }
+
+  export type MessageUpsertWithoutLikesInput = {
+    update: XOR<MessageUpdateWithoutLikesInput, MessageUncheckedUpdateWithoutLikesInput>
+    create: XOR<MessageCreateWithoutLikesInput, MessageUncheckedCreateWithoutLikesInput>
+    where?: MessageWhereInput
+  }
+
+  export type MessageUpdateToOneWithWhereWithoutLikesInput = {
+    where?: MessageWhereInput
+    data: XOR<MessageUpdateWithoutLikesInput, MessageUncheckedUpdateWithoutLikesInput>
+  }
+
+  export type MessageUpdateWithoutLikesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    type?: EnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType
+    fileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    fileName?: NullableStringFieldUpdateOperationsInput | string | null
+    fileSize?: NullableIntFieldUpdateOperationsInput | number | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isEncrypted?: BoolFieldUpdateOperationsInput | boolean
+    signalMessageType?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationId?: NullableIntFieldUpdateOperationsInput | number | null
+    chat?: ChatUpdateOneRequiredWithoutMessagesNestedInput
+    sender?: UserUpdateOneRequiredWithoutMessagesNestedInput
+    replyTo?: MessageUpdateOneWithoutRepliesNestedInput
+    replies?: MessageUpdateManyWithoutReplyToNestedInput
+    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    toDevice?: DeviceUpdateOneWithoutTargetMessagesNestedInput
+    fromDevice?: DeviceUpdateOneWithoutSentMessagesNestedInput
+    attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
+  }
+
+  export type MessageUncheckedUpdateWithoutLikesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    chatId?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    type?: EnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType
+    fileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    fileName?: NullableStringFieldUpdateOperationsInput | string | null
+    fileSize?: NullableIntFieldUpdateOperationsInput | number | null
+    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isEncrypted?: BoolFieldUpdateOperationsInput | boolean
+    toDeviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    senderDeviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    signalMessageType?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationId?: NullableIntFieldUpdateOperationsInput | number | null
+    replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
+    readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
+  }
+
+  export type UserUpsertWithoutMessageLikesInput = {
+    update: XOR<UserUpdateWithoutMessageLikesInput, UserUncheckedUpdateWithoutMessageLikesInput>
+    create: XOR<UserCreateWithoutMessageLikesInput, UserUncheckedCreateWithoutMessageLikesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutMessageLikesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutMessageLikesInput, UserUncheckedUpdateWithoutMessageLikesInput>
+  }
+
+  export type UserUpdateWithoutMessageLikesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    isAcivated?: BoolFieldUpdateOperationsInput | boolean
+    activationLink?: StringFieldUpdateOperationsInput | string
+    role?: Enumuser_rolesFieldUpdateOperationsInput | $Enums.user_roles
+    password?: StringFieldUpdateOperationsInput | string
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tokens?: TokenUpdateManyWithoutUserNestedInput
+    createdChats?: ChatUpdateManyWithoutCreatorNestedInput
+    chatMembers?: ChatMemberUpdateManyWithoutUserNestedInput
+    messages?: MessageUpdateManyWithoutSenderNestedInput
+    devices?: DeviceUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUpdateManyWithoutUserNestedInput
+    sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
+    receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
+    messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    chats?: ChatUpdateManyWithoutUserNestedInput
+    followers?: FollowUpdateManyWithoutFollowerNestedInput
+    following?: FollowUpdateManyWithoutFollowingNestedInput
+    profile?: ProfileUpdateOneWithoutUserNestedInput
+    passwordResetTokens?: PasswordResetTokenUpdateManyWithoutUserNestedInput
+    posts?: PostUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUpdateManyWithoutAuthorNestedInput
+    postLikes?: PostLikeUpdateManyWithoutUserNestedInput
+    invitationsSent?: InvitationUpdateManyWithoutFromUserNestedInput
+    invitationsReceived?: InvitationUpdateManyWithoutToUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutMessageLikesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    isAcivated?: BoolFieldUpdateOperationsInput | boolean
+    activationLink?: StringFieldUpdateOperationsInput | string
+    role?: Enumuser_rolesFieldUpdateOperationsInput | $Enums.user_roles
+    password?: StringFieldUpdateOperationsInput | string
+    createdAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tokens?: TokenUncheckedUpdateManyWithoutUserNestedInput
+    createdChats?: ChatUncheckedUpdateManyWithoutCreatorNestedInput
+    chatMembers?: ChatMemberUncheckedUpdateManyWithoutUserNestedInput
+    messages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    devices?: DeviceUncheckedUpdateManyWithoutUserNestedInput
+    pushDevices?: PushDeviceUncheckedUpdateManyWithoutUserNestedInput
+    sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
+    receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
+    messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
+    followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
+    following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
+    profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
+    passwordResetTokens?: PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
+    posts?: PostUncheckedUpdateManyWithoutUserNestedInput
+    authoredPosts?: PostUncheckedUpdateManyWithoutAuthorNestedInput
+    postLikes?: PostLikeUncheckedUpdateManyWithoutUserNestedInput
+    invitationsSent?: InvitationUncheckedUpdateManyWithoutFromUserNestedInput
+    invitationsReceived?: InvitationUncheckedUpdateManyWithoutToUserNestedInput
+  }
+
+  export type MessageCreateWithoutAttachmentsInput = {
+    id?: string
+    content: string
+    type?: $Enums.MessageType
+    fileUrl?: string | null
+    fileName?: string | null
+    fileSize?: number | null
+    editedAt?: Date | string | null
+    deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    expiresAt?: Date | string | null
+    isEncrypted?: boolean
+    signalMessageType?: string | null
+    registrationId?: number | null
+    chat: ChatCreateNestedOneWithoutMessagesInput
+    sender: UserCreateNestedOneWithoutMessagesInput
+    replyTo?: MessageCreateNestedOneWithoutRepliesInput
+    replies?: MessageCreateNestedManyWithoutReplyToInput
+    readStatus?: MessageReadStatusCreateNestedManyWithoutMessageInput
+    toDevice?: DeviceCreateNestedOneWithoutTargetMessagesInput
+    fromDevice?: DeviceCreateNestedOneWithoutSentMessagesInput
+    likes?: MessageLikeCreateNestedManyWithoutMessageInput
+  }
+
+  export type MessageUncheckedCreateWithoutAttachmentsInput = {
+    id?: string
+    chatId: string
+    senderId: string
+    content: string
+    type?: $Enums.MessageType
+    fileUrl?: string | null
+    fileName?: string | null
+    fileSize?: number | null
+    replyToId?: string | null
+    editedAt?: Date | string | null
+    deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    expiresAt?: Date | string | null
+    isEncrypted?: boolean
+    toDeviceId?: string | null
+    senderDeviceId?: string | null
+    signalMessageType?: string | null
+    registrationId?: number | null
+    replies?: MessageUncheckedCreateNestedManyWithoutReplyToInput
+    readStatus?: MessageReadStatusUncheckedCreateNestedManyWithoutMessageInput
+    likes?: MessageLikeUncheckedCreateNestedManyWithoutMessageInput
+  }
+
+  export type MessageCreateOrConnectWithoutAttachmentsInput = {
+    where: MessageWhereUniqueInput
+    create: XOR<MessageCreateWithoutAttachmentsInput, MessageUncheckedCreateWithoutAttachmentsInput>
+  }
+
+  export type MessageUpsertWithoutAttachmentsInput = {
+    update: XOR<MessageUpdateWithoutAttachmentsInput, MessageUncheckedUpdateWithoutAttachmentsInput>
+    create: XOR<MessageCreateWithoutAttachmentsInput, MessageUncheckedCreateWithoutAttachmentsInput>
+    where?: MessageWhereInput
+  }
+
+  export type MessageUpdateToOneWithWhereWithoutAttachmentsInput = {
+    where?: MessageWhereInput
+    data: XOR<MessageUpdateWithoutAttachmentsInput, MessageUncheckedUpdateWithoutAttachmentsInput>
+  }
+
+  export type MessageUpdateWithoutAttachmentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    type?: EnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType
+    fileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    fileName?: NullableStringFieldUpdateOperationsInput | string | null
+    fileSize?: NullableIntFieldUpdateOperationsInput | number | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isEncrypted?: BoolFieldUpdateOperationsInput | boolean
+    signalMessageType?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationId?: NullableIntFieldUpdateOperationsInput | number | null
+    chat?: ChatUpdateOneRequiredWithoutMessagesNestedInput
+    sender?: UserUpdateOneRequiredWithoutMessagesNestedInput
+    replyTo?: MessageUpdateOneWithoutRepliesNestedInput
+    replies?: MessageUpdateManyWithoutReplyToNestedInput
+    readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
+    toDevice?: DeviceUpdateOneWithoutTargetMessagesNestedInput
+    fromDevice?: DeviceUpdateOneWithoutSentMessagesNestedInput
+    likes?: MessageLikeUpdateManyWithoutMessageNestedInput
+  }
+
+  export type MessageUncheckedUpdateWithoutAttachmentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    chatId?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    content?: StringFieldUpdateOperationsInput | string
+    type?: EnumMessageTypeFieldUpdateOperationsInput | $Enums.MessageType
+    fileUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    fileName?: NullableStringFieldUpdateOperationsInput | string | null
+    fileSize?: NullableIntFieldUpdateOperationsInput | number | null
+    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
+    editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isEncrypted?: BoolFieldUpdateOperationsInput | boolean
+    toDeviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    senderDeviceId?: NullableStringFieldUpdateOperationsInput | string | null
+    signalMessageType?: NullableStringFieldUpdateOperationsInput | string | null
+    registrationId?: NullableIntFieldUpdateOperationsInput | number | null
+    replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
+    readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    likes?: MessageLikeUncheckedUpdateManyWithoutMessageNestedInput
   }
 
   export type ChatCreateWithoutCallsInput = {
@@ -31356,6 +35158,7 @@ export namespace Prisma {
     pushDevices?: PushDeviceCreateNestedManyWithoutUserInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeCreateNestedManyWithoutUserInput
     chats?: ChatCreateNestedManyWithoutUserInput
     followers?: FollowCreateNestedManyWithoutFollowerInput
     following?: FollowCreateNestedManyWithoutFollowingInput
@@ -31386,6 +35189,7 @@ export namespace Prisma {
     pushDevices?: PushDeviceUncheckedCreateNestedManyWithoutUserInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeUncheckedCreateNestedManyWithoutUserInput
     chats?: ChatUncheckedCreateNestedManyWithoutUserInput
     followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
@@ -31421,6 +35225,7 @@ export namespace Prisma {
     pushDevices?: PushDeviceCreateNestedManyWithoutUserInput
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeCreateNestedManyWithoutUserInput
     chats?: ChatCreateNestedManyWithoutUserInput
     followers?: FollowCreateNestedManyWithoutFollowerInput
     following?: FollowCreateNestedManyWithoutFollowingInput
@@ -31451,6 +35256,7 @@ export namespace Prisma {
     pushDevices?: PushDeviceUncheckedCreateNestedManyWithoutUserInput
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeUncheckedCreateNestedManyWithoutUserInput
     chats?: ChatUncheckedCreateNestedManyWithoutUserInput
     followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
@@ -31542,6 +35348,7 @@ export namespace Prisma {
     pushDevices?: PushDeviceUpdateManyWithoutUserNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUpdateManyWithoutUserNestedInput
     chats?: ChatUpdateManyWithoutUserNestedInput
     followers?: FollowUpdateManyWithoutFollowerNestedInput
     following?: FollowUpdateManyWithoutFollowingNestedInput
@@ -31572,6 +35379,7 @@ export namespace Prisma {
     pushDevices?: PushDeviceUncheckedUpdateManyWithoutUserNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUncheckedUpdateManyWithoutUserNestedInput
     chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
     followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
@@ -31613,6 +35421,7 @@ export namespace Prisma {
     pushDevices?: PushDeviceUpdateManyWithoutUserNestedInput
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUpdateManyWithoutUserNestedInput
     chats?: ChatUpdateManyWithoutUserNestedInput
     followers?: FollowUpdateManyWithoutFollowerNestedInput
     following?: FollowUpdateManyWithoutFollowingNestedInput
@@ -31643,6 +35452,7 @@ export namespace Prisma {
     pushDevices?: PushDeviceUncheckedUpdateManyWithoutUserNestedInput
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUncheckedUpdateManyWithoutUserNestedInput
     chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
     followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
@@ -31673,6 +35483,7 @@ export namespace Prisma {
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeCreateNestedManyWithoutUserInput
     chats?: ChatCreateNestedManyWithoutUserInput
     followers?: FollowCreateNestedManyWithoutFollowerInput
     following?: FollowCreateNestedManyWithoutFollowingInput
@@ -31703,6 +35514,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeUncheckedCreateNestedManyWithoutUserInput
     chats?: ChatUncheckedCreateNestedManyWithoutUserInput
     followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
@@ -31749,6 +35561,7 @@ export namespace Prisma {
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUpdateManyWithoutUserNestedInput
     chats?: ChatUpdateManyWithoutUserNestedInput
     followers?: FollowUpdateManyWithoutFollowerNestedInput
     following?: FollowUpdateManyWithoutFollowingNestedInput
@@ -31779,6 +35592,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUncheckedUpdateManyWithoutUserNestedInput
     chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
     followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
@@ -31810,6 +35624,7 @@ export namespace Prisma {
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeCreateNestedManyWithoutUserInput
     chats?: ChatCreateNestedManyWithoutUserInput
     following?: FollowCreateNestedManyWithoutFollowingInput
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -31840,6 +35655,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeUncheckedCreateNestedManyWithoutUserInput
     chats?: ChatUncheckedCreateNestedManyWithoutUserInput
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
@@ -31875,6 +35691,7 @@ export namespace Prisma {
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeCreateNestedManyWithoutUserInput
     chats?: ChatCreateNestedManyWithoutUserInput
     followers?: FollowCreateNestedManyWithoutFollowerInput
     profile?: ProfileCreateNestedOneWithoutUserInput
@@ -31905,6 +35722,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeUncheckedCreateNestedManyWithoutUserInput
     chats?: ChatUncheckedCreateNestedManyWithoutUserInput
     followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
     profile?: ProfileUncheckedCreateNestedOneWithoutUserInput
@@ -31951,6 +35769,7 @@ export namespace Prisma {
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUpdateManyWithoutUserNestedInput
     chats?: ChatUpdateManyWithoutUserNestedInput
     following?: FollowUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -31981,6 +35800,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUncheckedUpdateManyWithoutUserNestedInput
     chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
@@ -32022,6 +35842,7 @@ export namespace Prisma {
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUpdateManyWithoutUserNestedInput
     chats?: ChatUpdateManyWithoutUserNestedInput
     followers?: FollowUpdateManyWithoutFollowerNestedInput
     profile?: ProfileUpdateOneWithoutUserNestedInput
@@ -32052,6 +35873,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUncheckedUpdateManyWithoutUserNestedInput
     chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
     followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
     profile?: ProfileUncheckedUpdateOneWithoutUserNestedInput
@@ -32082,6 +35904,7 @@ export namespace Prisma {
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeCreateNestedManyWithoutUserInput
     chats?: ChatCreateNestedManyWithoutUserInput
     followers?: FollowCreateNestedManyWithoutFollowerInput
     following?: FollowCreateNestedManyWithoutFollowingInput
@@ -32112,6 +35935,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeUncheckedCreateNestedManyWithoutUserInput
     chats?: ChatUncheckedCreateNestedManyWithoutUserInput
     followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
@@ -32158,6 +35982,7 @@ export namespace Prisma {
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUpdateManyWithoutUserNestedInput
     chats?: ChatUpdateManyWithoutUserNestedInput
     followers?: FollowUpdateManyWithoutFollowerNestedInput
     following?: FollowUpdateManyWithoutFollowingNestedInput
@@ -32188,6 +36013,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUncheckedUpdateManyWithoutUserNestedInput
     chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
     followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
@@ -32218,6 +36044,7 @@ export namespace Prisma {
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeCreateNestedManyWithoutUserInput
     chats?: ChatCreateNestedManyWithoutUserInput
     followers?: FollowCreateNestedManyWithoutFollowerInput
     following?: FollowCreateNestedManyWithoutFollowingInput
@@ -32248,6 +36075,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeUncheckedCreateNestedManyWithoutUserInput
     chats?: ChatUncheckedCreateNestedManyWithoutUserInput
     followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
@@ -32283,6 +36111,7 @@ export namespace Prisma {
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeCreateNestedManyWithoutUserInput
     chats?: ChatCreateNestedManyWithoutUserInput
     followers?: FollowCreateNestedManyWithoutFollowerInput
     following?: FollowCreateNestedManyWithoutFollowingInput
@@ -32313,6 +36142,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeUncheckedCreateNestedManyWithoutUserInput
     chats?: ChatUncheckedCreateNestedManyWithoutUserInput
     followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
@@ -32466,6 +36296,7 @@ export namespace Prisma {
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUpdateManyWithoutUserNestedInput
     chats?: ChatUpdateManyWithoutUserNestedInput
     followers?: FollowUpdateManyWithoutFollowerNestedInput
     following?: FollowUpdateManyWithoutFollowingNestedInput
@@ -32496,6 +36327,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUncheckedUpdateManyWithoutUserNestedInput
     chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
     followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
@@ -32537,6 +36369,7 @@ export namespace Prisma {
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUpdateManyWithoutUserNestedInput
     chats?: ChatUpdateManyWithoutUserNestedInput
     followers?: FollowUpdateManyWithoutFollowerNestedInput
     following?: FollowUpdateManyWithoutFollowingNestedInput
@@ -32567,6 +36400,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUncheckedUpdateManyWithoutUserNestedInput
     chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
     followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
@@ -32713,6 +36547,7 @@ export namespace Prisma {
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeCreateNestedManyWithoutUserInput
     chats?: ChatCreateNestedManyWithoutUserInput
     followers?: FollowCreateNestedManyWithoutFollowerInput
     following?: FollowCreateNestedManyWithoutFollowingInput
@@ -32743,6 +36578,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeUncheckedCreateNestedManyWithoutUserInput
     chats?: ChatUncheckedCreateNestedManyWithoutUserInput
     followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
@@ -32834,6 +36670,7 @@ export namespace Prisma {
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUpdateManyWithoutUserNestedInput
     chats?: ChatUpdateManyWithoutUserNestedInput
     followers?: FollowUpdateManyWithoutFollowerNestedInput
     following?: FollowUpdateManyWithoutFollowingNestedInput
@@ -32864,6 +36701,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUncheckedUpdateManyWithoutUserNestedInput
     chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
     followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
@@ -32894,6 +36732,7 @@ export namespace Prisma {
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeCreateNestedManyWithoutUserInput
     chats?: ChatCreateNestedManyWithoutUserInput
     followers?: FollowCreateNestedManyWithoutFollowerInput
     following?: FollowCreateNestedManyWithoutFollowingInput
@@ -32924,6 +36763,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeUncheckedCreateNestedManyWithoutUserInput
     chats?: ChatUncheckedCreateNestedManyWithoutUserInput
     followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
@@ -32959,6 +36799,7 @@ export namespace Prisma {
     sentCalls?: CallCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeCreateNestedManyWithoutUserInput
     chats?: ChatCreateNestedManyWithoutUserInput
     followers?: FollowCreateNestedManyWithoutFollowerInput
     following?: FollowCreateNestedManyWithoutFollowingInput
@@ -32989,6 +36830,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedCreateNestedManyWithoutInitiatorInput
     receivedCalls?: CallUncheckedCreateNestedManyWithoutReceiverInput
     messageReads?: MessageReadStatusUncheckedCreateNestedManyWithoutUserInput
+    messageLikes?: MessageLikeUncheckedCreateNestedManyWithoutUserInput
     chats?: ChatUncheckedCreateNestedManyWithoutUserInput
     followers?: FollowUncheckedCreateNestedManyWithoutFollowerInput
     following?: FollowUncheckedCreateNestedManyWithoutFollowingInput
@@ -33035,6 +36877,7 @@ export namespace Prisma {
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUpdateManyWithoutUserNestedInput
     chats?: ChatUpdateManyWithoutUserNestedInput
     followers?: FollowUpdateManyWithoutFollowerNestedInput
     following?: FollowUpdateManyWithoutFollowingNestedInput
@@ -33065,6 +36908,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUncheckedUpdateManyWithoutUserNestedInput
     chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
     followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
@@ -33106,6 +36950,7 @@ export namespace Prisma {
     sentCalls?: CallUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUpdateManyWithoutUserNestedInput
     chats?: ChatUpdateManyWithoutUserNestedInput
     followers?: FollowUpdateManyWithoutFollowerNestedInput
     following?: FollowUpdateManyWithoutFollowingNestedInput
@@ -33136,6 +36981,7 @@ export namespace Prisma {
     sentCalls?: CallUncheckedUpdateManyWithoutInitiatorNestedInput
     receivedCalls?: CallUncheckedUpdateManyWithoutReceiverNestedInput
     messageReads?: MessageReadStatusUncheckedUpdateManyWithoutUserNestedInput
+    messageLikes?: MessageLikeUncheckedUpdateManyWithoutUserNestedInput
     chats?: ChatUncheckedUpdateManyWithoutUserNestedInput
     followers?: FollowUncheckedUpdateManyWithoutFollowerNestedInput
     following?: FollowUncheckedUpdateManyWithoutFollowingNestedInput
@@ -33192,6 +37038,8 @@ export namespace Prisma {
     replyToId?: string | null
     editedAt?: Date | string | null
     deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     expiresAt?: Date | string | null
@@ -33259,6 +37107,12 @@ export namespace Prisma {
     id?: string
     messageId: string
     readAt?: Date | string
+  }
+
+  export type MessageLikeCreateManyUserInput = {
+    id?: string
+    messageId: string
+    createdAt?: Date | string
   }
 
   export type ChatCreateManyUserInput = {
@@ -33473,6 +37327,8 @@ export namespace Prisma {
     fileSize?: NullableIntFieldUpdateOperationsInput | number | null
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -33485,6 +37341,8 @@ export namespace Prisma {
     readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
     toDevice?: DeviceUpdateOneWithoutTargetMessagesNestedInput
     fromDevice?: DeviceUpdateOneWithoutSentMessagesNestedInput
+    likes?: MessageLikeUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageUncheckedUpdateWithoutSenderInput = {
@@ -33498,6 +37356,8 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -33508,6 +37368,8 @@ export namespace Prisma {
     registrationId?: NullableIntFieldUpdateOperationsInput | number | null
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
     readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    likes?: MessageLikeUncheckedUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageUncheckedUpdateManyWithoutSenderInput = {
@@ -33521,6 +37383,8 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -33714,6 +37578,24 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     messageId?: StringFieldUpdateOperationsInput | string
     readAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MessageLikeUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    message?: MessageUpdateOneRequiredWithoutLikesNestedInput
+  }
+
+  export type MessageLikeUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    messageId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MessageLikeUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    messageId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ChatUpdateWithoutUserInput = {
@@ -34035,6 +37917,8 @@ export namespace Prisma {
     replyToId?: string | null
     editedAt?: Date | string | null
     deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     expiresAt?: Date | string | null
@@ -34094,6 +37978,8 @@ export namespace Prisma {
     fileSize?: NullableIntFieldUpdateOperationsInput | number | null
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -34106,6 +37992,8 @@ export namespace Prisma {
     readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
     toDevice?: DeviceUpdateOneWithoutTargetMessagesNestedInput
     fromDevice?: DeviceUpdateOneWithoutSentMessagesNestedInput
+    likes?: MessageLikeUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageUncheckedUpdateWithoutChatInput = {
@@ -34119,6 +38007,8 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -34129,6 +38019,8 @@ export namespace Prisma {
     registrationId?: NullableIntFieldUpdateOperationsInput | number | null
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
     readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    likes?: MessageLikeUncheckedUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageUncheckedUpdateManyWithoutChatInput = {
@@ -34142,6 +38034,8 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -34202,6 +38096,8 @@ export namespace Prisma {
     fileSize?: number | null
     editedAt?: Date | string | null
     deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     expiresAt?: Date | string | null
@@ -34218,6 +38114,29 @@ export namespace Prisma {
     readAt?: Date | string
   }
 
+  export type MessageLikeCreateManyMessageInput = {
+    id?: string
+    userId: string
+    createdAt?: Date | string
+  }
+
+  export type MessageAttachmentCreateManyMessageInput = {
+    id?: string
+    uploaderId: string
+    kind: $Enums.MessageAttachmentKind
+    url?: string | null
+    name?: string | null
+    size?: number | null
+    mimeType?: string | null
+    durationMs?: number | null
+    width?: number | null
+    height?: number | null
+    thumbnailUrl?: string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    postId?: string | null
+    createdAt?: Date | string
+  }
+
   export type MessageUpdateWithoutReplyToInput = {
     id?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
@@ -34227,6 +38146,8 @@ export namespace Prisma {
     fileSize?: NullableIntFieldUpdateOperationsInput | number | null
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -34239,6 +38160,8 @@ export namespace Prisma {
     readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
     toDevice?: DeviceUpdateOneWithoutTargetMessagesNestedInput
     fromDevice?: DeviceUpdateOneWithoutSentMessagesNestedInput
+    likes?: MessageLikeUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageUncheckedUpdateWithoutReplyToInput = {
@@ -34252,6 +38175,8 @@ export namespace Prisma {
     fileSize?: NullableIntFieldUpdateOperationsInput | number | null
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -34262,6 +38187,8 @@ export namespace Prisma {
     registrationId?: NullableIntFieldUpdateOperationsInput | number | null
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
     readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    likes?: MessageLikeUncheckedUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageUncheckedUpdateManyWithoutReplyToInput = {
@@ -34275,6 +38202,8 @@ export namespace Prisma {
     fileSize?: NullableIntFieldUpdateOperationsInput | number | null
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -34301,6 +38230,75 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     readAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MessageLikeUpdateWithoutMessageInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutMessageLikesNestedInput
+  }
+
+  export type MessageLikeUncheckedUpdateWithoutMessageInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MessageLikeUncheckedUpdateManyWithoutMessageInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MessageAttachmentUpdateWithoutMessageInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    uploaderId?: StringFieldUpdateOperationsInput | string
+    kind?: EnumMessageAttachmentKindFieldUpdateOperationsInput | $Enums.MessageAttachmentKind
+    url?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    size?: NullableIntFieldUpdateOperationsInput | number | null
+    mimeType?: NullableStringFieldUpdateOperationsInput | string | null
+    durationMs?: NullableIntFieldUpdateOperationsInput | number | null
+    width?: NullableIntFieldUpdateOperationsInput | number | null
+    height?: NullableIntFieldUpdateOperationsInput | number | null
+    thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    postId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MessageAttachmentUncheckedUpdateWithoutMessageInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    uploaderId?: StringFieldUpdateOperationsInput | string
+    kind?: EnumMessageAttachmentKindFieldUpdateOperationsInput | $Enums.MessageAttachmentKind
+    url?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    size?: NullableIntFieldUpdateOperationsInput | number | null
+    mimeType?: NullableStringFieldUpdateOperationsInput | string | null
+    durationMs?: NullableIntFieldUpdateOperationsInput | number | null
+    width?: NullableIntFieldUpdateOperationsInput | number | null
+    height?: NullableIntFieldUpdateOperationsInput | number | null
+    thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    postId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MessageAttachmentUncheckedUpdateManyWithoutMessageInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    uploaderId?: StringFieldUpdateOperationsInput | string
+    kind?: EnumMessageAttachmentKindFieldUpdateOperationsInput | $Enums.MessageAttachmentKind
+    url?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    size?: NullableIntFieldUpdateOperationsInput | number | null
+    mimeType?: NullableStringFieldUpdateOperationsInput | string | null
+    durationMs?: NullableIntFieldUpdateOperationsInput | number | null
+    width?: NullableIntFieldUpdateOperationsInput | number | null
+    height?: NullableIntFieldUpdateOperationsInput | number | null
+    thumbnailUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    postId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PreKeyCreateManyDeviceInput = {
@@ -34330,6 +38328,8 @@ export namespace Prisma {
     replyToId?: string | null
     editedAt?: Date | string | null
     deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     expiresAt?: Date | string | null
@@ -34351,6 +38351,8 @@ export namespace Prisma {
     replyToId?: string | null
     editedAt?: Date | string | null
     deletedAt?: Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: number
     createdAt?: Date | string
     updatedAt?: Date | string
     expiresAt?: Date | string | null
@@ -34414,6 +38416,8 @@ export namespace Prisma {
     fileSize?: NullableIntFieldUpdateOperationsInput | number | null
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -34426,6 +38430,8 @@ export namespace Prisma {
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
     fromDevice?: DeviceUpdateOneWithoutSentMessagesNestedInput
+    likes?: MessageLikeUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageUncheckedUpdateWithoutToDeviceInput = {
@@ -34440,6 +38446,8 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -34449,6 +38457,8 @@ export namespace Prisma {
     registrationId?: NullableIntFieldUpdateOperationsInput | number | null
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
     readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    likes?: MessageLikeUncheckedUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageUncheckedUpdateManyWithoutToDeviceInput = {
@@ -34463,6 +38473,8 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -34481,6 +38493,8 @@ export namespace Prisma {
     fileSize?: NullableIntFieldUpdateOperationsInput | number | null
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -34493,6 +38507,8 @@ export namespace Prisma {
     replies?: MessageUpdateManyWithoutReplyToNestedInput
     readStatus?: MessageReadStatusUpdateManyWithoutMessageNestedInput
     toDevice?: DeviceUpdateOneWithoutTargetMessagesNestedInput
+    likes?: MessageLikeUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageUncheckedUpdateWithoutFromDeviceInput = {
@@ -34507,6 +38523,8 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -34516,6 +38534,8 @@ export namespace Prisma {
     registrationId?: NullableIntFieldUpdateOperationsInput | number | null
     replies?: MessageUncheckedUpdateManyWithoutReplyToNestedInput
     readStatus?: MessageReadStatusUncheckedUpdateManyWithoutMessageNestedInput
+    likes?: MessageLikeUncheckedUpdateManyWithoutMessageNestedInput
+    attachments?: MessageAttachmentUncheckedUpdateManyWithoutMessageNestedInput
   }
 
   export type MessageUncheckedUpdateManyWithoutFromDeviceInput = {
@@ -34530,6 +38550,8 @@ export namespace Prisma {
     replyToId?: NullableStringFieldUpdateOperationsInput | string | null
     editedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    metadata?: NullableJsonNullValueInput | InputJsonValue
+    likesCount?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

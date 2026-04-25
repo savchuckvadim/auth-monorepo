@@ -21,6 +21,7 @@ export const AudioCallButton = ({ chatId, otherUserId }: { chatId: string, other
 
     return (
         <Button
+            variant="ghost"
             onClick={handleClick}
             disabled={isRequestingMedia}
             className="flex items-center gap-2"
@@ -28,7 +29,7 @@ export const AudioCallButton = ({ chatId, otherUserId }: { chatId: string, other
             {isRequestingMedia ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-                <Phone className="h-4 w-4" />
+                <Phone className="h-15 w-15 text-primary fill-current" />
             )}
         </Button>
     );

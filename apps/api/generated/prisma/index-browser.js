@@ -193,6 +193,8 @@ exports.Prisma.MessageScalarFieldEnum = {
   replyToId: 'replyToId',
   editedAt: 'editedAt',
   deletedAt: 'deletedAt',
+  metadata: 'metadata',
+  likesCount: 'likesCount',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   expiresAt: 'expiresAt',
@@ -241,6 +243,31 @@ exports.Prisma.MessageReadStatusScalarFieldEnum = {
   messageId: 'messageId',
   userId: 'userId',
   readAt: 'readAt'
+};
+
+exports.Prisma.MessageLikeScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  userId: 'userId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.MessageAttachmentScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  uploaderId: 'uploaderId',
+  kind: 'kind',
+  url: 'url',
+  name: 'name',
+  size: 'size',
+  mimeType: 'mimeType',
+  durationMs: 'durationMs',
+  width: 'width',
+  height: 'height',
+  thumbnailUrl: 'thumbnailUrl',
+  metadata: 'metadata',
+  postId: 'postId',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.CallScalarFieldEnum = {
@@ -379,6 +406,17 @@ exports.Prisma.ChatMemberOrderByRelevanceFieldEnum = {
   userId: 'userId'
 };
 
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
 exports.Prisma.MessageOrderByRelevanceFieldEnum = {
   id: 'id',
   chatId: 'chatId',
@@ -419,6 +457,23 @@ exports.Prisma.MessageReadStatusOrderByRelevanceFieldEnum = {
   id: 'id',
   messageId: 'messageId',
   userId: 'userId'
+};
+
+exports.Prisma.MessageLikeOrderByRelevanceFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  userId: 'userId'
+};
+
+exports.Prisma.MessageAttachmentOrderByRelevanceFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  uploaderId: 'uploaderId',
+  url: 'url',
+  name: 'name',
+  mimeType: 'mimeType',
+  thumbnailUrl: 'thumbnailUrl',
+  postId: 'postId'
 };
 
 exports.Prisma.CallOrderByRelevanceFieldEnum = {
@@ -468,17 +523,6 @@ exports.Prisma.PostLikeOrderByRelevanceFieldEnum = {
   userId: 'userId'
 };
 
-exports.Prisma.JsonNullValueFilter = {
-  DbNull: Prisma.DbNull,
-  JsonNull: Prisma.JsonNull,
-  AnyNull: Prisma.AnyNull
-};
-
-exports.Prisma.QueryMode = {
-  default: 'default',
-  insensitive: 'insensitive'
-};
-
 exports.Prisma.InvitationOrderByRelevanceFieldEnum = {
   id: 'id',
   fromUserId: 'fromUserId',
@@ -514,7 +558,19 @@ exports.MessageType = exports.$Enums.MessageType = {
   VIDEO: 'VIDEO',
   AUDIO: 'AUDIO',
   FILE: 'FILE',
-  SYSTEM: 'SYSTEM'
+  SYSTEM: 'SYSTEM',
+  CALL_EVENT: 'CALL_EVENT'
+};
+
+exports.MessageAttachmentKind = exports.$Enums.MessageAttachmentKind = {
+  IMAGE: 'IMAGE',
+  VIDEO: 'VIDEO',
+  AUDIO: 'AUDIO',
+  VOICE: 'VOICE',
+  CIRCLE: 'CIRCLE',
+  FILE: 'FILE',
+  POST_SHARE: 'POST_SHARE',
+  FORWARD_SNAPSHOT: 'FORWARD_SNAPSHOT'
 };
 
 exports.CallType = exports.$Enums.CallType = {
@@ -575,6 +631,8 @@ exports.Prisma.ModelName = {
   PreKey: 'PreKey',
   OneTimePreKey: 'OneTimePreKey',
   MessageReadStatus: 'MessageReadStatus',
+  MessageLike: 'MessageLike',
+  MessageAttachment: 'MessageAttachment',
   Call: 'Call',
   PushDevice: 'PushDevice',
   Follow: 'Follow',

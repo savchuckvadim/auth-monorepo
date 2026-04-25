@@ -13,9 +13,13 @@ import { MessagesService } from '../services/messages.service';
 import {
     CreateMessageDto,
     CreateSystemMessageDto,
+    ForwardMessagesDto,
     MessageDto,
+    MessageLikeDto,
+    ToggleMessageLikeResponseDto,
     UnreadCountResponseDto,
     UnreadTotalResponseDto,
+    UpdateMessageDto,
 } from '../dto';
 import { AccessTokenGuard } from '@/core/guards/access-token.guard';
 import { CurrentUser } from '@/core/decorators/auth/current-user.decorator';
@@ -48,6 +52,28 @@ export class MessagesController {
         return this.messagesService.createMessage(
             user.userId,
             createMessageDto,
+        );
+    }
+
+    @ApiOperation({
+        summary: 'Forward messages to one or multiple chats',
+        description:
+            'Для каждой пары (messageId × chatId) создаёт сообщение-контейнер с FORWARD_SNAPSHOT-вложением. Запрещено форвардить E2EE-источники и в E2EE-чаты.',
+    })
+    @ApiBody({ type: ForwardMessagesDto })
+    @ApiOkResponse({
+        description: 'Созданные сообщения-пересылки',
+        type: [MessageDto],
+    })
+    @Post('forward')
+    async forwardMessages(
+        @CurrentUser() user: TokenPayloadDto,
+        @Body() dto: ForwardMessagesDto,
+    ): Promise<MessageDto[]> {
+        return this.messagesService.forwardMessages(
+            user.userId,
+            dto.messageIds,
+            dto.targetChatIds,
         );
     }
 
@@ -124,6 +150,7 @@ export class MessagesController {
 
     @ApiOperation({ summary: 'Update a message' })
     @ApiParam({ name: 'id', description: 'Message ID', example: '1' })
+    @ApiBody({ type: UpdateMessageDto })
     @ApiResponse({
         status: 200,
         description: 'Message updated',
@@ -133,12 +160,12 @@ export class MessagesController {
     async updateMessage(
         @Param('id') messageId: string,
         @CurrentUser() user: TokenPayloadDto,
-        @Body('content') content: string,
+        @Body() dto: UpdateMessageDto,
     ) {
         return this.messagesService.updateMessage(
             messageId,
             user.userId,
-            content,
+            dto.content,
         );
     }
 
@@ -187,6 +214,53 @@ export class MessagesController {
     ) {
         await this.messagesService.markChatAsRead(chatId, user.userId);
         return { message: 'Chat marked as read' };
+    }
+
+    @ApiOperation({
+        summary: 'Toggle like on a message (idempotent via POST)',
+        description:
+            'Повторный POST снимает лайк. Возвращает финальное состояние для подтверждения оптимистичного UI.',
+    })
+    @ApiParam({ name: 'id', description: 'Message ID', type: String })
+    @ApiOkResponse({
+        description: 'Like toggle result',
+        type: ToggleMessageLikeResponseDto,
+    })
+    @Post(':id/like')
+    async toggleLike(
+        @Param('id') messageId: string,
+        @CurrentUser() user: TokenPayloadDto,
+    ): Promise<ToggleMessageLikeResponseDto> {
+        return this.messagesService.toggleMessageLike(messageId, user.userId);
+    }
+
+    @ApiOperation({ summary: 'List users who liked the message' })
+    @ApiParam({ name: 'id', description: 'Message ID', type: String })
+    @ApiOkResponse({
+        description: 'Paginated likers list',
+        type: [MessageLikeDto],
+    })
+    @Get(':id/likes')
+    async listLikes(
+        @Param('id') messageId: string,
+        @CurrentUser() user: TokenPayloadDto,
+        @Query('cursor') cursor?: string,
+        @Query('limit') limit?: string,
+    ): Promise<MessageLikeDto[]> {
+        const entries = await this.messagesService.getMessageLikes(
+            messageId,
+            user.userId,
+            {
+                cursor,
+                limit: limit ? parseInt(limit, 10) : undefined,
+            },
+        );
+        return entries.map(e => ({
+            id: e.id,
+            messageId: e.messageId,
+            createdAt: e.createdAt,
+            user: e.user,
+        }));
     }
 
     @ApiOperation({ summary: 'Get unread count for a chat' })

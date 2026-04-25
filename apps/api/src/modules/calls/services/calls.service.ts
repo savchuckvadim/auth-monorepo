@@ -95,12 +95,18 @@ export class CallsService {
     async getCallById(callId: string): Promise<{
         chatId: string;
         status: CallStatus;
+        initiatorId: string;
+        receiverId: string | null;
+        type: CallType;
     } | null> {
         return this.prisma.call.findUnique({
             where: { id: callId },
             select: {
                 chatId: true,
                 status: true,
+                initiatorId: true,
+                receiverId: true,
+                type: true,
             },
         });
     }

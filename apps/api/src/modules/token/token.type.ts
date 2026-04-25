@@ -1,3 +1,8 @@
+export {
+    AUTH_DEFAULT_TTL,
+    EnumAuthTtlEnv,
+} from '@/lib/auth/auth-token-lifetime.config';
+
 export enum EnumAuthErrorCode {
     // Access Token
     ACCESS_TOKEN_MISSING = 'ACCESS_TOKEN_MISSING',
@@ -35,16 +40,3 @@ export enum EnumAuthSecrets {
     ACCESS_TOKEN = 'JWT_ACCESS_SECRET',
     REFRESH_TOKEN = 'JWT_REFRESH_SECRET',
 }
-
-export enum EnumAuthTtlEnv {
-    ACCESS = 'JWT_ACCESS_EXPIRES_IN',
-    REFRESH = 'JWT_REFRESH_EXPIRES_IN',
-    PASSWORD_RESET = 'PASSWORD_RESET_EXPIRES_IN',
-}
-
-/** Default TTLs used when env overrides are not set. */
-export const AUTH_DEFAULT_TTL = {
-    ACCESS: '15m',
-    REFRESH: '30d',
-    PASSWORD_RESET: '30m',
-} as const;

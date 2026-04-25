@@ -1,6 +1,9 @@
 :root.sociopath-light {
     --radius: 0.9rem;
 
+
+    --brand-light: oklch(0.96 0 0);
+    --brand-dark: oklch(0.25 0 0);
     --background: oklch(0.96 0 0);
     /* #F4F4F4 - светлый фон */
     --foreground: oklch(0.25 0 0);

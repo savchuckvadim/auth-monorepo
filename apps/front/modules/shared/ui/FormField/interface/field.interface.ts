@@ -30,4 +30,6 @@ export type IFormField<
     startSlot?: ReactNode;
     /** Например кнопка показа пароля — справа */
     endSlot?: ReactNode;
+    /** Включить встроенный toggle show/hide для password-поля */
+    passwordRevealToggle?: boolean;
 };

@@ -1,0 +1,1 @@
+export { VoiceMessagePlayer } from './VoiceMessagePlayer';

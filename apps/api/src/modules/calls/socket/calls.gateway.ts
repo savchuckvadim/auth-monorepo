@@ -140,6 +140,8 @@ export class CallsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                             call.chatId,
                             call.initiatorId,
                             MISSED_REASON,
+                            undefined,
+                            call.id,
                         );
                     } finally {
                         this.callTimeoutMap.delete(call.id);
@@ -266,6 +268,7 @@ export class CallsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                     userId,
                     resolvedReason,
                     data.duration,
+                    callId,
                 );
                 this.callIdMap.delete(client.id);
             }
@@ -329,9 +332,42 @@ export class CallsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         actorUserId: string,
         reason: CallEndedReason,
         duration?: number,
+        callId?: string,
     ): Promise<void> {
         if (!chatId) return;
         if (await this.callsService.isSecretChat(chatId)) return;
+
+        let initiatorId = actorUserId;
+        let callType: 'audio' | 'video' = 'video';
+        if (callId) {
+            try {
+                const call = await this.callsService.getCallById(callId);
+                if (call) {
+                    initiatorId = call.initiatorId;
+                    callType = call.type === CallType.AUDIO ? 'audio' : 'video';
+                }
+            } catch {
+                /* ignore */
+            }
+        }
+
+        const reasonMap: Record<
+            CallEndedReason,
+            | 'missed'
+            | 'accepted'
+            | 'rejected'
+            | 'canceled'
+            | 'timeout'
+            | 'failed'
+        > = {
+            MISSED: 'missed',
+            ACCEPTED: 'accepted',
+            REJECTED: 'rejected',
+            CANCELED: 'canceled',
+            TIMEOUT: 'timeout',
+            FAILED: 'failed',
+        };
+
         const time = new Date().toLocaleTimeString('ru-RU', {
             hour: '2-digit',
             minute: '2-digit',
@@ -340,7 +376,7 @@ export class CallsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             typeof duration === 'number' && duration > 0
                 ? `, длительность ${duration}с`
                 : '';
-        const messageText = (() => {
+        const fallbackText = (() => {
             switch (reason) {
                 case ACCEPTED_REASON:
                     return `Звонок состоялся в ${time}${durationLabel}`;
@@ -359,12 +395,23 @@ export class CallsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             }
         })();
 
+        const metadata: Record<string, unknown> = {
+            reason: reasonMap[reason] ?? 'failed',
+            callType,
+            initiatorId,
+            ...(callId ? { callId } : {}),
+            ...(typeof duration === 'number' && duration > 0
+                ? { durationMs: duration * 1000 }
+                : {}),
+        };
+
         try {
-            await this.messagesService.createSystemMessage(
-                actorUserId,
+            await this.messagesService.createCallEventMessage({
+                userId: actorUserId,
                 chatId,
-                messageText,
-            );
+                content: fallbackText,
+                metadata,
+            });
         } catch (error) {
             console.error(error);
             // Do not fail signaling if timeline write fails.

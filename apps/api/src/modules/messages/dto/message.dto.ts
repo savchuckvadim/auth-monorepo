@@ -1,6 +1,71 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserDto } from '@/modules/user';
-import { Message, MessageType } from 'generated/prisma';
+import { Message, MessageAttachment, MessageType } from 'generated/prisma';
+import { MessageAttachmentDto } from './message-attachment.dto';
+
+/**
+ * Полезная нагрузка для `MessageType.CALL_EVENT`.
+ *
+ * Клиент рендерит карточку звонка, читая эти поля вместо regex-парсинга
+ * свободного текста старых SYSTEM-сообщений.
+ */
+export class CallEventMetadataDto {
+    @ApiProperty({
+        description:
+            'Направление: кто инициировал звонок относительно получателя DTO',
+        enum: ['incoming', 'outgoing'],
+        example: 'incoming',
+    })
+    direction: 'incoming' | 'outgoing';
+
+    @ApiProperty({
+        description: 'Причина завершения звонка',
+        enum: [
+            'missed',
+            'accepted',
+            'rejected',
+            'canceled',
+            'timeout',
+            'failed',
+        ],
+        example: 'missed',
+    })
+    reason:
+        | 'missed'
+        | 'accepted'
+        | 'rejected'
+        | 'canceled'
+        | 'timeout'
+        | 'failed';
+
+    @ApiProperty({
+        description: 'Тип звонка',
+        enum: ['audio', 'video'],
+        example: 'audio',
+    })
+    callType: 'audio' | 'video';
+
+    @ApiPropertyOptional({
+        description: 'Длительность звонка в миллисекундах (если accepted)',
+        example: 75000,
+        type: Number,
+    })
+    durationMs?: number;
+
+    @ApiPropertyOptional({
+        description: 'ID инициатора звонка (чей `initiatorId` в Call)',
+        example: 'd63...',
+        type: String,
+    })
+    initiatorId?: string;
+
+    @ApiPropertyOptional({
+        description: 'Ссылка на Call.id в истории звонков',
+        example: 'd63...',
+        type: String,
+    })
+    callId?: string;
+}
 
 /** ORM row + includes used when building MessageDto (recursive replyTo). */
 export type MessageDtoSource = Message & {
@@ -12,6 +77,10 @@ export type MessageDtoSource = Message & {
     fromDevice?: { clientDeviceId: string } | null;
     replyTo?: MessageDtoSource;
     readBy?: string[];
+    /** Заполняется сервисом из `MessageLike` по `viewerId` (is current user liker). */
+    isLiked?: boolean;
+    /** Заполняется сервисом когда нужен полноценный рендер (chatList/feed). */
+    attachments?: MessageAttachment[];
 };
 
 export class MessageDto {
@@ -65,11 +134,45 @@ export class MessageDto {
     })
     editedAt?: Date;
     @ApiPropertyOptional({
+        description:
+            'Derived flag: true if the message was edited at least once. Computed from `editedAt`.',
+        example: true,
+        type: Boolean,
+    })
+    isEdited?: boolean;
+    @ApiPropertyOptional({
         description: 'Deleted At',
         example: '2021-01-01',
         type: Date,
     })
     deletedAt?: Date;
+    @ApiPropertyOptional({
+        description:
+            'Произвольные метаданные сообщения. Для `type=CALL_EVENT` содержит `CallEventMetadataDto`.',
+        type: () => CallEventMetadataDto,
+    })
+    metadata?: CallEventMetadataDto | Record<string, unknown>;
+    @ApiProperty({
+        description:
+            'Денормализованный счётчик лайков (быстрые выборки списка сообщений).',
+        example: 0,
+        type: Number,
+    })
+    likesCount: number;
+    @ApiPropertyOptional({
+        description:
+            'Лайкнул ли это сообщение текущий зритель (viewer). `undefined` если не загружено.',
+        example: false,
+        type: Boolean,
+    })
+    isLiked?: boolean;
+    @ApiProperty({
+        description:
+            'Вложения сообщения (IMAGE/VIDEO/AUDIO/VOICE/CIRCLE/FILE/POST_SHARE/FORWARD_SNAPSHOT). Пусто, если вложений нет.',
+        type: () => [MessageAttachmentDto],
+        default: [],
+    })
+    attachments: MessageAttachmentDto[];
     @ApiProperty({
         description: 'Created At',
         example: '2021-01-01',
@@ -145,7 +248,17 @@ export class MessageDto {
         this.fileSize = message.fileSize || undefined;
         this.replyToId = message.replyToId || undefined;
         this.editedAt = message.editedAt || undefined;
+        this.isEdited = Boolean(message.editedAt);
         this.deletedAt = message.deletedAt || undefined;
+        this.metadata = (message.metadata ?? undefined) as
+            | CallEventMetadataDto
+            | Record<string, unknown>
+            | undefined;
+        this.likesCount = message.likesCount ?? 0;
+        this.isLiked = message.isLiked;
+        this.attachments = (message.attachments ?? []).map(
+            a => new MessageAttachmentDto(a),
+        );
         this.createdAt = message.createdAt;
         this.updatedAt = message.updatedAt;
         this.sender = message.sender;

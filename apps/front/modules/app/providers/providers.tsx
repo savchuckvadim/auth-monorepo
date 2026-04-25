@@ -5,6 +5,11 @@ import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import { AppProvider } from '@/modules/app';
 import { AprilThemeProvider } from '@workspace/theme';
 import { ReactQueryProvider } from './tanstack-query.provider';
+import { AppToastProvider } from '@/modules/shared/ui';
+// Side-effect: конфигурируем axios-клиент из @workspace/nest-api на первом
+// импорте провайдеров. Это гарантирует, что baseURL и onSessionExpired
+// будут выставлены до первого API-запроса со страниц.
+import './back-api.bootstrap';
 
 export function Providers({ children }: { children: React.ReactNode }) {
     return (
@@ -18,7 +23,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
             storageKey="theme"
         >      <AprilThemeProvider >
                 <ReactQueryProvider>
-                    <AppProvider>{children}</AppProvider>
+                    <AppToastProvider>
+                        <AppProvider>{children}</AppProvider>
+                    </AppToastProvider>
                 </ReactQueryProvider>
             </AprilThemeProvider>
         </NextThemesProvider>

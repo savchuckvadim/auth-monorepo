@@ -1,11 +1,9 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { LiveKitService } from '../services/live-kit.service';
-import { IsNotEmpty, IsString } from 'class-validator';
 import {
     ApiBody,
     ApiOkResponse,
     ApiOperation,
-    ApiProperty,
     ApiResponse,
     ApiTags,
 } from '@nestjs/swagger';
@@ -14,25 +12,8 @@ import { CurrentUser } from '@/core/decorators/auth/current-user.decorator';
 import { TokenPayloadDto } from '@/modules/token';
 import { CallsService } from '../services/calls.service';
 import { CallHistoryItemDto } from '../dto/call-history-item.dto';
-
-export class GetTokenDto {
-    @ApiProperty({ description: 'Room name', example: 'room1' })
-    @IsString()
-    @IsNotEmpty()
-    roomName: string;
-
-    @ApiProperty({ description: 'User id', example: '1' })
-    @IsString()
-    @IsNotEmpty()
-    userId: string;
-}
-
-export class CallTokenDto {
-    @ApiProperty({ description: 'Token', example: 'token123' })
-    @IsString()
-    @IsNotEmpty()
-    token: string;
-}
+import { GetTokenDto } from '../dto/get-token.dto';
+import { CallTokenDto } from '../dto/call-token.dto';
 @ApiTags('calls')
 @Controller('calls')
 @UseGuards(AccessTokenGuard)

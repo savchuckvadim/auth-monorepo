@@ -8,10 +8,17 @@
 import type {
     CreateMessageDto,
     CreateSystemMessageDto,
+    ForwardMessagesDto,
+    MessageAttachmentDto,
+    MessageAttachmentsUploadBody,
     MessageDto,
+    MessageLikeDto,
     MessagesGetChatMessagesParams,
+    MessagesListLikesParams,
+    ToggleMessageLikeResponseDto,
     UnreadCountResponseDto,
     UnreadTotalResponseDto,
+    UpdateMessageDto,
 } from '.././model';
 
 import { customAxios } from '../../lib/back-api';
@@ -26,6 +33,20 @@ export const getMessages = () => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             data: createMessageDto,
+        });
+    };
+    /**
+     * Для каждой пары (messageId × chatId) создаёт сообщение-контейнер с FORWARD_SNAPSHOT-вложением. Запрещено форвардить E2EE-источники и в E2EE-чаты.
+     * @summary Forward messages to one or multiple chats
+     */
+    const messagesForwardMessages = (
+        forwardMessagesDto: ForwardMessagesDto,
+    ) => {
+        return customAxios<MessageDto[]>({
+            url: `/api/messages/forward`,
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            data: forwardMessagesDto,
         });
     };
     /**
@@ -75,10 +96,15 @@ export const getMessages = () => {
     /**
      * @summary Update a message
      */
-    const messagesUpdateMessage = (id: string) => {
+    const messagesUpdateMessage = (
+        id: string,
+        updateMessageDto: UpdateMessageDto,
+    ) => {
         return customAxios<MessageDto>({
             url: `/api/messages/${id}`,
             method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            data: updateMessageDto,
         });
     };
     /**
@@ -109,6 +135,26 @@ export const getMessages = () => {
         });
     };
     /**
+     * Повторный POST снимает лайк. Возвращает финальное состояние для подтверждения оптимистичного UI.
+     * @summary Toggle like on a message (idempotent via POST)
+     */
+    const messagesToggleLike = (id: string) => {
+        return customAxios<ToggleMessageLikeResponseDto>({
+            url: `/api/messages/${id}/like`,
+            method: 'POST',
+        });
+    };
+    /**
+     * @summary List users who liked the message
+     */
+    const messagesListLikes = (id: string, params: MessagesListLikesParams) => {
+        return customAxios<MessageLikeDto[]>({
+            url: `/api/messages/${id}/likes`,
+            method: 'GET',
+            params,
+        });
+    };
+    /**
      * @summary Get unread count for a chat
      */
     const messagesGetUnreadCount = (chatId: string) => {
@@ -117,8 +163,48 @@ export const getMessages = () => {
             method: 'GET',
         });
     };
+    /**
+     * Возвращает `MessageAttachmentDto`. Клиент передаст `attachment.id` в `CreateMessageDto.attachmentIds` при отправке сообщения. Orphan-ы старше 1 часа подчищаются кроном.
+     * @summary Upload a message attachment (orphan until attached to a message)
+     */
+    const messageAttachmentsUpload = (
+        messageAttachmentsUploadBody: MessageAttachmentsUploadBody,
+    ) => {
+        const formData = new FormData();
+        formData.append(`file`, messageAttachmentsUploadBody.file);
+        formData.append(`kind`, messageAttachmentsUploadBody.kind);
+        if (messageAttachmentsUploadBody.durationMs !== undefined) {
+            formData.append(
+                `durationMs`,
+                messageAttachmentsUploadBody.durationMs.toString(),
+            );
+        }
+        if (messageAttachmentsUploadBody.waveform !== undefined) {
+            formData.append(`waveform`, messageAttachmentsUploadBody.waveform);
+        }
+        if (messageAttachmentsUploadBody.width !== undefined) {
+            formData.append(
+                `width`,
+                messageAttachmentsUploadBody.width.toString(),
+            );
+        }
+        if (messageAttachmentsUploadBody.height !== undefined) {
+            formData.append(
+                `height`,
+                messageAttachmentsUploadBody.height.toString(),
+            );
+        }
+
+        return customAxios<MessageAttachmentDto>({
+            url: `/api/messages/attachments/upload`,
+            method: 'POST',
+            headers: { 'Content-Type': 'multipart/form-data' },
+            data: formData,
+        });
+    };
     return {
         messagesCreateMessage,
+        messagesForwardMessages,
         messagesCreateSystemMessage,
         messagesGetChatMessages,
         messagesGetTotalUnread,
@@ -127,11 +213,19 @@ export const getMessages = () => {
         messagesDeleteMessage,
         messagesMarkAsRead,
         messagesMarkChatAsRead,
+        messagesToggleLike,
+        messagesListLikes,
         messagesGetUnreadCount,
+        messageAttachmentsUpload,
     };
 };
 export type MessagesCreateMessageResult = NonNullable<
     Awaited<ReturnType<ReturnType<typeof getMessages>['messagesCreateMessage']>>
+>;
+export type MessagesForwardMessagesResult = NonNullable<
+    Awaited<
+        ReturnType<ReturnType<typeof getMessages>['messagesForwardMessages']>
+    >
 >;
 export type MessagesCreateSystemMessageResult = NonNullable<
     Awaited<
@@ -169,8 +263,19 @@ export type MessagesMarkChatAsReadResult = NonNullable<
         ReturnType<ReturnType<typeof getMessages>['messagesMarkChatAsRead']>
     >
 >;
+export type MessagesToggleLikeResult = NonNullable<
+    Awaited<ReturnType<ReturnType<typeof getMessages>['messagesToggleLike']>>
+>;
+export type MessagesListLikesResult = NonNullable<
+    Awaited<ReturnType<ReturnType<typeof getMessages>['messagesListLikes']>>
+>;
 export type MessagesGetUnreadCountResult = NonNullable<
     Awaited<
         ReturnType<ReturnType<typeof getMessages>['messagesGetUnreadCount']>
+    >
+>;
+export type MessageAttachmentsUploadResult = NonNullable<
+    Awaited<
+        ReturnType<ReturnType<typeof getMessages>['messageAttachmentsUpload']>
     >
 >;

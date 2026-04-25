@@ -11,6 +11,12 @@ export const MessagesWsServerEvent = {
     USER_TYPING: 'user:typing',
     /** Собеседник пометил чат прочитанным — перезапросить сообщения (readBy). */
     CHAT_READ: 'message:chat-read',
+    /** Сообщение отредактировано отправителем. */
+    MESSAGE_UPDATED: 'message:updated',
+    /** Сообщение soft-удалено отправителем. */
+    MESSAGE_DELETED: 'message:deleted',
+    /** Лайк был добавлен/снят — payload содержит финальный счётчик. */
+    MESSAGE_LIKED: 'message:liked',
 } as const;
 
 export function chatRoomId(chatId: string): string {

@@ -20,4 +20,5 @@ export const CreateMessageDtoType = {
     AUDIO: 'AUDIO',
     FILE: 'FILE',
     SYSTEM: 'SYSTEM',
+    CALL_EVENT: 'CALL_EVENT',
 } as const;

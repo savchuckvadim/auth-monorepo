@@ -28,15 +28,15 @@ export default function NetworkLayout({ children }: { children: React.ReactNode 
                         >
                             <div className={
                                 cn(
-                                    'container mx-auto p-0 sm:px-6 lg:px-4 md:p-4 flex flex-row md:gap-4',
+                                    'container max-w-7xl mx-auto p-0 sm:px-6 lg:px-4 md:p-4 flex flex-row md:gap-4',
                                 )
                             }>
 
-                                <div className='w-0 md:block md:w-1/6 h-screen  pt-20'>
+                                <div className='w-0 md:block md:w-2/10 h-screen  pt-20'>
                                     <Navigation />
                                 </div>
 
-                                <div className='w-full md:w-5/6 flex flex-col gap-4 pt-20 pb-20 md:pb-4'>
+                                <div className='w-full md:w-8/10 flex flex-col gap-4 pt-20 pb-20 md:pb-4'>
                                     <div className="container mx-auto p-2 sm:px-6 lg:px-0 ">
 
                                         {children}

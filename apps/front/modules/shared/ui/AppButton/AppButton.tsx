@@ -7,7 +7,7 @@ import type { ComponentProps, ReactNode } from 'react';
 
 const sizeClass = {
     /** Формы входа / регистрации: полная ширина, 48px */
-    auth: 'h-12 w-full min-w-0 px-4 text-base',
+    auth: 'h-12 w-full min-w-0 px-4 text-sm',
     /** Карточки людей, профиль: 40px */
     md: 'h-10 min-w-0 px-4',
     sm: 'h-9 min-w-0 px-3 text-sm',

@@ -2,6 +2,11 @@
 import { Injectable } from '@nestjs/common';
 import { CookieOptions, Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { parseDurationToMs } from '@/lib/utils/duration.util';
+import {
+    AUTH_DEFAULT_TTL,
+    EnumAuthTtlEnv,
+} from '@/lib/auth/auth-token-lifetime.config';
 
 @Injectable()
 export class CookieService {
@@ -13,6 +18,30 @@ export class CookieService {
     private isProd(): boolean {
         return this.configService.get<string>('NODE_ENV') === 'production';
     }
+
+    private getCookieMaxAgeMs(type: 'access' | 'refresh'): number {
+        const tokenTtl =
+            type === 'access'
+                ? this.configService.get<string>(EnumAuthTtlEnv.ACCESS)
+                : this.configService.get<string>(EnumAuthTtlEnv.REFRESH);
+        const fallback = parseDurationToMs(
+            type === 'access'
+                ? AUTH_DEFAULT_TTL.ACCESS
+                : AUTH_DEFAULT_TTL.REFRESH,
+        );
+
+        return parseDurationToMs(
+            type === 'access'
+                ? (this.configService.get<string>(
+                      EnumAuthTtlEnv.ACCESS_COOKIE,
+                  ) ?? tokenTtl)
+                : (this.configService.get<string>(
+                      EnumAuthTtlEnv.REFRESH_COOKIE,
+                  ) ?? tokenTtl),
+            fallback,
+        );
+    }
+
     private getCookieOptions(maxAge?: 'access' | 'refresh'): CookieOptions {
         const domain = this.configService.get<string>('CLIENT_DOMAIN');
         const isProd = this.isProd();
@@ -25,15 +54,7 @@ export class CookieService {
             path: '/',
         };
         if (maxAge) {
-            options.maxAge =
-                maxAge === 'access'
-                    ? 15 * 60 * 1000 // 15 минут
-                    : 30 * 24 * 60 * 60 * 1000; // 30 дней
-
-            //for test
-            // options.maxAge = maxAge === 'access'
-            //     ? 1 * 60 * 1000  // 1 минут
-            //     : 2 * 60 * 1000 //  2 минут
+            options.maxAge = this.getCookieMaxAgeMs(maxAge);
         }
         return options;
     }

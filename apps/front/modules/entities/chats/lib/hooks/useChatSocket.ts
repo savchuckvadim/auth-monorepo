@@ -68,6 +68,80 @@ export const useChatSocket = ({
         };
         messagesSocket.on(MessagesWsServerEvent.CHAT_READ, handleChatRead);
 
+        const handleMessageUpdated = (updated: Message) => {
+            if (updated.chatId !== chatId) return;
+            queryClient.setQueriesData<Message[]>(
+                { queryKey: ['messages', 'chat', chatId] },
+                (oldData) => {
+                    if (!oldData) return oldData;
+                    return oldData.map((m) =>
+                        m.id === updated.id ? { ...m, ...updated } : m,
+                    );
+                },
+            );
+        };
+        messagesSocket.on(
+            MessagesWsServerEvent.MESSAGE_UPDATED,
+            handleMessageUpdated,
+        );
+
+        const handleMessageDeleted = (payload: {
+            messageId: string;
+            chatId: string;
+        }) => {
+            if (payload.chatId !== chatId) return;
+            queryClient.setQueriesData<Message[]>(
+                { queryKey: ['messages', 'chat', chatId] },
+                (oldData) => {
+                    if (!oldData) return oldData;
+                    return oldData.filter((m) => m.id !== payload.messageId);
+                },
+            );
+            void queryClient.invalidateQueries({
+                queryKey: ['chats', 'user'],
+            });
+        };
+        messagesSocket.on(
+            MessagesWsServerEvent.MESSAGE_DELETED,
+            handleMessageDeleted,
+        );
+
+        /**
+         * Бэк рассылает `{ messageId, chatId, userId, likesCount, isLiked }`.
+         * Флаг `isLiked` относится к пользователю-инициатору toggle. Для
+         * остальных viewers `isLiked` оставляем как есть (их собственное
+         * состояние изменить может только их собственный toggle). Счётчик
+         * обновляем всегда — он глобальный.
+         */
+        const handleMessageLiked = (payload: {
+            messageId: string;
+            chatId: string;
+            userId: string;
+            likesCount: number;
+            isLiked: boolean;
+        }) => {
+            if (payload.chatId !== chatId) return;
+            queryClient.setQueriesData<Message[]>(
+                { queryKey: ['messages', 'chat', chatId] },
+                (oldData) => {
+                    if (!oldData) return oldData;
+                    return oldData.map((m) => {
+                        if (m.id !== payload.messageId) return m;
+                        const isSelf = payload.userId === userId;
+                        return {
+                            ...m,
+                            likesCount: payload.likesCount,
+                            isLiked: isSelf ? payload.isLiked : m.isLiked,
+                        };
+                    });
+                },
+            );
+        };
+        messagesSocket.on(
+            MessagesWsServerEvent.MESSAGE_LIKED,
+            handleMessageLiked,
+        );
+
         const joinChat = () => {
             messagesSocket.emit('chat:join', { chatId }, (response: { error?: string } | null) => {
                 if (response?.error) {
@@ -91,6 +165,18 @@ export const useChatSocket = ({
         return () => {
             messagesSocket.off(MessagesWsServerEvent.NEW_MESSAGE, handleNewMessage);
             messagesSocket.off(MessagesWsServerEvent.CHAT_READ, handleChatRead);
+            messagesSocket.off(
+                MessagesWsServerEvent.MESSAGE_UPDATED,
+                handleMessageUpdated,
+            );
+            messagesSocket.off(
+                MessagesWsServerEvent.MESSAGE_DELETED,
+                handleMessageDeleted,
+            );
+            messagesSocket.off(
+                MessagesWsServerEvent.MESSAGE_LIKED,
+                handleMessageLiked,
+            );
             if (chatId) {
                 messagesSocket.emit(MessagesWsClientEvent.CHAT_LEAVE, { chatId });
             }

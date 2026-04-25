@@ -4,6 +4,15 @@ import { EnumAuthErrorCode } from '@/modules/token/token.type';
 import { SessionDto, SessionsBulkResultDto } from '../dtos/session.dto';
 
 /**
+ * Дефолтный deviceId, который проставляется утилитой `resolveDeviceIdFromHeaders`,
+ * когда клиент не прислал `x-device-id`. Такие сессии считаются "неопознанными"
+ * (несколько разных устройств могут иметь одинаковое значение), поэтому по
+ * нему **нельзя** матчить текущую сессию — иначе все web-сессии взаимно
+ * помечались бы как `isCurrent = true`.
+ */
+const UNKNOWN_DEVICE_ID = 'web';
+
+/**
  * Входные данные для распознавания "текущей" сессии. Web передаёт refreshToken
  * (он есть в cookie у сервера); mobile не хранит refreshToken, но шлёт стабильный
  * `x-device-id` при каждом запросе — по нему и определим.
@@ -72,23 +81,41 @@ export class SessionsService {
         return { revoked };
     }
 
+    /**
+     * Определяем "текущую" сессию:
+     *
+     * 1. Web-кейс: у сервера есть refreshToken из httpOnly-cookie входящего
+     *    запроса — это самый точный и стабильный матч (у каждой сессии свой
+     *    ротируемый refreshToken). Если он передан в контекст — сверяем
+     *    **только** его, вторую ветку не рассматриваем. Это исключает
+     *    ситуацию, в которой у всех web-сессий совпадает дефолтный deviceId
+     *    и они все оказываются `isCurrent = true`.
+     *
+     * 2. Mobile-кейс: refreshToken в cookie не живёт — клиент хранит его в
+     *    SecureStore, но на сервере при запросе `/sessions` его нет. Зато
+     *    мобилка обязана слать стабильный `x-device-id`. Тогда по нему и
+     *    определяем текущую сессию. Дефолтное "web" значение игнорируем —
+     *    оно говорит о том, что заголовок не пришёл и матчить по нему
+     *    небезопасно.
+     */
     private isCurrent(
         token: { refreshToken: string; deviceId: string | null },
         context: SessionContext,
     ): boolean {
-        if (
-            context.refreshToken &&
-            context.refreshToken === token.refreshToken
-        ) {
-            return true;
+        if (context.refreshToken) {
+            return context.refreshToken === token.refreshToken;
         }
+
+        const contextDeviceId = context.deviceId;
         if (
-            context.deviceId &&
+            contextDeviceId &&
+            contextDeviceId !== UNKNOWN_DEVICE_ID &&
             token.deviceId &&
-            context.deviceId === token.deviceId
+            token.deviceId === contextDeviceId
         ) {
             return true;
         }
+
         return false;
     }
 }

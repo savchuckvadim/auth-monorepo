@@ -20,7 +20,13 @@ import {
     MessagesWsServerEvent,
     chatRoomId,
 } from './messages-socket.constants';
-import { ChatReadEvent, MessageCreatedEvent } from '../events/message.events';
+import {
+    ChatReadEvent,
+    MessageCreatedEvent,
+    MessageDeletedEvent,
+    MessageLikedEvent,
+    MessageUpdatedEvent,
+} from '../events/message.events';
 import { MessageEvent } from '../type/message-event.type';
 import { getErrorMessage } from '../lib/get-error-message';
 import { PushDispatchService } from '@/modules/notifications/push/push-dispatch.service';
@@ -98,6 +104,40 @@ export class MessagesGateway
             .emit(MessagesWsServerEvent.CHAT_READ, {
                 chatId: event.chatId,
                 readerUserId: event.readerUserId,
+            });
+    }
+
+    @OnEvent(MessageEvent.UPDATED)
+    handleMessageUpdated(event: MessageUpdatedEvent): void {
+        if (!this.server?.sockets) return;
+        this.server
+            .to(chatRoomId(event.chatId))
+            .emit(MessagesWsServerEvent.MESSAGE_UPDATED, event.message);
+    }
+
+    @OnEvent(MessageEvent.DELETED)
+    handleMessageDeleted(event: MessageDeletedEvent): void {
+        if (!this.server?.sockets) return;
+        this.server
+            .to(chatRoomId(event.chatId))
+            .emit(MessagesWsServerEvent.MESSAGE_DELETED, {
+                messageId: event.messageId,
+                chatId: event.chatId,
+                deleterUserId: event.deleterUserId,
+            });
+    }
+
+    @OnEvent(MessageEvent.LIKED)
+    handleMessageLiked(event: MessageLikedEvent): void {
+        if (!this.server?.sockets) return;
+        this.server
+            .to(chatRoomId(event.chatId))
+            .emit(MessagesWsServerEvent.MESSAGE_LIKED, {
+                messageId: event.messageId,
+                chatId: event.chatId,
+                userId: event.userId,
+                likesCount: event.likesCount,
+                isLiked: event.isLiked,
             });
     }
 

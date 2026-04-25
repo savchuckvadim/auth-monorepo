@@ -28,7 +28,7 @@ export function AppSurfaceCard({
     return (
         <div
             className={cn(
-                'overflow-hidden rounded-xl',
+                'overflow-hidden rounded-xl shadow-none border-none',
                 variantClass[variant],
                 className,
             )}

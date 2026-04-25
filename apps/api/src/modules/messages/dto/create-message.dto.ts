@@ -1,5 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+    ArrayMaxSize,
+    IsArray,
     IsBoolean,
     IsInt,
     IsString,
@@ -7,8 +9,11 @@ import {
     IsOptional,
     IsUUID,
     MaxLength,
+    ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { MessageType } from 'generated/prisma';
+import { MessageAttachmentInputDto } from './message-attachment.dto';
 
 export class CreateMessageDto {
     @ApiProperty({
@@ -130,4 +135,29 @@ export class CreateMessageDto {
     @IsOptional()
     @IsInt()
     registrationId?: number;
+
+    @ApiPropertyOptional({
+        description:
+            'ID уже загруженных через `POST /messages/attachments/upload` вложений. Сервер привяжет их к созданному сообщению.',
+        type: [String],
+        maxItems: 10,
+    })
+    @IsOptional()
+    @IsArray()
+    @ArrayMaxSize(10)
+    @IsUUID('4', { each: true })
+    attachmentIds?: string[];
+
+    @ApiPropertyOptional({
+        description:
+            'Inline-вложения: POST_SHARE (через postId) или FORWARD_SNAPSHOT (через metadata). Медиа надо заливать через upload endpoint и слать как `attachmentIds`.',
+        type: [MessageAttachmentInputDto],
+        maxItems: 10,
+    })
+    @IsOptional()
+    @IsArray()
+    @ArrayMaxSize(10)
+    @ValidateNested({ each: true })
+    @Type(() => MessageAttachmentInputDto)
+    attachmentInputs?: MessageAttachmentInputDto[];
 }

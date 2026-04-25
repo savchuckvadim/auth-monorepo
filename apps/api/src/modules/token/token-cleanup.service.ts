@@ -2,10 +2,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { TokenService } from './token.service';
 import { RedisService } from '@/core/redis/redis.service';
+import { ConfigService } from '@nestjs/config';
+import { parseDurationToMs } from '@/lib/utils/duration.util';
+import {
+    AUTH_DEFAULT_TTL,
+    EnumAuthTtlEnv,
+} from '@/lib/auth/auth-token-lifetime.config';
 
 const LOCK_KEY = 'locks:token-cleanup';
-/** Держим лок заметно больше максимально ожидаемого времени чистки. */
-const LOCK_TTL_SECONDS = 10 * 60;
 
 @Injectable()
 export class TokenCleanupService {
@@ -14,6 +18,7 @@ export class TokenCleanupService {
     constructor(
         private readonly tokenService: TokenService,
         private readonly redisService: RedisService,
+        private readonly configService: ConfigService,
     ) {}
 
     @Cron(CronExpression.EVERY_DAY_AT_2AM)
@@ -57,7 +62,7 @@ export class TokenCleanupService {
                 LOCK_KEY,
                 String(Date.now()),
                 'EX',
-                LOCK_TTL_SECONDS,
+                this.getLockTtlSeconds(),
                 'NX',
             );
             return result === 'OK';
@@ -71,6 +76,17 @@ export class TokenCleanupService {
             );
             return true;
         }
+    }
+
+    private getLockTtlSeconds(): number {
+        const fallbackMs = parseDurationToMs(
+            AUTH_DEFAULT_TTL.TOKEN_CLEANUP_LOCK,
+        );
+        const ttlMs = parseDurationToMs(
+            this.configService.get<string>(EnumAuthTtlEnv.TOKEN_CLEANUP_LOCK),
+            fallbackMs,
+        );
+        return Math.max(1, Math.floor(ttlMs / 1000));
     }
 
     private async releaseLock(): Promise<void> {

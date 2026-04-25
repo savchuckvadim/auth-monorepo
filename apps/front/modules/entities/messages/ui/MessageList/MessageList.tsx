@@ -46,8 +46,10 @@ export const MessageList = ({
 
                 const showAvatar =
                     message.type !== MessageType.SYSTEM &&
+                    message.type !== MessageType.CALL_EVENT &&
                     (!prevMessage ||
                         prevMessage.type === MessageType.SYSTEM ||
+                        prevMessage.type === MessageType.CALL_EVENT ||
                         prevMessage.senderId !== message.senderId);
 
                 return (
@@ -59,6 +61,7 @@ export const MessageList = ({
                             message={message}
                             isOwn={isOwn}
                             showAvatar={showAvatar}
+                            currentUserId={currentUserId}
                             onRetryFailed={onRetryFailed}
                         />
                     </Fragment>

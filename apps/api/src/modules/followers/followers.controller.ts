@@ -80,6 +80,39 @@ export class FollowersController {
         return this.followersService.getUserById(userId, user.userId);
     }
 
+    @ApiOperation({ summary: 'Get followers of the current user' })
+    @ApiResponse({
+        status: 200,
+        description: 'Followers list',
+        type: [FollowDto],
+    })
+    @Get('me/followers')
+    async getMyFollowers(@CurrentUser() user: TokenPayloadDto) {
+        return this.followersService.getFollowers(user.userId, user.userId);
+    }
+
+    @ApiOperation({ summary: 'Get following of the current user' })
+    @ApiResponse({
+        status: 200,
+        description: 'Following list',
+        type: [FollowDto],
+    })
+    @Get('me/following')
+    async getMyFollowing(@CurrentUser() user: TokenPayloadDto) {
+        return this.followersService.getFollowing(user.userId, user.userId);
+    }
+
+    @ApiOperation({ summary: 'Get friends of the current user' })
+    @ApiResponse({
+        status: 200,
+        description: 'Friends list',
+        type: [UserWithFollowStatusDto],
+    })
+    @Get('me/friends')
+    async getMyFriends(@CurrentUser() user: TokenPayloadDto) {
+        return this.followersService.getFriends(user.userId);
+    }
+
     @ApiOperation({ summary: 'Get followers of a user' })
     @ApiParam({ name: 'userId', description: 'User ID', example: '1' })
     @ApiResponse({
@@ -124,39 +157,6 @@ export class FollowersController {
     ) {
         void user;
         return this.followersService.getFriends(userId);
-    }
-
-    @ApiOperation({ summary: 'Get followers of the current user' })
-    @ApiResponse({
-        status: 200,
-        description: 'Followers list',
-        type: [FollowDto],
-    })
-    @Get('me/followers')
-    async getMyFollowers(@CurrentUser() user: TokenPayloadDto) {
-        return this.followersService.getFollowers(user.userId, user.userId);
-    }
-
-    @ApiOperation({ summary: 'Get following of the current user' })
-    @ApiResponse({
-        status: 200,
-        description: 'Following list',
-        type: [FollowDto],
-    })
-    @Get('me/following')
-    async getMyFollowing(@CurrentUser() user: TokenPayloadDto) {
-        return this.followersService.getFollowing(user.userId, user.userId);
-    }
-
-    @ApiOperation({ summary: 'Get friends of the current user' })
-    @ApiResponse({
-        status: 200,
-        description: 'Friends list',
-        type: [UserWithFollowStatusDto],
-    })
-    @Get('me/friends')
-    async getMyFriends(@CurrentUser() user: TokenPayloadDto) {
-        return this.followersService.getFriends(user.userId);
     }
 
     @ApiOperation({ summary: 'Check if the current user is following a user' })

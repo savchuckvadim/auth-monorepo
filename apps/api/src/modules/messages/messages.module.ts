@@ -11,6 +11,9 @@ import { PrismaModule } from '@/core/prisma';
 import { NotificationsModule } from '@/modules/notifications/notifications.module';
 import { RedisModule } from '@/core/redis';
 import { EncryptionModule } from '@/modules/encryption/encryption.module';
+import { S3Module } from '@/core/s3';
+import { MessageAttachmentsController } from './controllers/message-attachments.controller';
+import { MessageAttachmentsCleanupService } from './services/message-attachments-cleanup.service';
 
 @Module({
     imports: [
@@ -20,12 +23,14 @@ import { EncryptionModule } from '@/modules/encryption/encryption.module';
         TokenModule,
         NotificationsModule,
         RedisModule,
+        S3Module,
     ],
-    controllers: [MessagesController],
+    controllers: [MessagesController, MessageAttachmentsController],
     providers: [
         MessagesService,
         MessagesGateway,
         SocketStorageService,
+        MessageAttachmentsCleanupService,
         {
             provide: MessagesRepository,
             useClass: MessagesPrismaRepository,

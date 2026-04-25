@@ -16,10 +16,10 @@ export function LoginAuthCardFooter({
 }: LoginAuthCardFooterProps) {
     return (
         <AuthCardFooter>
-            <div className="text-center">
+            <div className="text-center mb-4">
                 <Link
                     href={forgotPasswordHref}
-                    className="text-sm font-medium text-primary hover:underline"
+                    className="text-sm font-medium text-primary hover:underline "
                 >
                     Forgot password?
                 </Link>

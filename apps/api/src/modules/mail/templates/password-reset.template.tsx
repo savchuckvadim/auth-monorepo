@@ -42,8 +42,9 @@ export function PasswordResetTemplate({
             </Text>
 
             <Text className="mx-0 mt-7 mb-0 text-center text-xs leading-normal text-email-muted">
-                Не запрашивал сброс? Проигнорируй письмо — пароль останется прежним.
-                После успешного сброса все активные сессии будут разлогинены.
+                Не запрашивал сброс? Проигнорируй письмо — пароль останется
+                прежним. После успешного сброса все активные сессии будут
+                разлогинены.
             </Text>
         </DarkEmailShell>
     );

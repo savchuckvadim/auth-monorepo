@@ -11,7 +11,12 @@ import { Button } from '@workspace/ui/components/button';
 import { useChatMessages, useMarkChatAsRead } from '@/modules/entities/messages';
 import { useChatSocket, useSendMessage } from '@/modules/entities/chats';
 
-import { ChatInputWidget, ChatMessagesWidget } from '@/modules/widgets/chat';
+import {
+    ChatInputWidget,
+    ChatMessagesWidget,
+    CurrentChatComposerProvider,
+    useCurrentChatComposer,
+} from '@/modules/widgets/chat';
 import { LoadingComponent } from '@/modules/shared/ui/Loading/ui/LoadingComponent';
 import { scrollToBottomDeferred } from '@/modules/entities/messages/lib/utils/scroll-to-bottom.util';
 
@@ -111,19 +116,88 @@ export default function ChatPage() {
         );
     }
 
+    return (
+        <CurrentChatComposerProvider>
+            <ChatPageLayout
+                chatId={chatId}
+                messageText={messageText}
+                setMessageText={setMessageText}
+                sendMessage={sendMessage}
+                retryFailedMessage={retryFailedMessage}
+                isSendingMessage={isSendingMessage}
+                messagesEndRef={messagesEndRef}
+            />
+        </CurrentChatComposerProvider>
+    );
+}
+
+type ChatPageLayoutProps = {
+    chatId: string;
+    messageText: string;
+    setMessageText: (v: string) => void;
+    sendMessage: (
+        text: string,
+        options?: {
+            replyToId?: string | null;
+            attachmentIds?: string[];
+            attachmentInputs?: Array<{
+                kind: string;
+                postId?: string;
+            }>;
+        },
+    ) => Promise<void | unknown>;
+    retryFailedMessage: (tempMessageId: string) => void;
+    isSendingMessage: boolean;
+    messagesEndRef: React.RefObject<HTMLDivElement | null>;
+};
+
+function ChatPageLayout({
+    chatId,
+    messageText,
+    setMessageText,
+    sendMessage,
+    retryFailedMessage,
+    isSendingMessage,
+    messagesEndRef,
+}: ChatPageLayoutProps) {
+    const { currentUser } = useAuth();
+    const { replyTarget, attachmentDrafts, sharedPost, clearComposer } =
+        useCurrentChatComposer();
+
     const handleSendMessage = () => {
         const text = messageText.trim();
-        if (!text) return;
+        // Собираем только успешно загруженные вложения; upload-ы в процессе
+        // не попадают — кнопка Send в ChatInputWidget в этот момент disabled,
+        // но страхуемся.
+        const attachmentIds = attachmentDrafts
+            .filter((d) => d.uploadedId && !d.error && !d.uploading)
+            .map((d) => d.uploadedId as string);
+        const attachmentInputs = sharedPost
+            ? [{ kind: 'POST_SHARE', postId: sharedPost.postId }]
+            : [];
+        if (
+            !text &&
+            attachmentIds.length === 0 &&
+            attachmentInputs.length === 0
+        ) {
+            return;
+        }
+        const replyToId = replyTarget?.messageId ?? null;
         setMessageText('');
-        void sendMessage(text).catch((error) => {
+        clearComposer();
+        void sendMessage(text, {
+            replyToId,
+            attachmentIds,
+            attachmentInputs,
+        }).catch((error) => {
             console.error('Failed to send message:', error);
         });
     };
 
     return (
-        <div className="flex h-[calc(100dvh-10rem)] overflow-hidden rounded-3xl border-2 bg-background md:h-[82vh]">
+        <div className="flex h-[calc(100dvh-10rem)] overflow-hidden rounded-3xl border-none md:h-[82vh]">
             <div className="w-full">
-                <div className="flex h-full flex-col overflow-hidden bg-card">
+                <div className="flex h-full flex-col overflow-hidden bg-card dark:bg-background">
                     <ChatMessagesWidget
                         messagesEndRef={messagesEndRef}
                         onRetryFailed={retryFailedMessage}
@@ -131,6 +205,8 @@ export default function ChatPage() {
 
                     {chatId ? (
                         <ChatInputWidget
+                            chatId={chatId}
+                            currentUserId={currentUser?.id}
                             messageText={messageText}
                             onMessageTextChange={setMessageText}
                             onSendMessage={handleSendMessage}

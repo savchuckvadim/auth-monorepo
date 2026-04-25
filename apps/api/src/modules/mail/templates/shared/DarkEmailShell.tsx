@@ -11,9 +11,7 @@ import {
     Tailwind,
     Text,
 } from '@react-email/components';
-
 import { EMAIL_TAILWIND_CONFIG } from './theme';
-import { SOCIOPATH_LOGO_DATA_URI } from './logo';
 
 interface DarkEmailShellProps {
     /** Текст, показываемый в списке писем как preview (скрытый сниппет). */
@@ -42,12 +40,14 @@ interface DarkEmailShellProps {
  * Набор токенов вынесен в {@link EMAIL_TAILWIND_CONFIG} и повторяет
  * имена переменных темы `sociopath-dark`.
  */
+
 export function DarkEmailShell({
     preview,
     heroTitle,
     heroSubtitle,
     children,
 }: DarkEmailShellProps) {
+    const SOCIOPATH_LOGO_DATA_URI = `${process.env.CLIENT_URL}/logo.svg`;
     return (
         <Html>
             <Head>
@@ -62,7 +62,7 @@ export function DarkEmailShell({
             </Head>
             <Preview>{preview}</Preview>
             <Tailwind config={EMAIL_TAILWIND_CONFIG}>
-                <Body className="m-0 w-full bg-email-bg p-0 font-email text-email-fg">
+                <Body className="m-0 w-full p-0 font-email text-email-bg ba-white">
                     <Container className="mx-auto max-w-[560px] px-4 pt-8 pb-10">
                         <Section className="px-0 py-2 pb-6 text-center">
                             <table
@@ -85,7 +85,7 @@ export function DarkEmailShell({
                                             />
                                         </td>
                                         <td className="align-middle">
-                                            <Text className="m-0 text-[32px] font-bold leading-none tracking-tight text-email-fg">
+                                            <Text className="m-0 text-[32px] font-bold leading-none tracking-tight text-email-bg">
                                                 Sociopath.
                                             </Text>
                                         </td>
@@ -93,7 +93,7 @@ export function DarkEmailShell({
                                 </tbody>
                             </table>
                         </Section>
-                        <Section className="rounded-2xl border border-solid border-email-border bg-email-card px-8 py-9">
+                        <Section className="rounded-2xl bg-email-card px-8 py-9">
                             <Text className="mx-0 mt-0 mb-2 text-center text-[28px] font-bold leading-tight text-email-fg">
                                 {heroTitle}
                             </Text>
@@ -105,7 +105,8 @@ export function DarkEmailShell({
                             {children}
                         </Section>
                         <Text className="mx-0 mt-6 mb-0 text-center text-xs text-email-muted">
-                            © {new Date().getFullYear()} Sociopath. All rights reserved.
+                            © {new Date().getFullYear()} Sociopath. All rights
+                            reserved.
                         </Text>
                     </Container>
                 </Body>

@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { Controller } from 'react-hook-form';
 import type { FieldPath, FieldValues } from 'react-hook-form';
 import { Input } from '@workspace/ui/components/input';
@@ -29,10 +31,28 @@ export function FormField<
     withLabel = false,
     startSlot,
     endSlot,
+    passwordRevealToggle = false,
     id: idProp,
     ...rest
 }: IFormField<TFieldValues, TName>) {
+    const [showPassword, setShowPassword] = useState(false);
     const fieldId = idProp ?? `field-${String(name)}`;
+    const resolvedEndSlot =
+        endSlot ??
+        (passwordRevealToggle ? (
+            <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent group-focus-within:text-primary"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+                {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                ) : (
+                    <Eye className="h-4 w-4" />
+                )}
+            </button>
+        ) : null);
 
     return (
         <div className="space-y-1.5">
@@ -54,6 +74,13 @@ export function FormField<
                                 id={fieldId}
                                 {...field}
                                 {...rest}
+                                type={
+                                    passwordRevealToggle
+                                        ? showPassword
+                                            ? 'text'
+                                            : 'password'
+                                        : rest.type
+                                }
                                 value={
                                     field.value === undefined ||
                                     field.value === null
@@ -66,12 +93,12 @@ export function FormField<
                                     'min-w-0 flex-1 border-0 bg-transparent px-0 py-0 shadow-none',
                                     'text-base leading-normal md:text-sm',
                                     'focus-visible:ring-0 focus-visible:ring-offset-0',
-                                    endSlot && 'pr-11',
+                                    resolvedEndSlot && 'pr-11',
                                     inputClassName,
                                 )}
                             />
-                            {endSlot ? (
-                                <FormFieldEndSlot>{endSlot}</FormFieldEndSlot>
+                            {resolvedEndSlot ? (
+                                <FormFieldEndSlot>{resolvedEndSlot}</FormFieldEndSlot>
                             ) : null}
                         </FormFieldInputRow>
                         <FormFieldErrorMessage
