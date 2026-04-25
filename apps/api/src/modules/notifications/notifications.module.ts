@@ -7,6 +7,7 @@ import { FcmPushService } from './push/fcm-push.service';
 import { ApnsPushService } from './push/apns-push.service';
 import { ApnsVoipPushService } from './push/apns-voip-push.service';
 import { PushDispatchService } from './push/push-dispatch.service';
+import { PushDeviceCleanupService } from './push-device-cleanup.service';
 import { PrismaModule } from '@/core/prisma';
 import { TokenModule } from '@/modules/token';
 
@@ -20,6 +21,7 @@ import { TokenModule } from '@/modules/token';
         ApnsPushService,
         ApnsVoipPushService,
         PushDispatchService,
+        PushDeviceCleanupService,
     ],
     exports: [NotificationsGateway, NotificationsService, PushDispatchService],
 })

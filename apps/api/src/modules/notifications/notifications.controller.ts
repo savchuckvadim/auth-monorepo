@@ -1,8 +1,17 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Post,
+    UseGuards,
+} from '@nestjs/common';
 import {
     ApiBody,
     ApiOkResponse,
     ApiOperation,
+    ApiParam,
     ApiResponse,
     ApiTags,
 } from '@nestjs/swagger';
@@ -53,5 +62,38 @@ export class NotificationsController {
     @Get('devices')
     async getDevices(@CurrentUser() user: TokenPayloadDto) {
         return this.notificationsService.getActiveDevicesForUser(user.userId);
+    }
+
+    @ApiOperation({
+        summary: 'Remove a push device installation',
+        description:
+            'Hard-deletes the device row scoped to the current user. ' +
+            'Mobile apps should call this on logout so the backend stops ' +
+            'dispatching pushes to this installation immediately, instead of ' +
+            'waiting for APNS/FCM to report the token as unregistered.',
+    })
+    @ApiParam({
+        name: 'installationId',
+        description:
+            'PushDevice.id returned by POST /notifications/devices/register',
+    })
+    @ApiResponse({
+        status: 200,
+        schema: {
+            properties: {
+                success: { type: 'boolean' },
+                deleted: { type: 'number' },
+            },
+        },
+    })
+    @Delete('devices/:installationId')
+    async removePushDevice(
+        @CurrentUser() user: TokenPayloadDto,
+        @Param('installationId') installationId: string,
+    ) {
+        return this.notificationsService.removeDevice(
+            user.userId,
+            installationId,
+        );
     }
 }

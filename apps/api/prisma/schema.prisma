@@ -423,19 +423,22 @@ enum PushProvider {
 }
 
 model PushDevice {
-    id         String       @id @default(uuid())
-    userId     String       @map("user_id") @db.VarChar(255)
-    platform   PushPlatform
-    provider   PushProvider
-    token      String       @unique @db.VarChar(512)
-    voipToken  String?      @map("voip_token") @db.VarChar(512)
-    isActive   Boolean      @default(true) @map("is_active")
-    lastSeenAt DateTime     @default(now()) @map("last_seen_at")
-    createdAt  DateTime     @default(now()) @map("created_at")
-    updatedAt  DateTime     @updatedAt @map("updated_at")
+    id               String       @id @default(uuid())
+    userId           String       @map("user_id") @db.VarChar(255)
+    /// Stable per-app-install id from the client (e.g. keychain UUID). Optional for legacy rows.
+    installationId   String?      @map("installation_id") @db.VarChar(128)
+    platform         PushPlatform
+    provider         PushProvider
+    token            String       @unique @db.VarChar(512)
+    voipToken        String?      @map("voip_token") @db.VarChar(512)
+    isActive         Boolean      @default(true) @map("is_active")
+    lastSeenAt       DateTime     @default(now()) @map("last_seen_at")
+    createdAt        DateTime     @default(now()) @map("created_at")
+    updatedAt        DateTime     @updatedAt @map("updated_at")
 
     user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+    @@unique([userId, installationId], map: "push_devices_user_installation_uidx")
     @@index([userId, isActive])
     @@index([platform, provider])
     @@map("push_devices")

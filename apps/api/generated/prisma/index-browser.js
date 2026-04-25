@@ -287,6 +287,7 @@ exports.Prisma.CallScalarFieldEnum = {
 exports.Prisma.PushDeviceScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
+  installationId: 'installationId',
   platform: 'platform',
   provider: 'provider',
   token: 'token',
@@ -486,6 +487,7 @@ exports.Prisma.CallOrderByRelevanceFieldEnum = {
 exports.Prisma.PushDeviceOrderByRelevanceFieldEnum = {
   id: 'id',
   userId: 'userId',
+  installationId: 'installationId',
   token: 'token',
   voipToken: 'voipToken'
 };

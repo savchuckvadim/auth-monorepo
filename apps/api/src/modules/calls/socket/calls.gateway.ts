@@ -29,6 +29,9 @@ const CANCELED_REASON: CallEndedReason = 'CANCELED';
 const FAILED_REASON: CallEndedReason = 'FAILED';
 const TIMEOUT_REASON: CallEndedReason = 'TIMEOUT';
 
+/** Number of seconds an unanswered call rings before being marked as missed. */
+const CALL_TIMEOUT_SECONDS = 45;
+
 @WebSocketGateway({
     cors: {
         origin: '*',
@@ -53,6 +56,9 @@ export class CallsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         // TODO: Получить userId из токена аутентификации
         // Пока используем query параметр для тестирования
         const userId = client.handshake.query.userId as string;
+        const platform = (
+            (client.handshake.query.platform as string) || 'web'
+        ).toLowerCase();
 
         if (!userId) {
             client.disconnect();
@@ -62,12 +68,18 @@ export class CallsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         // Сохраняем маппинг userId <-> socketId
         this.onlineUsersService.setUser(userId, client.id);
 
-        // Добавляем в персональную комнату (как в PostGateway)
-        if (userId) {
-            void client.join(`user:${userId}`);
+        // Базовая комната — для signaling (peer:nego, ice, accepted, end).
+        void client.join(`user:${userId}`);
+
+        // Целевая комната для входящих звонков. Только web получает call:incoming
+        // через WS — на мобилку звонок приходит исключительно push'ем.
+        if (platform === 'web') {
+            void client.join(`user:${userId}:web`);
         }
 
-        console.log(`Socket Connected: ${client.id} (user: ${userId})`);
+        console.log(
+            `Socket Connected: ${client.id} (user: ${userId}, platform: ${platform})`,
+        );
     }
 
     handleDisconnect(client: Socket) {
@@ -105,32 +117,51 @@ export class CallsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
             this.callIdMap.set(client.id, call.id);
 
-            // Отправляем в комнату пользователя (Socket.IO сам проверит онлайн статус)
-            this.server.to(`user:${data.toUserId}`).emit(CallEvent.INCOMING, {
-                from: client.id,
-                fromUserId: userId,
-                callId: call.id,
-                chatId: data.chatId,
-                offer: data.offer,
-                type: data.type,
-            });
+            const callerInfo = await this.callsService.getCallerInfo(userId);
+            const callerName = callerInfo.name ?? userId;
+            const callerAvatar =
+                callerInfo.avatar ?? this.getDefaultCallerAvatarUrl();
+            const callType = data.type || CallType.VIDEO;
+            const expiresAt =
+                Math.floor(Date.now() / 1000) + CALL_TIMEOUT_SECONDS;
 
-            if (!this.onlineUsersService.isUserOnline(data.toUserId)) {
-                await this.pushDispatchService.sendIncomingCallVoip(
-                    data.toUserId,
-                    {
-                        title: 'Incoming call',
-                        body: 'You have an incoming call',
-                        data: {
-                            type: 'incoming_call',
-                            callId: call.id,
-                            chatId: data.chatId,
-                            fromUserId: userId,
-                            callType: data.type || CallType.VIDEO,
-                        },
-                    },
-                );
-            }
+            // WS → только web. Мобилка получает звонок исключительно push'ем,
+            // поэтому в `:web` подкомнату попадают только web-сокеты.
+            this.server
+                .to(`user:${data.toUserId}:web`)
+                .emit(CallEvent.INCOMING, {
+                    from: client.id,
+                    fromUserId: userId,
+                    callerName,
+                    callerAvatar,
+                    callId: call.id,
+                    chatId: data.chatId,
+                    offer: data.offer,
+                    type: callType,
+                    callType,
+                    expiresAt,
+                });
+
+            // Push → всегда на все зарегистрированные мобильные устройства,
+            // независимо от того, online пользователь на web или нет.
+            // Если юзер сидит и на web, и на мобилке — позвонит и там, и там.
+            await this.pushDispatchService.sendIncomingCall(data.toUserId, {
+                title: callerName,
+                body:
+                    callType === CallType.AUDIO
+                        ? 'Incoming voice call'
+                        : 'Incoming video call',
+                data: {
+                    type: 'incoming_call',
+                    callId: call.id,
+                    chatId: data.chatId,
+                    fromUserId: userId,
+                    callerName,
+                    callerAvatar,
+                    callType,
+                    expiresAt: String(expiresAt),
+                },
+            });
 
             const timer = setTimeout(() => {
                 void (async () => {
@@ -143,11 +174,21 @@ export class CallsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                             undefined,
                             call.id,
                         );
+                        void this.pushDispatchService
+                            .sendCancelCallToMobileUsers(
+                                [userId, data.toUserId],
+                                {
+                                    callId: call.id,
+                                    chatId: call.chatId,
+                                    reason: 'missed',
+                                },
+                            )
+                            .catch(() => undefined);
                     } finally {
                         this.callTimeoutMap.delete(call.id);
                     }
                 })();
-            }, 45000);
+            }, CALL_TIMEOUT_SECONDS * 1000);
             this.callTimeoutMap.set(call.id, timer);
 
             console.log(
@@ -203,6 +244,17 @@ export class CallsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 ans: data.ans,
             });
 
+            if (callId) {
+                const callForPush = await this.callsService.getCallById(callId);
+                void this.pushDispatchService
+                    .sendCancelCallToMobileUsers([userId], {
+                        callId,
+                        chatId: callForPush?.chatId,
+                        reason: 'accepted',
+                    })
+                    .catch(() => undefined);
+            }
+
             return { success: true };
         } catch (error) {
             return { error: getErrorMessage(error) };
@@ -247,14 +299,18 @@ export class CallsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
         try {
             const callId = this.callIdMap.get(client.id) || data.callId;
+            let resolvedReason: CallEndedReason = CANCELED_REASON;
+            let chatIdForPush: string | undefined;
+
             if (callId) {
                 const call = await this.callsService.getCallById(callId);
+                chatIdForPush = call?.chatId;
                 const timeout = this.callTimeoutMap.get(callId);
                 if (timeout) {
                     clearTimeout(timeout);
                     this.callTimeoutMap.delete(callId);
                 }
-                const resolvedReason: CallEndedReason = this.resolveEndedReason(
+                resolvedReason = this.resolveEndedReason(
                     data.endedReason,
                     call?.status,
                 );
@@ -279,6 +335,18 @@ export class CallsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 fromUserId: userId,
                 callId,
             });
+
+            if (callId) {
+                void this.pushDispatchService
+                    .sendCancelCallToMobileUsers([userId, data.toUserId], {
+                        callId,
+                        chatId: chatIdForPush,
+                        reason: this.mapEndedReasonToCancelPushReason(
+                            resolvedReason,
+                        ),
+                    })
+                    .catch(() => undefined);
+            }
 
             return { success: true };
         } catch (error) {
@@ -416,6 +484,34 @@ export class CallsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             console.error(error);
             // Do not fail signaling if timeline write fails.
         }
+    }
+
+    private mapEndedReasonToCancelPushReason(reason: CallEndedReason): string {
+        switch (reason) {
+            case REJECTED_REASON:
+                return 'rejected';
+            case CANCELED_REASON:
+                return 'canceled';
+            case MISSED_REASON:
+                return 'missed';
+            case TIMEOUT_REASON:
+                return 'timeout';
+            case FAILED_REASON:
+                return 'failed';
+            case ACCEPTED_REASON:
+                return 'ended';
+            default:
+                return 'ended';
+        }
+    }
+
+    /**
+     * Fallback caller avatar shown on the native call screen when the user has
+     * no profile picture. Mirrors the logo used in transactional emails.
+     */
+    private getDefaultCallerAvatarUrl(): string {
+        const clientUrl = process.env.CLIENT_URL ?? '';
+        return clientUrl ? `${clientUrl}/logo.svg` : '';
     }
 
     private resolveEndedReason(
